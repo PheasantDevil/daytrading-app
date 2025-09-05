@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { StockApiResponse } from '@/lib/stock-api';
+import { useEffect, useState } from 'react';
 
 interface RealTimePriceProps {
   stockId: number;
@@ -59,11 +59,7 @@ export default function RealTimePrice({
   }
 
   if (error) {
-    return (
-      <div className="text-red-600 text-center p-4">
-        Error: {error}
-      </div>
-    );
+    return <div className="text-red-600 text-center p-4">Error: {error}</div>;
   }
 
   if (!price) {
@@ -86,20 +82,22 @@ export default function RealTimePrice({
           {lastUpdated?.toLocaleTimeString()}
         </span>
       </div>
-      
+
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-2xl font-bold">{price.price.toFixed(2)}</span>
           <div className="text-right">
             <div className={`text-sm font-medium ${changeColor}`}>
-              {isPositive ? '+' : ''}{price.change.toFixed(2)}
+              {isPositive ? '+' : ''}
+              {price.change.toFixed(2)}
             </div>
             <div className={`text-xs ${changeColor}`}>
-              {isPositive ? '+' : ''}{price.changePercent.toFixed(2)}%
+              {isPositive ? '+' : ''}
+              {price.changePercent.toFixed(2)}%
             </div>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
             <span className="text-gray-600">High:</span>
@@ -115,7 +113,9 @@ export default function RealTimePrice({
           </div>
           <div>
             <span className="text-gray-600">Volume:</span>
-            <span className="ml-2 font-medium">{price.volume.toLocaleString()}</span>
+            <span className="ml-2 font-medium">
+              {price.volume.toLocaleString()}
+            </span>
           </div>
         </div>
       </div>

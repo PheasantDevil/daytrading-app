@@ -1,6 +1,6 @@
 import { prisma } from './database';
 import { redis } from './redis';
-import { stockApiService, StockApiResponse } from './stock-api';
+import { StockApiResponse, stockApiService } from './stock-api';
 
 export class StockDataSyncService {
   private static instance: StockDataSyncService;
@@ -43,9 +43,9 @@ export class StockDataSyncService {
       for (let i = 0; i < stocks.length; i += batchSize) {
         const batch = stocks.slice(i, i + batchSize);
         await this.syncBatch(batch);
-        
+
         // レート制限を考慮して待機
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
 
       console.log('Stock data sync completed');
@@ -59,16 +59,22 @@ export class StockDataSyncService {
   /**
    * バッチで株価データを同期
    */
-  private async syncBatch(stocks: { id: number; symbol: string }[]): Promise<void> {
-    const symbols = stocks.map(stock => stockApiService.toYahooSymbol(stock.symbol));
-    
+  private async syncBatch(
+    stocks: { id: number; symbol: string }[]
+  ): Promise<void> {
+    const symbols = stocks.map((stock) =>
+      stockApiService.toYahooSymbol(stock.symbol)
+    );
+
     try {
       const prices = await stockApiService.getMultipleRealTimePrices(symbols);
-      
+
       for (const price of prices) {
-        const originalSymbol = stockApiService.convertJapaneseSymbol(price.symbol);
-        const stock = stocks.find(s => s.symbol === originalSymbol);
-        
+        const originalSymbol = stockApiService.convertJapaneseSymbol(
+          price.symbol
+        );
+        const stock = stocks.find((s) => s.symbol === originalSymbol);
+
         if (stock) {
           await this.saveStockPrice(stock.id, price);
         }
@@ -81,7 +87,10 @@ export class StockDataSyncService {
   /**
    * 株価データをデータベースに保存
    */
-  private async saveStockPrice(stockId: number, price: StockApiResponse): Promise<void> {
+  private async saveStockPrice(
+    stockId: number,
+    price: StockApiResponse
+  ): Promise<void> {
     try {
       await prisma.stockPrice.create({
         data: {
@@ -112,15 +121,18 @@ export class StockDataSyncService {
   /**
    * 特定銘柄の株価データを同期
    */
-  async syncStockPrice(stockId: number, symbol: string): Promise<StockApiResponse | null> {
+  async syncStockPrice(
+    stockId: number,
+    symbol: string
+  ): Promise<StockApiResponse | null> {
     try {
       const yahooSymbol = stockApiService.toYahooSymbol(symbol);
       const price = await stockApiService.getRealTimePrice(yahooSymbol);
-      
+
       if (price) {
         await this.saveStockPrice(stockId, price);
       }
-      
+
       return price;
     } catch (error) {
       console.error(`Error syncing price for stock ${stockId}:`, error);
@@ -178,9 +190,14 @@ export class StockDataSyncService {
         });
       }
 
-      console.log(`Synced ${historicalData.length} historical records for stock ${stockId}`);
+      console.log(
+        `Synced ${historicalData.length} historical records for stock ${stockId}`
+      );
     } catch (error) {
-      console.error(`Error syncing historical data for stock ${stockId}:`, error);
+      console.error(
+        `Error syncing historical data for stock ${stockId}:`,
+        error
+      );
     }
   }
 
@@ -205,10 +222,13 @@ export class StockDataSyncService {
    */
   startPeriodicSync(intervalMinutes: number = 5): void {
     console.log(`Starting periodic sync every ${intervalMinutes} minutes`);
-    
-    setInterval(async () => {
-      await this.syncAllStockPrices();
-    }, intervalMinutes * 60 * 1000);
+
+    setInterval(
+      async () => {
+        await this.syncAllStockPrices();
+      },
+      intervalMinutes * 60 * 1000
+    );
   }
 }
 

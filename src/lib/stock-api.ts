@@ -1,4 +1,3 @@
-import axios from 'axios';
 import yahooFinance from 'yahoo-finance2';
 
 export interface StockApiResponse {
@@ -41,13 +40,13 @@ export class StockApiService {
   private async rateLimit(): Promise<void> {
     const now = Date.now();
     const timeSinceLastRequest = now - this.lastRequestTime;
-    
+
     if (timeSinceLastRequest < this.rateLimitDelay) {
-      await new Promise(resolve => 
+      await new Promise((resolve) =>
         setTimeout(resolve, this.rateLimitDelay - timeSinceLastRequest)
       );
     }
-    
+
     this.lastRequestTime = Date.now();
   }
 
@@ -57,9 +56,9 @@ export class StockApiService {
   async getRealTimePrice(symbol: string): Promise<StockApiResponse | null> {
     try {
       await this.rateLimit();
-      
+
       const result = await yahooFinance.quote(symbol);
-      
+
       if (!result) {
         return null;
       }
@@ -93,14 +92,14 @@ export class StockApiService {
   ): Promise<HistoricalData[]> {
     try {
       await this.rateLimit();
-      
+
       const result = await yahooFinance.historical(symbol, {
         period1,
         period2,
         interval,
       });
 
-      return result.map(item => ({
+      return result.map((item) => ({
         symbol: symbol,
         date: item.date.toISOString().split('T')[0],
         open: item.open || 0,
@@ -118,16 +117,18 @@ export class StockApiService {
   /**
    * 複数銘柄のリアルタイム価格を取得
    */
-  async getMultipleRealTimePrices(symbols: string[]): Promise<StockApiResponse[]> {
+  async getMultipleRealTimePrices(
+    symbols: string[]
+  ): Promise<StockApiResponse[]> {
     const results: StockApiResponse[] = [];
-    
+
     for (const symbol of symbols) {
       const price = await this.getRealTimePrice(symbol);
       if (price) {
         results.push(price);
       }
     }
-    
+
     return results;
   }
 

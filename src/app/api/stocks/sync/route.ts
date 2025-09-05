@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { stockDataSyncService } from '@/lib/stock-data-sync';
-import { createSuccessResponse, createErrorResponse } from '@/utils/api';
+import { createErrorResponse, createSuccessResponse } from '@/utils/api';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,8 +22,11 @@ export async function POST(request: NextRequest) {
             { status: 400 }
           );
         }
-        
-        const result = await stockDataSyncService.syncStockPrice(stockId, symbol);
+
+        const result = await stockDataSyncService.syncStockPrice(
+          stockId,
+          symbol
+        );
         return NextResponse.json(
           createSuccessResponse(result, 'Stock price synced'),
           { status: 200 }
@@ -36,7 +39,7 @@ export async function POST(request: NextRequest) {
             { status: 400 }
           );
         }
-        
+
         const { days = 30 } = await request.json();
         await stockDataSyncService.syncHistoricalData(stockId, symbol, days);
         return NextResponse.json(
@@ -45,16 +48,14 @@ export async function POST(request: NextRequest) {
         );
 
       default:
-        return NextResponse.json(
-          createErrorResponse('Invalid action'),
-          { status: 400 }
-        );
+        return NextResponse.json(createErrorResponse('Invalid action'), {
+          status: 400,
+        });
     }
   } catch (error) {
     console.error('Stock sync error:', error);
-    return NextResponse.json(
-      createErrorResponse('Internal server error'),
-      { status: 500 }
-    );
+    return NextResponse.json(createErrorResponse('Internal server error'), {
+      status: 500,
+    });
   }
 }
