@@ -1,0 +1,107 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  trades     Trade[]
+  positions  Position[]
+
+  @@map("users")
+}
+
+model Stock {
+  id        Int      @id @default(autoincrement())
+  symbol    String   @unique
+  name      String
+  market    String
+  sector    String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  stockPrices StockPrice[]
+  trades      Trade[]
+  positions   Position[]
+  predictions Prediction[]
+
+  @@map("stocks")
+}
+
+model StockPrice {
+  id        Int      @id @default(autoincrement())
+  stockId   Int      @map("stock_id")
+  price     Decimal  @db.Decimal(10, 2)
+  volume    BigInt?
+  high      Decimal? @db.Decimal(10, 2)
+  low       Decimal? @db.Decimal(10, 2)
+  open      Decimal? @db.Decimal(10, 2)
+  close     Decimal? @db.Decimal(10, 2)
+  timestamp DateTime
+  createdAt DateTime @default(now()) @map("created_at")
+
+  stock Stock @relation(fields: [stockId], references: [id])
+
+  @@map("stock_prices")
+}
+
+model Trade {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  stockId     Int      @map("stock_id")
+  tradeType   String   @map("trade_type") // BUY or SELL
+  quantity    Int
+  price       Decimal  @db.Decimal(10, 2)
+  totalAmount Decimal  @db.Decimal(12, 2) @map("total_amount")
+  status      String   @default("PENDING") // PENDING, FILLED, CANCELLED
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user  User  @relation(fields: [userId], references: [id])
+  stock Stock @relation(fields: [stockId], references: [id])
+
+  @@map("trades")
+}
+
+model Position {
+  id              Int      @id @default(autoincrement())
+  userId          Int      @map("user_id")
+  stockId         Int      @map("stock_id")
+  quantity        Int
+  averagePrice    Decimal  @db.Decimal(10, 2) @map("average_price")
+  totalInvestment Decimal  @db.Decimal(12, 2) @map("total_investment")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user  User  @relation(fields: [userId], references: [id])
+  stock Stock @relation(fields: [stockId], references: [id])
+
+  @@map("positions")
+}
+
+model Prediction {
+  id              Int      @id @default(autoincrement())
+  stockId         Int      @map("stock_id")
+  predictedPrice  Decimal  @db.Decimal(10, 2) @map("predicted_price")
+  confidenceScore Decimal? @db.Decimal(5, 4) @map("confidence_score")
+  modelName       String?  @map("model_name")
+  predictionDate  DateTime @map("prediction_date")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  stock Stock @relation(fields: [stockId], references: [id])
+
+  @@map("predictions")
+}
