@@ -2,6 +2,8 @@
 
 import StockChart from '@/components/StockChart';
 import StockList from '@/components/StockList';
+import RealTimePrice from '@/components/RealTimePrice';
+import DataSyncButton from '@/components/DataSyncButton';
 import { ChartData, Stock } from '@/types';
 import { useState } from 'react';
 
@@ -40,11 +42,28 @@ export default function Home() {
           デイトレード用Webアプリ
         </h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* 銘柄リスト */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold mb-4">銘柄一覧</h2>
             <StockList onStockSelect={handleStockSelect} />
+          </div>
+
+          {/* リアルタイム価格 */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold mb-4">リアルタイム価格</h2>
+            {selectedStock ? (
+              <RealTimePrice
+                stockId={selectedStock.id}
+                symbol={selectedStock.symbol}
+                autoRefresh={true}
+                refreshInterval={5000}
+              />
+            ) : (
+              <div className="text-center text-gray-500 py-8">
+                銘柄を選択してください
+              </div>
+            )}
           </div>
 
           {/* チャート表示 */}
@@ -77,6 +96,11 @@ export default function Home() {
                 銘柄を選択してください
               </div>
             )}
+          </div>
+
+          {/* データ同期 */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <DataSyncButton onSyncComplete={() => window.location.reload()} />
           </div>
         </div>
 
