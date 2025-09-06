@@ -1,9 +1,9 @@
 import {
+  KabuAccountInfo,
   KabuApiCredentials,
   KabuApiResponse,
-  KabuAccountInfo,
-  KabuPosition,
   KabuOrderRequest,
+  KabuPosition,
 } from '@/types/securities';
 
 /**
@@ -113,7 +113,7 @@ export class KabuApiClient {
       ...orderRequest,
       Password: this.credentials.apiPassword,
     };
-    
+
     return this.makeAuthenticatedRequest<any>('/sendorder', {
       method: 'POST',
       body: JSON.stringify(orderWithPassword),
