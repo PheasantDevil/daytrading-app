@@ -68,11 +68,25 @@ export class RandomForestPredictor {
 
     const trees: DecisionTree[] = [];
     const featureNames = [
-      'sma5', 'sma10', 'sma20', 'sma50', 'ema12', 'ema26',
-      'rsi', 'macd', 'macdSignal', 'macdHistogram',
-      'bollingerUpper', 'bollingerLower', 'bollingerMiddle',
-      'volumeSma', 'priceChange', 'priceChangePercent',
-      'volatility', 'price', 'volume'
+      'sma5',
+      'sma10',
+      'sma20',
+      'sma50',
+      'ema12',
+      'ema26',
+      'rsi',
+      'macd',
+      'macdSignal',
+      'macdHistogram',
+      'bollingerUpper',
+      'bollingerLower',
+      'bollingerMiddle',
+      'volumeSma',
+      'priceChange',
+      'priceChangePercent',
+      'volatility',
+      'price',
+      'volume',
     ];
 
     // 各決定木を学習
@@ -119,34 +133,46 @@ export class RandomForestPredictor {
         threshold: 0,
         left: null,
         right: null,
-        prediction: this.calculateMean(data.map(d => d.target)),
+        prediction: this.calculateMean(data.map((d) => d.target)),
       };
     }
 
     // 最適な分割を見つける
     const bestSplit = this.findBestSplit(data);
-    
+
     if (bestSplit === null) {
       return {
         featureIndex: -1,
         threshold: 0,
         left: null,
         right: null,
-        prediction: this.calculateMean(data.map(d => d.target)),
+        prediction: this.calculateMean(data.map((d) => d.target)),
       };
     }
 
     // データを分割
-    const leftData = data.filter(d => 
-      this.extractFeatures(d)[bestSplit.featureIndex] <= bestSplit.threshold
+    const leftData = data.filter(
+      (d) =>
+        this.extractFeatures(d)[bestSplit.featureIndex] <= bestSplit.threshold
     );
-    const rightData = data.filter(d => 
-      this.extractFeatures(d)[bestSplit.featureIndex] > bestSplit.threshold
+    const rightData = data.filter(
+      (d) =>
+        this.extractFeatures(d)[bestSplit.featureIndex] > bestSplit.threshold
     );
 
     // 再帰的に子ノードを構築
-    const left = this.buildTree(leftData, maxDepth, minSamplesSplit, currentDepth + 1);
-    const right = this.buildTree(rightData, maxDepth, minSamplesSplit, currentDepth + 1);
+    const left = this.buildTree(
+      leftData,
+      maxDepth,
+      minSamplesSplit,
+      currentDepth + 1
+    );
+    const right = this.buildTree(
+      rightData,
+      maxDepth,
+      minSamplesSplit,
+      currentDepth + 1
+    );
 
     return {
       featureIndex: bestSplit.featureIndex,
@@ -160,26 +186,37 @@ export class RandomForestPredictor {
   /**
    * 最適な分割を見つける
    */
-  private findBestSplit(data: MLFeatures[]): { featureIndex: number; threshold: number; score: number } | null {
+  private findBestSplit(
+    data: MLFeatures[]
+  ): { featureIndex: number; threshold: number; score: number } | null {
     if (data.length < 2) return null;
 
-    const features = data.map(d => this.extractFeatures(d));
-    const targets = data.map(d => d.target);
+    const features = data.map((d) => this.extractFeatures(d));
+    const targets = data.map((d) => d.target);
     const nFeatures = features[0].length;
-    
-    let bestSplit: { featureIndex: number; threshold: number; score: number } | null = null;
+
+    let bestSplit: {
+      featureIndex: number;
+      threshold: number;
+      score: number;
+    } | null = null;
     let bestScore = -Infinity;
 
     // 各特徴量について最適な分割を探す
     for (let featureIndex = 0; featureIndex < nFeatures; featureIndex++) {
-      const values = features.map(f => f[featureIndex]);
+      const values = features.map((f) => f[featureIndex]);
       const uniqueValues = [...new Set(values)].sort((a, b) => a - b);
 
       // 各閾値で分割を試す
       for (let i = 0; i < uniqueValues.length - 1; i++) {
         const threshold = (uniqueValues[i] + uniqueValues[i + 1]) / 2;
-        const score = this.calculateSplitScore(features, targets, featureIndex, threshold);
-        
+        const score = this.calculateSplitScore(
+          features,
+          targets,
+          featureIndex,
+          threshold
+        );
+
         if (score > bestScore) {
           bestScore = score;
           bestSplit = { featureIndex, threshold, score };
@@ -214,8 +251,8 @@ export class RandomForestPredictor {
       return -Infinity;
     }
 
-    const leftTargets = leftIndices.map(i => targets[i]);
-    const rightTargets = rightIndices.map(i => targets[i]);
+    const leftTargets = leftIndices.map((i) => targets[i]);
+    const rightTargets = rightIndices.map((i) => targets[i]);
 
     const leftVariance = this.calculateVariance(leftTargets);
     const rightVariance = this.calculateVariance(rightTargets);
@@ -224,7 +261,8 @@ export class RandomForestPredictor {
     const leftWeight = leftIndices.length / features.length;
     const rightWeight = rightIndices.length / features.length;
 
-    const weightedVariance = leftWeight * leftVariance + rightWeight * rightVariance;
+    const weightedVariance =
+      leftWeight * leftVariance + rightWeight * rightVariance;
     return totalVariance - weightedVariance;
   }
 
@@ -233,9 +271,12 @@ export class RandomForestPredictor {
    */
   private calculateVariance(values: number[]): number {
     if (values.length === 0) return 0;
-    
+
     const mean = this.calculateMean(values);
-    const sumSquaredDiffs = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0);
+    const sumSquaredDiffs = values.reduce(
+      (sum, val) => sum + Math.pow(val - mean, 2),
+      0
+    );
     return sumSquaredDiffs / values.length;
   }
 
@@ -266,7 +307,7 @@ export class RandomForestPredictor {
 
     // 平均を計算
     const predicted = this.calculateMean(predictions);
-    
+
     // 信頼度を計算（予測の分散の逆数）
     const variance = this.calculateVariance(predictions);
     const confidence = Math.max(0, Math.min(1, 1 / (1 + variance)));
@@ -301,7 +342,7 @@ export class RandomForestPredictor {
    * 複数の予測を実行
    */
   predictBatch(features: MLFeatures[]): PredictionResult[] {
-    return features.map(f => this.predict(f));
+    return features.map((f) => this.predict(f));
   }
 
   /**
@@ -313,24 +354,35 @@ export class RandomForestPredictor {
     }
 
     const predictions = this.predictBatch(testData);
-    const actual = testData.map(d => d.target);
-    const predicted = predictions.map(p => p.predicted);
+    const actual = testData.map((d) => d.target);
+    const predicted = predictions.map((p) => p.predicted);
 
     // 平均二乗誤差
-    const mse = predictions.reduce((sum, p, i) => 
-      sum + Math.pow(p.predicted - actual[i], 2), 0) / predictions.length;
+    const mse =
+      predictions.reduce(
+        (sum, p, i) => sum + Math.pow(p.predicted - actual[i], 2),
+        0
+      ) / predictions.length;
 
     // 平均絶対誤差
-    const mae = predictions.reduce((sum, p, i) => 
-      sum + Math.abs(p.predicted - actual[i]), 0) / predictions.length;
+    const mae =
+      predictions.reduce(
+        (sum, p, i) => sum + Math.abs(p.predicted - actual[i]),
+        0
+      ) / predictions.length;
 
     // R²スコア
-    const meanActual = actual.reduce((sum, val) => sum + val, 0) / actual.length;
-    const ssRes = predictions.reduce((sum, p, i) => 
-      sum + Math.pow(actual[i] - p.predicted, 2), 0);
-    const ssTot = actual.reduce((sum, val) => 
-      sum + Math.pow(val - meanActual, 2), 0);
-    const r2 = 1 - (ssRes / ssTot);
+    const meanActual =
+      actual.reduce((sum, val) => sum + val, 0) / actual.length;
+    const ssRes = predictions.reduce(
+      (sum, p, i) => sum + Math.pow(actual[i] - p.predicted, 2),
+      0
+    );
+    const ssTot = actual.reduce(
+      (sum, val) => sum + Math.pow(val - meanActual, 2),
+      0
+    );
+    const r2 = 1 - ssRes / ssTot;
 
     return { mse, mae, r2 };
   }

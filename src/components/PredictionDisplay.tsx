@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { PredictionResult } from '@/lib/ml/prediction-service';
+import { useEffect, useState } from 'react';
 
 interface PredictionDisplayProps {
   stockId: number;
@@ -53,7 +53,7 @@ export default function PredictionDisplay({
       });
 
       const result = await response.json();
-      
+
       if (result.success) {
         // 学習完了後に予測を取得
         setTimeout(fetchPredictions, 5000);
@@ -85,11 +85,7 @@ export default function PredictionDisplay({
   }
 
   if (error) {
-    return (
-      <div className="text-red-600 text-center p-4">
-        Error: {error}
-      </div>
-    );
+    return <div className="text-red-600 text-center p-4">Error: {error}</div>;
   }
 
   if (predictions.length === 0) {
@@ -136,10 +132,7 @@ export default function PredictionDisplay({
 
       <div className="space-y-3">
         {predictions.map((prediction, index) => (
-          <div
-            key={index}
-            className="p-3 bg-gray-50 rounded-lg border"
-          >
+          <div key={index} className="p-3 bg-gray-50 rounded-lg border">
             <div className="flex justify-between items-start mb-2">
               <h4 className="font-medium capitalize">
                 {prediction.modelName.replace('_', ' ')}
@@ -148,7 +141,7 @@ export default function PredictionDisplay({
                 {prediction.timestamp.toLocaleTimeString()}
               </span>
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">予測価格:</span>
@@ -156,7 +149,7 @@ export default function PredictionDisplay({
                   ¥{prediction.predictedPrice.toFixed(2)}
                 </span>
               </div>
-              
+
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">信頼度:</span>
                 <div className="flex items-center space-x-2">
@@ -182,7 +175,11 @@ export default function PredictionDisplay({
           <div className="flex justify-between items-center">
             <span className="text-sm text-blue-600">予測価格:</span>
             <span className="text-lg font-bold text-blue-800">
-              ¥{(predictions.reduce((sum, p) => sum + p.predictedPrice, 0) / predictions.length).toFixed(2)}
+              ¥
+              {(
+                predictions.reduce((sum, p) => sum + p.predictedPrice, 0) /
+                predictions.length
+              ).toFixed(2)}
             </span>
           </div>
         </div>

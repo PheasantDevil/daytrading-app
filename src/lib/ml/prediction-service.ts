@@ -3,7 +3,6 @@ import { redis } from '../redis';
 import { FeatureEngineering, MLFeatures } from './feature-engineering';
 import { LinearRegressionPredictor } from './models/linear-regression';
 import { RandomForestPredictor } from './models/random-forest';
-import { StockPrice } from '@/types';
 
 export interface PredictionResult {
   modelName: string;
@@ -42,7 +41,10 @@ export class PredictionService {
   /**
    * 株価データから特徴量を生成
    */
-  private async generateFeatures(stockId: number, days: number = 100): Promise<MLFeatures[]> {
+  private async generateFeatures(
+    stockId: number,
+    days: number = 100
+  ): Promise<MLFeatures[]> {
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(endDate.getDate() - days);
@@ -80,7 +82,7 @@ export class PredictionService {
 
     try {
       const features = await this.generateFeatures(stockId, 200);
-      
+
       if (features.length < 50) {
         throw new Error('Insufficient training data');
       }
@@ -121,7 +123,7 @@ export class PredictionService {
   async predict(stockId: number): Promise<PredictionResult[]> {
     try {
       const features = await this.generateFeatures(stockId, 50);
-      
+
       if (features.length === 0) {
         throw new Error('No features available for prediction');
       }
@@ -172,7 +174,10 @@ export class PredictionService {
   /**
    * 予測結果をデータベースに保存
    */
-  private async savePrediction(stockId: number, result: PredictionResult): Promise<void> {
+  private async savePrediction(
+    stockId: number,
+    result: PredictionResult
+  ): Promise<void> {
     try {
       await prisma.prediction.create({
         data: {
@@ -198,7 +203,10 @@ export class PredictionService {
   /**
    * モデル性能を保存
    */
-  private async saveModelPerformance(modelName: string, performance: { mse: number; mae: number; r2: number }): Promise<void> {
+  private async saveModelPerformance(
+    modelName: string,
+    performance: { mse: number; mae: number; r2: number }
+  ): Promise<void> {
     try {
       await redis.setex(
         `model_performance:${modelName}`,
@@ -216,7 +224,10 @@ export class PredictionService {
   /**
    * キャッシュから予測結果を取得
    */
-  async getCachedPrediction(stockId: number, modelName: string): Promise<PredictionResult | null> {
+  async getCachedPrediction(
+    stockId: number,
+    modelName: string
+  ): Promise<PredictionResult | null> {
     try {
       const cached = await redis.get(`prediction:${stockId}:${modelName}`);
       if (cached) {
@@ -232,7 +243,9 @@ export class PredictionService {
   /**
    * モデル性能を取得
    */
-  async getModelPerformance(modelName: string): Promise<ModelPerformance | null> {
+  async getModelPerformance(
+    modelName: string
+  ): Promise<ModelPerformance | null> {
     try {
       const cached = await redis.get(`model_performance:${modelName}`);
       if (cached) {
@@ -265,7 +278,10 @@ export class PredictionService {
   /**
    * 予測履歴を取得
    */
-  async getPredictionHistory(stockId: number, limit: number = 10): Promise<PredictionResult[]> {
+  async getPredictionHistory(
+    stockId: number,
+    limit: number = 10
+  ): Promise<PredictionResult[]> {
     try {
       const predictions = await prisma.prediction.findMany({
         where: { stockId },
@@ -273,7 +289,7 @@ export class PredictionService {
         take: limit,
       });
 
-      return predictions.map(p => ({
+      return predictions.map((p) => ({
         modelName: p.modelName || 'unknown',
         predictedPrice: p.predictedPrice,
         confidence: p.confidenceScore || 0,
@@ -291,21 +307,24 @@ export class PredictionService {
    */
   startPeriodicTraining(intervalHours: number = 24): void {
     console.log(`Starting periodic training every ${intervalHours} hours`);
-    
-    setInterval(async () => {
-      try {
-        // 全銘柄のモデルを再学習
-        const stocks = await prisma.stock.findMany({
-          select: { id: true },
-        });
 
-        for (const stock of stocks) {
-          await this.trainModels(stock.id);
+    setInterval(
+      async () => {
+        try {
+          // 全銘柄のモデルを再学習
+          const stocks = await prisma.stock.findMany({
+            select: { id: true },
+          });
+
+          for (const stock of stocks) {
+            await this.trainModels(stock.id);
+          }
+        } catch (error) {
+          console.error('Error in periodic training:', error);
         }
-      } catch (error) {
-        console.error('Error in periodic training:', error);
-      }
-    }, intervalHours * 60 * 60 * 1000);
+      },
+      intervalHours * 60 * 60 * 1000
+    );
   }
 }
 

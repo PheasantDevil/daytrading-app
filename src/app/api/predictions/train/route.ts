@@ -1,20 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { predictionService } from '@/lib/ml/prediction-service';
-import { createSuccessResponse, createErrorResponse } from '@/utils/api';
+import { createErrorResponse, createSuccessResponse } from '@/utils/api';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
     const { stockId } = await request.json();
 
     if (!stockId) {
-      return NextResponse.json(
-        createErrorResponse('Stock ID is required'),
-        { status: 400 }
-      );
+      return NextResponse.json(createErrorResponse('Stock ID is required'), {
+        status: 400,
+      });
     }
 
     // 非同期で学習を開始
-    predictionService.trainModels(stockId).catch(error => {
+    predictionService.trainModels(stockId).catch((error) => {
       console.error('Training failed:', error);
     });
 
@@ -24,9 +23,8 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error('Training request error:', error);
-    return NextResponse.json(
-      createErrorResponse('Internal server error'),
-      { status: 500 }
-    );
+    return NextResponse.json(createErrorResponse('Internal server error'), {
+      status: 500,
+    });
   }
 }

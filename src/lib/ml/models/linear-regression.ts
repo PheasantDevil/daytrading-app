@@ -62,16 +62,30 @@ export class LinearRegressionPredictor {
 
     // 正規方程式を使用して線形回帰を解く
     const result = this.solveNormalEquation(X, y);
-    
+
     this.model = {
       coefficients: result.coefficients,
       intercept: result.intercept,
       featureNames: [
-        'sma5', 'sma10', 'sma20', 'sma50', 'ema12', 'ema26',
-        'rsi', 'macd', 'macdSignal', 'macdHistogram',
-        'bollingerUpper', 'bollingerLower', 'bollingerMiddle',
-        'volumeSma', 'priceChange', 'priceChangePercent',
-        'volatility', 'price', 'volume'
+        'sma5',
+        'sma10',
+        'sma20',
+        'sma50',
+        'ema12',
+        'ema26',
+        'rsi',
+        'macd',
+        'macdSignal',
+        'macdHistogram',
+        'bollingerUpper',
+        'bollingerLower',
+        'bollingerMiddle',
+        'volumeSma',
+        'priceChange',
+        'priceChangePercent',
+        'volatility',
+        'price',
+        'volume',
       ],
     };
   }
@@ -79,23 +93,26 @@ export class LinearRegressionPredictor {
   /**
    * 正規方程式を解く
    */
-  private solveNormalEquation(X: number[][], y: number[]): { coefficients: number[]; intercept: number } {
+  private solveNormalEquation(
+    X: number[][],
+    y: number[]
+  ): { coefficients: number[]; intercept: number } {
     const n = X.length;
     const m = X[0].length;
 
     // バイアス項を追加
-    const XWithBias = X.map(row => [1, ...row]);
-    
+    const XWithBias = X.map((row) => [1, ...row]);
+
     // X^T * X を計算
     const XTX = this.matrixMultiply(this.transpose(XWithBias), XWithBias);
-    
+
     // X^T * y を計算
     const XTy = this.matrixVectorMultiply(this.transpose(XWithBias), y);
-    
+
     // (X^T * X)^-1 * X^T * y を計算
     const XTXInv = this.matrixInverse(XTX);
     const coefficients = this.matrixVectorMultiply(XTXInv, XTy);
-    
+
     return {
       intercept: coefficients[0],
       coefficients: coefficients.slice(1),
@@ -118,7 +135,10 @@ export class LinearRegressionPredictor {
     }
 
     // 信頼度を計算（簡易版）
-    const confidence = Math.max(0, Math.min(1, 1 - Math.abs(prediction - features.price) / features.price));
+    const confidence = Math.max(
+      0,
+      Math.min(1, 1 - Math.abs(prediction - features.price) / features.price)
+    );
 
     return {
       predicted: prediction,
@@ -131,7 +151,7 @@ export class LinearRegressionPredictor {
    * 複数の予測を実行
    */
   predictBatch(features: MLFeatures[]): PredictionResult[] {
-    return features.map(f => this.predict(f));
+    return features.map((f) => this.predict(f));
   }
 
   /**
@@ -143,24 +163,35 @@ export class LinearRegressionPredictor {
     }
 
     const predictions = this.predictBatch(testData);
-    const actual = testData.map(d => d.target);
-    const predicted = predictions.map(p => p.predicted);
+    const actual = testData.map((d) => d.target);
+    const predicted = predictions.map((p) => p.predicted);
 
     // 平均二乗誤差
-    const mse = predictions.reduce((sum, p, i) => 
-      sum + Math.pow(p.predicted - actual[i], 2), 0) / predictions.length;
+    const mse =
+      predictions.reduce(
+        (sum, p, i) => sum + Math.pow(p.predicted - actual[i], 2),
+        0
+      ) / predictions.length;
 
     // 平均絶対誤差
-    const mae = predictions.reduce((sum, p, i) => 
-      sum + Math.abs(p.predicted - actual[i]), 0) / predictions.length;
+    const mae =
+      predictions.reduce(
+        (sum, p, i) => sum + Math.abs(p.predicted - actual[i]),
+        0
+      ) / predictions.length;
 
     // R²スコア
-    const meanActual = actual.reduce((sum, val) => sum + val, 0) / actual.length;
-    const ssRes = predictions.reduce((sum, p, i) => 
-      sum + Math.pow(actual[i] - p.predicted, 2), 0);
-    const ssTot = actual.reduce((sum, val) => 
-      sum + Math.pow(val - meanActual, 2), 0);
-    const r2 = 1 - (ssRes / ssTot);
+    const meanActual =
+      actual.reduce((sum, val) => sum + val, 0) / actual.length;
+    const ssRes = predictions.reduce(
+      (sum, p, i) => sum + Math.pow(actual[i] - p.predicted, 2),
+      0
+    );
+    const ssTot = actual.reduce(
+      (sum, val) => sum + Math.pow(val - meanActual, 2),
+      0
+    );
+    const r2 = 1 - ssRes / ssTot;
 
     return { mse, mae, r2 };
   }
@@ -169,7 +200,7 @@ export class LinearRegressionPredictor {
    * 行列の転置
    */
   private transpose(matrix: number[][]): number[][] {
-    return matrix[0].map((_, colIndex) => matrix.map(row => row[colIndex]));
+    return matrix[0].map((_, colIndex) => matrix.map((row) => row[colIndex]));
   }
 
   /**
@@ -194,7 +225,7 @@ export class LinearRegressionPredictor {
    * 行列とベクトルの掛け算
    */
   private matrixVectorMultiply(matrix: number[][], vector: number[]): number[] {
-    return matrix.map(row => 
+    return matrix.map((row) =>
       row.reduce((sum, val, i) => sum + val * vector[i], 0)
     );
   }
@@ -208,9 +239,13 @@ export class LinearRegressionPredictor {
     }
 
     const n = matrix.length;
-    const identity: number[][] = Array(n).fill(null).map((_, i) => 
-      Array(n).fill(0).map((_, j) => i === j ? 1 : 0)
-    );
+    const identity: number[][] = Array(n)
+      .fill(null)
+      .map((_, i) =>
+        Array(n)
+          .fill(0)
+          .map((_, j) => (i === j ? 1 : 0))
+      );
 
     // ガウス・ジョルダン法
     const augmented = matrix.map((row, i) => [...row, ...identity[i]]);
@@ -237,7 +272,7 @@ export class LinearRegressionPredictor {
       }
     }
 
-    return augmented.map(row => row.slice(n));
+    return augmented.map((row) => row.slice(n));
   }
 
   /**
