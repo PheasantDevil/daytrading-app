@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/database';
 import { stockDataSyncService } from '@/lib/stock-data-sync';
-import { createSuccessResponse, createErrorResponse } from '@/utils/api';
+import { createErrorResponse, createSuccessResponse } from '@/utils/api';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   request: NextRequest,
@@ -11,10 +11,9 @@ export async function GET(
     const stockId = parseInt(params.id);
 
     if (isNaN(stockId)) {
-      return NextResponse.json(
-        createErrorResponse('Invalid stock ID'),
-        { status: 400 }
-      );
+      return NextResponse.json(createErrorResponse('Invalid stock ID'), {
+        status: 400,
+      });
     }
 
     // 銘柄情報を取得
@@ -23,10 +22,9 @@ export async function GET(
     });
 
     if (!stock) {
-      return NextResponse.json(
-        createErrorResponse('Stock not found'),
-        { status: 404 }
-      );
+      return NextResponse.json(createErrorResponse('Stock not found'), {
+        status: 404,
+      });
     }
 
     // キャッシュから最新価格を取得
@@ -34,7 +32,10 @@ export async function GET(
 
     // キャッシュにない場合は新しく取得
     if (!realTimePrice) {
-      realTimePrice = await stockDataSyncService.syncStockPrice(stockId, stock.symbol);
+      realTimePrice = await stockDataSyncService.syncStockPrice(
+        stockId,
+        stock.symbol
+      );
     }
 
     if (!realTimePrice) {
@@ -44,15 +45,13 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(
-      createSuccessResponse(realTimePrice),
-      { status: 200 }
-    );
+    return NextResponse.json(createSuccessResponse(realTimePrice), {
+      status: 200,
+    });
   } catch (error) {
     console.error('Real-time price fetch error:', error);
-    return NextResponse.json(
-      createErrorResponse('Internal server error'),
-      { status: 500 }
-    );
+    return NextResponse.json(createErrorResponse('Internal server error'), {
+      status: 500,
+    });
   }
 }

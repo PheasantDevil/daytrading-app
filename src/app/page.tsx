@@ -1,9 +1,10 @@
 'use client';
 
+import DataSyncButton from '@/components/DataSyncButton';
+import PredictionDisplay from '@/components/PredictionDisplay';
+import RealTimePrice from '@/components/RealTimePrice';
 import StockChart from '@/components/StockChart';
 import StockList from '@/components/StockList';
-import RealTimePrice from '@/components/RealTimePrice';
-import DataSyncButton from '@/components/DataSyncButton';
 import { ChartData, Stock } from '@/types';
 import { useState } from 'react';
 
@@ -42,7 +43,7 @@ export default function Home() {
           デイトレード用Webアプリ
         </h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
           {/* 銘柄リスト */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold mb-4">銘柄一覧</h2>
@@ -66,8 +67,25 @@ export default function Home() {
             )}
           </div>
 
-          {/* チャート表示 */}
+          {/* 株価予測 */}
           <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold mb-4">株価予測</h2>
+            {selectedStock ? (
+              <PredictionDisplay
+                stockId={selectedStock.id}
+                symbol={selectedStock.symbol}
+                autoRefresh={true}
+                refreshInterval={30000}
+              />
+            ) : (
+              <div className="text-center text-gray-500 py-8">
+                銘柄を選択してください
+              </div>
+            )}
+          </div>
+
+          {/* チャート表示 */}
+          <div className="bg-white rounded-lg shadow-md p-6 lg:col-span-2 xl:col-span-1">
             <h2 className="text-xl font-semibold mb-4">
               {selectedStock
                 ? `${selectedStock.symbol} - ${selectedStock.name}`
