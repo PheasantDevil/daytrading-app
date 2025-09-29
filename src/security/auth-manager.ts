@@ -3,9 +3,9 @@
  * ユーザー認証、認可、セッション管理
  */
 
-import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
 
 export interface User {
   id: string;
@@ -114,8 +114,12 @@ export class AuthManager {
   private sessions: Map<string, Session> = new Map();
   private permissions: Map<string, Permission> = new Map();
   private roles: Map<string, Role> = new Map();
-  private loginAttempts: Map<string, { count: number; lastAttempt: Date }> = new Map();
-  private passwordResetTokens: Map<string, { userId: string; expiresAt: Date }> = new Map();
+  private loginAttempts: Map<string, { count: number; lastAttempt: Date }> =
+    new Map();
+  private passwordResetTokens: Map<
+    string,
+    { userId: string; expiresAt: Date }
+  > = new Map();
 
   constructor(config: AuthConfig) {
     this.config = config;
@@ -149,13 +153,15 @@ export class AuthManager {
       // ログイン試行回数をチェック
       const attemptKey = credentials.email;
       const attempts = this.loginAttempts.get(attemptKey);
-      
+
       if (attempts && attempts.count >= this.config.security.maxLoginAttempts) {
-        const lockoutTime = attempts.lastAttempt.getTime() + this.config.security.lockoutDuration;
+        const lockoutTime =
+          attempts.lastAttempt.getTime() + this.config.security.lockoutDuration;
         if (Date.now() < lockoutTime) {
           return {
             success: false,
-            error: 'アカウントがロックされています。しばらくしてから再試行してください。',
+            error:
+              'アカウントがロックされています。しばらくしてから再試行してください。',
           };
         } else {
           // ロックアウト期間が過ぎた場合はリセット
@@ -164,7 +170,9 @@ export class AuthManager {
       }
 
       // ユーザーを検索
-      const user = Array.from(this.users.values()).find(u => u.email === credentials.email);
+      const user = Array.from(this.users.values()).find(
+        (u) => u.email === credentials.email
+      );
       if (!user) {
         this.recordLoginAttempt(attemptKey, false);
         return {
@@ -182,7 +190,10 @@ export class AuthManager {
       }
 
       // パスワードを検証
-      const isPasswordValid = await bcrypt.compare(credentials.password, user.passwordHash);
+      const isPasswordValid = await bcrypt.compare(
+        credentials.password,
+        user.passwordHash
+      );
       if (!isPasswordValid) {
         this.recordLoginAttempt(attemptKey, false);
         return {
@@ -200,7 +211,10 @@ export class AuthManager {
           };
         }
 
-        const isMfaValid = this.verifyMFACode(user.mfaSecret!, credentials.mfaCode);
+        const isMfaValid = this.verifyMFACode(
+          user.mfaSecret!,
+          credentials.mfaCode
+        );
         if (!isMfaValid) {
           this.recordLoginAttempt(attemptKey, false);
           return {
@@ -244,11 +258,13 @@ export class AuthManager {
   /**
    * トークンを検証
    */
-  async verifyToken(token: string): Promise<{ valid: boolean; user?: User; error?: string }> {
+  async verifyToken(
+    token: string
+  ): Promise<{ valid: boolean; user?: User; error?: string }> {
     try {
       const decoded = jwt.verify(token, this.config.jwt.secret) as any;
       const user = this.users.get(decoded.userId);
-      
+
       if (!user || !user.isActive) {
         return { valid: false, error: 'ユーザーが見つからないか、無効です。' };
       }
@@ -264,8 +280,10 @@ export class AuthManager {
    */
   async refreshToken(refreshToken: string): Promise<AuthResult> {
     try {
-      const session = Array.from(this.sessions.values()).find(s => s.refreshToken === refreshToken);
-      
+      const session = Array.from(this.sessions.values()).find(
+        (s) => s.refreshToken === refreshToken
+      );
+
       if (!session || !session.isActive || session.expiresAt < new Date()) {
         return {
           success: false,
@@ -288,7 +306,9 @@ export class AuthManager {
       // セッションを更新
       session.token = newToken;
       session.refreshToken = newRefreshToken;
-      session.expiresAt = new Date(Date.now() + this.parseExpiresIn(this.config.jwt.refreshExpiresIn));
+      session.expiresAt = new Date(
+        Date.now() + this.parseExpiresIn(this.config.jwt.refreshExpiresIn)
+      );
       session.lastAccessed = new Date();
       this.sessions.set(session.id, session);
 
@@ -311,7 +331,11 @@ export class AuthManager {
   /**
    * ユーザーを認可
    */
-  async authorize(user: User, resource: string, action: string): Promise<boolean> {
+  async authorize(
+    user: User,
+    resource: string,
+    action: string
+  ): Promise<boolean> {
     try {
       // 管理者は全ての権限を持つ
       if (user.role === 'ADMIN') {
@@ -319,9 +343,13 @@ export class AuthManager {
       }
 
       // ユーザーの権限をチェック
-      const hasPermission = user.permissions.some(permissionId => {
+      const hasPermission = user.permissions.some((permissionId) => {
         const permission = this.permissions.get(permissionId);
-        return permission && permission.resource === resource && permission.action === action;
+        return (
+          permission &&
+          permission.resource === resource &&
+          permission.action === action
+        );
       });
 
       return hasPermission;
@@ -334,7 +362,18 @@ export class AuthManager {
   /**
    * ユーザーを作成
    */
-  async createUser(userData: Omit<User, 'id' | 'passwordHash' | 'createdAt' | 'updatedAt' | 'mfaEnabled' | 'mfaSecret'>, password: string): Promise<User> {
+  async createUser(
+    userData: Omit<
+      User,
+      | 'id'
+      | 'passwordHash'
+      | 'createdAt'
+      | 'updatedAt'
+      | 'mfaEnabled'
+      | 'mfaSecret'
+    >,
+    password: string
+  ): Promise<User> {
     try {
       const userId = crypto.randomUUID();
       const passwordHash = await bcrypt.hash(password, 12);
@@ -414,7 +453,11 @@ export class AuthManager {
   /**
    * セッションを作成
    */
-  private async createSession(userId: string, token: string, refreshToken: string): Promise<Session> {
+  private async createSession(
+    userId: string,
+    token: string,
+    refreshToken: string
+  ): Promise<Session> {
     const sessionId = crypto.randomUUID();
     const now = new Date();
 
@@ -423,7 +466,9 @@ export class AuthManager {
       userId,
       token,
       refreshToken,
-      expiresAt: new Date(now.getTime() + this.parseExpiresIn(this.config.jwt.refreshExpiresIn)),
+      expiresAt: new Date(
+        now.getTime() + this.parseExpiresIn(this.config.jwt.refreshExpiresIn)
+      ),
       createdAt: now,
       lastAccessed: now,
       ipAddress: '127.0.0.1', // 簡略化
@@ -510,16 +555,18 @@ export class AuthManager {
   private generateMFACode(secret: string): string {
     // 簡略化されたMFAコード生成
     const time = Math.floor(Date.now() / 1000 / this.config.mfa.period);
-    const hash = crypto.createHmac('sha1', Buffer.from(secret, 'base32'))
+    const hash = crypto
+      .createHmac('sha1', Buffer.from(secret, 'base32'))
       .update(Buffer.from(time.toString(16).padStart(16, '0'), 'hex'))
       .digest();
-    
+
     const offset = hash[hash.length - 1] & 0xf;
-    const code = ((hash[offset] & 0x7f) << 24) |
-                 ((hash[offset + 1] & 0xff) << 16) |
-                 ((hash[offset + 2] & 0xff) << 8) |
-                 (hash[offset + 3] & 0xff);
-    
+    const code =
+      ((hash[offset] & 0x7f) << 24) |
+      ((hash[offset + 1] & 0xff) << 16) |
+      ((hash[offset + 2] & 0xff) << 8) |
+      (hash[offset + 3] & 0xff);
+
     return (code % 1000000).toString().padStart(6, '0');
   }
 
@@ -530,7 +577,10 @@ export class AuthManager {
     if (success) {
       this.loginAttempts.delete(email);
     } else {
-      const attempts = this.loginAttempts.get(email) || { count: 0, lastAttempt: new Date() };
+      const attempts = this.loginAttempts.get(email) || {
+        count: 0,
+        lastAttempt: new Date(),
+      };
       attempts.count++;
       attempts.lastAttempt = new Date();
       this.loginAttempts.set(email, attempts);
@@ -556,11 +606,16 @@ export class AuthManager {
     const unit = match[2];
 
     switch (unit) {
-      case 's': return value;
-      case 'm': return value * 60;
-      case 'h': return value * 60 * 60;
-      case 'd': return value * 24 * 60 * 60;
-      default: return 3600;
+      case 's':
+        return value;
+      case 'm':
+        return value * 60;
+      case 'h':
+        return value * 60 * 60;
+      case 'd':
+        return value * 24 * 60 * 60;
+      default:
+        return 3600;
     }
   }
 
@@ -580,7 +635,12 @@ export class AuthManager {
         id: 'trader',
         name: 'Trader',
         description: 'トレーダー',
-        permissions: ['trading:read', 'trading:write', 'portfolio:read', 'portfolio:write'],
+        permissions: [
+          'trading:read',
+          'trading:write',
+          'portfolio:read',
+          'portfolio:write',
+        ],
         isDefault: false,
       },
       {
@@ -648,21 +708,32 @@ export class AuthManager {
    * デフォルトユーザーを作成
    */
   private async createDefaultUsers(): Promise<void> {
-    const adminUser = await this.createUser({
-      email: 'admin@example.com',
-      username: 'admin',
-      role: 'ADMIN',
-      permissions: ['*'],
-      isActive: true,
-    }, 'admin123');
+    const adminUser = await this.createUser(
+      {
+        email: 'admin@example.com',
+        username: 'admin',
+        role: 'ADMIN',
+        permissions: ['*'],
+        isActive: true,
+      },
+      'admin123'
+    );
 
-    const traderUser = await this.createUser({
-      email: 'trader@example.com',
-      username: 'trader',
-      role: 'TRADER',
-      permissions: ['trading:read', 'trading:write', 'portfolio:read', 'portfolio:write'],
-      isActive: true,
-    }, 'trader123');
+    const traderUser = await this.createUser(
+      {
+        email: 'trader@example.com',
+        username: 'trader',
+        role: 'TRADER',
+        permissions: [
+          'trading:read',
+          'trading:write',
+          'portfolio:read',
+          'portfolio:write',
+        ],
+        isActive: true,
+      },
+      'trader123'
+    );
 
     console.log('✅ デフォルトユーザー作成完了');
   }
@@ -679,7 +750,9 @@ export class AuthManager {
    * 全ユーザーを取得
    */
   getAllUsers(): User[] {
-    return Array.from(this.users.values()).map(user => this.sanitizeUser(user));
+    return Array.from(this.users.values()).map((user) =>
+      this.sanitizeUser(user)
+    );
   }
 
   /**
