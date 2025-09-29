@@ -4,9 +4,9 @@
  */
 
 import { AdvancedMLService } from '../src/ai/advanced-ml-service';
-import { WebSocketManager } from '../src/realtime/websocket-manager';
 import { LocalizationService } from '../src/i18n/localization-service';
 import { PWAManager } from '../src/mobile/pwa-manager';
+import { WebSocketManager } from '../src/realtime/websocket-manager';
 
 async function testAdvancedMLService(): Promise<void> {
   console.log('\n🧪 高度なMLサービステスト開始...');
@@ -71,13 +71,18 @@ async function testAdvancedMLService(): Promise<void> {
         },
       }));
 
-      const ensemblePrediction = await advancedMLService.predictWithEnsemble('AAPL', marketData);
+      const ensemblePrediction = await advancedMLService.predictWithEnsemble(
+        'AAPL',
+        marketData
+      );
       console.log(
         `✅ アンサンブル予測: 予測値=${ensemblePrediction.ensemblePrediction.toFixed(4)}, 信頼度=${ensemblePrediction.ensembleConfidence.toFixed(4)}`
       );
 
       // 強化学習最適化テスト
-      const rlResult = await advancedMLService.optimizeStrategyWithRL({ name: 'momentum' });
+      const rlResult = await advancedMLService.optimizeStrategyWithRL({
+        name: 'momentum',
+      });
       console.log(
         `✅ 強化学習最適化: 総報酬=${rlResult.totalReward.toFixed(4)}, 学習率=${rlResult.learningRate}`
       );
@@ -87,7 +92,8 @@ async function testAdvancedMLService(): Promise<void> {
         {
           id: 'news1',
           title: 'Apple reports strong quarterly earnings',
-          content: 'Apple Inc. reported better than expected quarterly earnings...',
+          content:
+            'Apple Inc. reported better than expected quarterly earnings...',
           source: 'Reuters',
           publishedAt: new Date(),
         },
@@ -100,7 +106,8 @@ async function testAdvancedMLService(): Promise<void> {
         },
       ];
 
-      const sentimentAnalysis = await advancedMLService.analyzeNewsSentiment(newsData);
+      const sentimentAnalysis =
+        await advancedMLService.analyzeNewsSentiment(newsData);
       console.log(`✅ ニュース感情分析: ${sentimentAnalysis.length}記事`);
 
       sentimentAnalysis.forEach((analysis, index) => {
@@ -117,20 +124,26 @@ async function testAdvancedMLService(): Promise<void> {
         timestamp: new Date(),
       };
 
-      const chartPattern = await advancedMLService.recognizeChartPattern(chartImage);
+      const chartPattern =
+        await advancedMLService.recognizeChartPattern(chartImage);
       console.log(
         `✅ チャートパターン認識: パターン=${chartPattern.pattern}, 方向=${chartPattern.direction}, 信頼度=${chartPattern.confidence.toFixed(4)}`
       );
 
       // 時系列分析テスト
-      const timeSeriesAnalysis = await advancedMLService.analyzeTimeSeries('AAPL', marketData);
+      const timeSeriesAnalysis = await advancedMLService.analyzeTimeSeries(
+        'AAPL',
+        marketData
+      );
       console.log(
         `✅ 時系列分析: トレンド=${timeSeriesAnalysis.trend}, ボラティリティ=${timeSeriesAnalysis.volatility.toFixed(4)}, 季節性=${timeSeriesAnalysis.seasonality}`
       );
 
       // 統計取得テスト
       const stats = advancedMLService.getStats();
-      console.log(`✅ ML統計: 初期化=${stats.initialized}, アンサンブルモデル数=${stats.ensembleModels}`);
+      console.log(
+        `✅ ML統計: 初期化=${stats.initialized}, アンサンブルモデル数=${stats.ensembleModels}`
+      );
     }
 
     console.log('✅ 高度なMLサービステスト完了');
@@ -208,7 +221,7 @@ async function testWebSocketManager(): Promise<void> {
       const streamData = {
         symbol: 'AAPL',
         dataType: 'PRICE' as const,
-        data: { price: 150.30, volume: 1000000 },
+        data: { price: 150.3, volume: 1000000 },
         timestamp: new Date(),
         source: 'test-source',
       };
@@ -249,7 +262,12 @@ async function testLocalizationService(): Promise<void> {
       timezone: {
         default: 'Asia/Tokyo',
         autoDetect: true,
-        supported: ['Asia/Tokyo', 'America/New_York', 'Asia/Shanghai', 'Europe/London'],
+        supported: [
+          'Asia/Tokyo',
+          'America/New_York',
+          'Asia/Shanghai',
+          'Europe/London',
+        ],
       },
       dateTime: {
         formats: {
@@ -271,7 +289,9 @@ async function testLocalizationService(): Promise<void> {
 
     // 初期化テスト
     const initialized = await localizationService.initialize();
-    console.log(`✅ ローカライゼーションサービス初期化: ${initialized ? '成功' : '失敗'}`);
+    console.log(
+      `✅ ローカライゼーションサービス初期化: ${initialized ? '成功' : '失敗'}`
+    );
 
     if (initialized) {
       // 翻訳テスト
@@ -300,7 +320,11 @@ async function testLocalizationService(): Promise<void> {
 
       console.log('✅ 通貨フォーマットテスト:');
       currencies.forEach(({ amount, currency, locale }) => {
-        const formatted = localizationService.formatCurrency(amount, currency, locale);
+        const formatted = localizationService.formatCurrency(
+          amount,
+          currency,
+          locale
+        );
         console.log(`  - ${locale} ${currency}: ${amount} = ${formatted}`);
       });
 
@@ -327,7 +351,11 @@ async function testLocalizationService(): Promise<void> {
 
       console.log('✅ 日付フォーマットテスト:');
       dateFormats.forEach(({ locale, format }) => {
-        const formatted = localizationService.formatDate(testDate, locale, format);
+        const formatted = localizationService.formatDate(
+          testDate,
+          locale,
+          format
+        );
         console.log(`  - ${locale}: ${testDate.toISOString()} = ${formatted}`);
       });
 
@@ -340,8 +368,14 @@ async function testLocalizationService(): Promise<void> {
 
       console.log('✅ タイムゾーン変換テスト:');
       timezoneConversions.forEach(({ from, to }) => {
-        const converted = localizationService.convertTimezone(testDate, from, to);
-        console.log(`  - ${from} -> ${to}: ${testDate.toISOString()} = ${converted.toISOString()}`);
+        const converted = localizationService.convertTimezone(
+          testDate,
+          from,
+          to
+        );
+        console.log(
+          `  - ${from} -> ${to}: ${testDate.toISOString()} = ${converted.toISOString()}`
+        );
       });
 
       // 相対時間テスト
@@ -358,8 +392,12 @@ async function testLocalizationService(): Promise<void> {
       });
 
       // ロケール検出テスト
-      const detectedLocale = localizationService.detectLocale('ja-JP,ja;q=0.9,en-US;q=0.8');
-      console.log(`✅ ロケール検出: ja-JP,ja;q=0.9,en-US;q=0.8 = ${detectedLocale}`);
+      const detectedLocale = localizationService.detectLocale(
+        'ja-JP,ja;q=0.9,en-US;q=0.8'
+      );
+      console.log(
+        `✅ ロケール検出: ja-JP,ja;q=0.9,en-US;q=0.8 = ${detectedLocale}`
+      );
 
       // 通貨検出テスト
       const detectedCurrency = localizationService.detectCurrency('ja-JP');
@@ -466,7 +504,11 @@ async function testPWAManager(): Promise<void> {
 
     if (initialized) {
       // リソースキャッシュテスト
-      const resources = ['/static/app.js', '/static/app.css', '/images/logo.png'];
+      const resources = [
+        '/static/app.js',
+        '/static/app.css',
+        '/images/logo.png',
+      ];
       await pwaManager.cacheResources(resources);
       console.log(`✅ リソースキャッシュ: ${resources.length}個`);
 
@@ -483,7 +525,7 @@ async function testPWAManager(): Promise<void> {
         symbol: 'MSFT',
         action: 'SELL',
         quantity: 50,
-        price: 300.00,
+        price: 300.0,
       });
       console.log('✅ オフラインデータ保存: ORDER');
 
@@ -500,7 +542,8 @@ async function testPWAManager(): Promise<void> {
 
       // プッシュ通知購読テスト（モック）
       try {
-        const subscription = await pwaManager.subscribeToPushNotifications('user123');
+        const subscription =
+          await pwaManager.subscribeToPushNotifications('user123');
         console.log(`✅ プッシュ通知購読: ${subscription.userId}`);
 
         // プッシュ通知送信テスト
@@ -541,11 +584,39 @@ async function testIntegrationWorkflow(): Promise<void> {
   try {
     // 高度なMLサービス
     const advancedMLService = new AdvancedMLService({
-      ensemble: { enabled: true, models: ['LSTM'], weights: { LSTM: 1.0 }, votingMethod: 'WEIGHTED_AVERAGE' },
-      reinforcement: { enabled: true, algorithm: 'DQN', learningRate: 0.001, epsilon: 0.1, gamma: 0.95, memorySize: 1000 },
-      nlp: { enabled: true, model: 'BERT', sentimentThreshold: 0.5, keywordExtraction: true, entityRecognition: true },
-      computerVision: { enabled: true, model: 'RESNET', patternRecognition: true, confidenceThreshold: 0.7 },
-      timeSeries: { enabled: true, methods: ['LSTM'], forecastHorizon: 5, seasonalityDetection: true },
+      ensemble: {
+        enabled: true,
+        models: ['LSTM'],
+        weights: { LSTM: 1.0 },
+        votingMethod: 'WEIGHTED_AVERAGE',
+      },
+      reinforcement: {
+        enabled: true,
+        algorithm: 'DQN',
+        learningRate: 0.001,
+        epsilon: 0.1,
+        gamma: 0.95,
+        memorySize: 1000,
+      },
+      nlp: {
+        enabled: true,
+        model: 'BERT',
+        sentimentThreshold: 0.5,
+        keywordExtraction: true,
+        entityRecognition: true,
+      },
+      computerVision: {
+        enabled: true,
+        model: 'RESNET',
+        patternRecognition: true,
+        confidenceThreshold: 0.7,
+      },
+      timeSeries: {
+        enabled: true,
+        methods: ['LSTM'],
+        forecastHorizon: 5,
+        seasonalityDetection: true,
+      },
     });
 
     // ローカライゼーションサービス
@@ -554,18 +625,77 @@ async function testIntegrationWorkflow(): Promise<void> {
       supportedLocales: ['ja-JP', 'en-US'],
       fallbackLocale: 'en-US',
       currency: { default: 'JPY', supported: ['USD', 'JPY'], autoDetect: true },
-      timezone: { default: 'Asia/Tokyo', autoDetect: true, supported: ['Asia/Tokyo', 'America/New_York'] },
-      dateTime: { formats: { 'ja-JP': 'YYYY/MM/DD', 'en-US': 'MM/DD/YYYY' }, relativeTime: true },
-      number: { formats: { 'ja-JP': { style: 'decimal' }, 'en-US': { style: 'decimal' } }, precision: 2 },
+      timezone: {
+        default: 'Asia/Tokyo',
+        autoDetect: true,
+        supported: ['Asia/Tokyo', 'America/New_York'],
+      },
+      dateTime: {
+        formats: { 'ja-JP': 'YYYY/MM/DD', 'en-US': 'MM/DD/YYYY' },
+        relativeTime: true,
+      },
+      number: {
+        formats: {
+          'ja-JP': { style: 'decimal' },
+          'en-US': { style: 'decimal' },
+        },
+        precision: 2,
+      },
     });
 
     // PWA管理サービス
     const pwaManager = new PWAManager({
-      serviceWorker: { enabled: true, scope: '/', updateInterval: 300000, cacheStrategy: 'CACHE_FIRST', maxCacheSize: 100, maxCacheAge: 86400000 },
-      cache: { enabled: true, strategies: { static: 'CACHE_FIRST', api: 'NETWORK_FIRST', images: 'STALE_WHILE_REVALIDATE' }, patterns: { static: ['/static/**'], api: ['/api/**'], images: ['/images/**'] } },
-      offlineStorage: { enabled: true, maxSize: 50, syncInterval: 300000, conflictResolution: 'LAST_WRITE_WINS' },
-      pushNotification: { enabled: true, vapidPublicKey: 'test-key', vapidPrivateKey: 'test-key', supportedFeatures: ['badge'], defaultOptions: { badge: '/badge.png' } },
-      manifest: { name: 'Trading App', short_name: 'Trading', description: 'Trading app', start_url: '/', display: 'standalone', orientation: 'portrait', theme_color: '#000', background_color: '#fff', icons: [], categories: ['finance'], lang: 'ja', dir: 'ltr', scope: '/', prefer_related_applications: false, related_applications: [] },
+      serviceWorker: {
+        enabled: true,
+        scope: '/',
+        updateInterval: 300000,
+        cacheStrategy: 'CACHE_FIRST',
+        maxCacheSize: 100,
+        maxCacheAge: 86400000,
+      },
+      cache: {
+        enabled: true,
+        strategies: {
+          static: 'CACHE_FIRST',
+          api: 'NETWORK_FIRST',
+          images: 'STALE_WHILE_REVALIDATE',
+        },
+        patterns: {
+          static: ['/static/**'],
+          api: ['/api/**'],
+          images: ['/images/**'],
+        },
+      },
+      offlineStorage: {
+        enabled: true,
+        maxSize: 50,
+        syncInterval: 300000,
+        conflictResolution: 'LAST_WRITE_WINS',
+      },
+      pushNotification: {
+        enabled: true,
+        vapidPublicKey: 'test-key',
+        vapidPrivateKey: 'test-key',
+        supportedFeatures: ['badge'],
+        defaultOptions: { badge: '/badge.png' },
+      },
+      manifest: {
+        name: 'Trading App',
+        short_name: 'Trading',
+        description: 'Trading app',
+        start_url: '/',
+        display: 'standalone',
+        orientation: 'portrait',
+        theme_color: '#000',
+        background_color: '#fff',
+        icons: [],
+        categories: ['finance'],
+        lang: 'ja',
+        dir: 'ltr',
+        scope: '/',
+        prefer_related_applications: false,
+        related_applications: [],
+      },
     });
 
     // 統合ワークフロー実行
@@ -582,11 +712,18 @@ async function testIntegrationWorkflow(): Promise<void> {
 
     // 2. 多言語対応テスト
     if (localizationInitialized) {
-      const japaneseText = localizationService.translate('trading.buy', 'ja-JP');
+      const japaneseText = localizationService.translate(
+        'trading.buy',
+        'ja-JP'
+      );
       const englishText = localizationService.translate('trading.buy', 'en-US');
       console.log(`✅ 多言語対応: 日本語=${japaneseText}, 英語=${englishText}`);
 
-      const formattedCurrency = localizationService.formatCurrency(1234.56, 'JPY', 'ja-JP');
+      const formattedCurrency = localizationService.formatCurrency(
+        1234.56,
+        'JPY',
+        'ja-JP'
+      );
       console.log(`✅ 通貨フォーマット: ${formattedCurrency}`);
     }
 
@@ -600,16 +737,31 @@ async function testIntegrationWorkflow(): Promise<void> {
         low: 145 + Math.random() * 10,
         close: 150 + Math.random() * 10,
         volume: Math.random() * 1000000,
-        indicators: { rsi: 50, macd: 0, bb_upper: 160, bb_lower: 140, sma_20: 150 },
+        indicators: {
+          rsi: 50,
+          macd: 0,
+          bb_upper: 160,
+          bb_lower: 140,
+          sma_20: 150,
+        },
       }));
 
-      const prediction = await advancedMLService.predictWithEnsemble('AAPL', marketData);
-      console.log(`✅ ML予測: 予測値=${prediction.ensemblePrediction.toFixed(4)}, 信頼度=${prediction.ensembleConfidence.toFixed(4)}`);
+      const prediction = await advancedMLService.predictWithEnsemble(
+        'AAPL',
+        marketData
+      );
+      console.log(
+        `✅ ML予測: 予測値=${prediction.ensemblePrediction.toFixed(4)}, 信頼度=${prediction.ensembleConfidence.toFixed(4)}`
+      );
     }
 
     // 4. PWA機能テスト
     if (pwaInitialized) {
-      await pwaManager.saveOfflineData('TRADE', { symbol: 'AAPL', action: 'BUY', quantity: 100 });
+      await pwaManager.saveOfflineData('TRADE', {
+        symbol: 'AAPL',
+        action: 'BUY',
+        quantity: 100,
+      });
       const offlineData = await pwaManager.getOfflineData();
       console.log(`✅ PWA機能: オフラインデータ=${offlineData.length}件`);
     }
@@ -620,9 +772,15 @@ async function testIntegrationWorkflow(): Promise<void> {
     const pwaStats = pwaManager.getStats();
 
     console.log(`✅ 統合統計:`);
-    console.log(`  - ML: 初期化=${mlStats.initialized}, アンサンブルモデル=${mlStats.ensembleModels}`);
-    console.log(`  - ローカライゼーション: 初期化=${localizationStats.initialized}, サポートロケール=${localizationStats.supportedLocales}`);
-    console.log(`  - PWA: 初期化=${pwaStats.initialized}, サービスワーカー=${pwaStats.serviceWorkerEnabled}`);
+    console.log(
+      `  - ML: 初期化=${mlStats.initialized}, アンサンブルモデル=${mlStats.ensembleModels}`
+    );
+    console.log(
+      `  - ローカライゼーション: 初期化=${localizationStats.initialized}, サポートロケール=${localizationStats.supportedLocales}`
+    );
+    console.log(
+      `  - PWA: 初期化=${pwaStats.initialized}, サービスワーカー=${pwaStats.serviceWorkerEnabled}`
+    );
 
     // 6. サービス停止
     advancedMLService.stop();

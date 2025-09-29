@@ -125,7 +125,9 @@ export class PWAManager {
     this.config = config;
     this.cacheManager = new CacheManager(config.cache);
     this.offlineStorage = new OfflineStorageManager(config.offlineStorage);
-    this.pushNotificationService = new PushNotificationService(config.pushNotification);
+    this.pushNotificationService = new PushNotificationService(
+      config.pushNotification
+    );
   }
 
   /**
@@ -180,13 +182,17 @@ export class PWAManager {
         scope: this.config.serviceWorker.scope,
       });
 
-      this.serviceWorker = registration.active || registration.waiting || registration.installing;
+      this.serviceWorker =
+        registration.active || registration.waiting || registration.installing;
 
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing;
         if (newWorker) {
           newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            if (
+              newWorker.state === 'installed' &&
+              navigator.serviceWorker.controller
+            ) {
               // 新しいバージョンが利用可能
               this.showUpdateNotification();
             }
@@ -246,7 +252,9 @@ export class PWAManager {
   /**
    * プッシュ通知を購読
    */
-  async subscribeToPushNotifications(userId: string): Promise<PushSubscription> {
+  async subscribeToPushNotifications(
+    userId: string
+  ): Promise<PushSubscription> {
     try {
       if (!this.isInitialized) {
         throw new Error('PWA管理サービスが初期化されていません');
@@ -268,7 +276,10 @@ export class PWAManager {
   /**
    * プッシュ通知を送信
    */
-  async sendPushNotification(subscription: PushSubscription, notification: any): Promise<void> {
+  async sendPushNotification(
+    subscription: PushSubscription,
+    notification: any
+  ): Promise<void> {
     try {
       if (!this.isInitialized) {
         throw new Error('PWA管理サービスが初期化されていません');
@@ -278,7 +289,10 @@ export class PWAManager {
         throw new Error('プッシュ通知が無効です');
       }
 
-      await this.pushNotificationService.sendNotification(subscription, notification);
+      await this.pushNotificationService.sendNotification(
+        subscription,
+        notification
+      );
       console.log(`✅ プッシュ通知送信完了: ${subscription.userId}`);
     } catch (error) {
       console.error(`❌ プッシュ通知送信エラー: ${subscription.userId}`, error);
@@ -468,7 +482,7 @@ class CacheManager {
   async clearCache(): Promise<void> {
     if ('caches' in window) {
       const cacheNames = await caches.keys();
-      await Promise.all(cacheNames.map(name => caches.delete(name)));
+      await Promise.all(cacheNames.map((name) => caches.delete(name)));
     }
   }
 
@@ -510,12 +524,14 @@ class OfflineStorageManager {
 
   async getData(type?: OfflineData['type']): Promise<OfflineData[]> {
     const data = Array.from(this.storage.values());
-    return type ? data.filter(d => d.type === type) : data;
+    return type ? data.filter((d) => d.type === type) : data;
   }
 
   async syncData(): Promise<void> {
-    const unsyncedData = Array.from(this.storage.values()).filter(d => !d.synced);
-    
+    const unsyncedData = Array.from(this.storage.values()).filter(
+      (d) => !d.synced
+    );
+
     for (const data of unsyncedData) {
       try {
         // サーバーに同期
@@ -583,7 +599,10 @@ class PushNotificationService {
     return pushSubscription;
   }
 
-  async sendNotification(subscription: PushSubscription, notification: any): Promise<void> {
+  async sendNotification(
+    subscription: PushSubscription,
+    notification: any
+  ): Promise<void> {
     // 簡略化されたプッシュ通知送信
     console.log(`📱 プッシュ通知送信: ${subscription.userId}`);
   }

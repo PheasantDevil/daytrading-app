@@ -128,17 +128,24 @@ export class LocalizationService {
       const translations = this.translations.get(locale);
       if (!translations) {
         // フォールバックロケールを試行
-        const fallbackTranslations = this.translations.get(this.config.fallbackLocale);
+        const fallbackTranslations = this.translations.get(
+          this.config.fallbackLocale
+        );
         if (!fallbackTranslations) {
           return key; // 翻訳が見つからない場合はキーを返す
         }
-        return this.formatMessage(fallbackTranslations.get(key)?.value || key, params);
+        return this.formatMessage(
+          fallbackTranslations.get(key)?.value || key,
+          params
+        );
       }
 
       const translation = translations.get(key);
       if (!translation) {
         // フォールバックロケールを試行
-        const fallbackTranslations = this.translations.get(this.config.fallbackLocale);
+        const fallbackTranslations = this.translations.get(
+          this.config.fallbackLocale
+        );
         if (fallbackTranslations) {
           const fallbackTranslation = fallbackTranslations.get(key);
           if (fallbackTranslation) {
@@ -195,7 +202,11 @@ export class LocalizationService {
   /**
    * 数値をフォーマット
    */
-  formatNumber(value: number, locale: string, options?: Intl.NumberFormatOptions): string {
+  formatNumber(
+    value: number,
+    locale: string,
+    options?: Intl.NumberFormatOptions
+  ): string {
     try {
       if (!this.isInitialized) {
         throw new Error('ローカライゼーションサービスが初期化されていません');
@@ -207,7 +218,7 @@ export class LocalizationService {
       }
 
       const defaultOptions: Intl.NumberFormatOptions = {
-        ...this.config.number.formats[locale] || {},
+        ...(this.config.number.formats[locale] || {}),
         ...options,
       };
 
@@ -233,7 +244,8 @@ export class LocalizationService {
       }
 
       const dateFormat = format || localeInfo.dateFormat;
-      const options: Intl.DateTimeFormatOptions = this.parseDateFormat(dateFormat);
+      const options: Intl.DateTimeFormatOptions =
+        this.parseDateFormat(dateFormat);
 
       return new Intl.DateTimeFormat(locale, options).format(date);
     } catch (error) {
@@ -289,7 +301,9 @@ export class LocalizationService {
       if (diffSeconds < 60) {
         return this.translate('time.just_now', locale);
       } else if (diffMinutes < 60) {
-        return this.translate('time.minutes_ago', locale, { count: diffMinutes });
+        return this.translate('time.minutes_ago', locale, {
+          count: diffMinutes,
+        });
       } else if (diffHours < 24) {
         return this.translate('time.hours_ago', locale, { count: diffHours });
       } else if (diffDays < 7) {
@@ -309,9 +323,12 @@ export class LocalizationService {
   detectLocale(acceptLanguage?: string, userAgent?: string): string {
     try {
       if (acceptLanguage) {
-        const languages = acceptLanguage.split(',').map(lang => {
+        const languages = acceptLanguage.split(',').map((lang) => {
           const [code, quality] = lang.trim().split(';q=');
-          return { code: code.trim(), quality: quality ? parseFloat(quality) : 1.0 };
+          return {
+            code: code.trim(),
+            quality: quality ? parseFloat(quality) : 1.0,
+          };
         });
 
         // 品質でソート
@@ -325,7 +342,7 @@ export class LocalizationService {
 
           // 言語コードのみでマッチング
           const languageCode = lang.code.split('-')[0];
-          const supportedLocale = this.config.supportedLocales.find(locale => 
+          const supportedLocale = this.config.supportedLocales.find((locale) =>
             locale.startsWith(languageCode)
           );
           if (supportedLocale) {
@@ -347,7 +364,10 @@ export class LocalizationService {
   detectCurrency(locale: string): string {
     try {
       const localeInfo = this.locales.get(locale);
-      if (localeInfo && this.config.currency.supported.includes(localeInfo.currency)) {
+      if (
+        localeInfo &&
+        this.config.currency.supported.includes(localeInfo.currency)
+      ) {
         return localeInfo.currency;
       }
 
@@ -542,7 +562,11 @@ export class LocalizationService {
       { key: 'trading.sell', locale: 'en-US', value: 'Sell' },
       { key: 'trading.hold', locale: 'en-US', value: 'Hold' },
       { key: 'time.just_now', locale: 'en-US', value: 'Just now' },
-      { key: 'time.minutes_ago', locale: 'en-US', value: '{count} minutes ago' },
+      {
+        key: 'time.minutes_ago',
+        locale: 'en-US',
+        value: '{count} minutes ago',
+      },
       { key: 'time.hours_ago', locale: 'en-US', value: '{count} hours ago' },
       { key: 'time.days_ago', locale: 'en-US', value: '{count} days ago' },
 
@@ -564,7 +588,9 @@ export class LocalizationService {
       if (!this.translations.has(translation.locale)) {
         this.translations.set(translation.locale, new Map());
       }
-      this.translations.get(translation.locale)!.set(translation.key, translation);
+      this.translations
+        .get(translation.locale)!
+        .set(translation.key, translation);
     }
 
     console.log(`✅ 翻訳初期化完了: ${defaultTranslations.length}個`);
@@ -579,7 +605,10 @@ export class LocalizationService {
     let formattedMessage = message;
     for (const [key, value] of Object.entries(params)) {
       const placeholder = `{${key}}`;
-      formattedMessage = formattedMessage.replace(new RegExp(placeholder, 'g'), String(value));
+      formattedMessage = formattedMessage.replace(
+        new RegExp(placeholder, 'g'),
+        String(value)
+      );
     }
 
     return formattedMessage;
@@ -636,7 +665,10 @@ export class LocalizationService {
       supportedLocales: this.config.supportedLocales.length,
       supportedCurrencies: this.config.currency.supported.length,
       supportedTimezones: this.config.timezone.supported.length,
-      translationCount: Array.from(this.translations.values()).reduce((sum, map) => sum + map.size, 0),
+      translationCount: Array.from(this.translations.values()).reduce(
+        (sum, map) => sum + map.size,
+        0
+      ),
     };
   }
 
