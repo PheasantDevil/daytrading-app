@@ -1,5 +1,5 @@
-import { generateToken, verifyPassword } from '@/lib/auth';
-import { prisma } from '@/lib/database';
+import { generateToken, verifyPassword } from '@/core/auth';
+import { prisma } from '@/core/database';
 import { LoginRequest } from '@/types';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 import { NextRequest, NextResponse } from 'next/server';

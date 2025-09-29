@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/database';
+import { prisma } from '@/core/database';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 import { NextRequest, NextResponse } from 'next/server';
 

@@ -1,6 +1,7 @@
 'use client';
 
 import DataSyncButton from '@/components/DataSyncButton';
+import DemoTradingPanel from '@/components/DemoTradingPanel';
 import PredictionDisplay from '@/components/PredictionDisplay';
 import RealTimePrice from '@/components/RealTimePrice';
 import StockChart from '@/components/StockChart';
@@ -142,6 +143,16 @@ export default function Home() {
           {/* データ同期 */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <DataSyncButton onSyncComplete={() => window.location.reload()} />
+          </div>
+
+          {/* デモトレード */}
+          <div className="bg-white rounded-lg shadow-md p-6 lg:col-span-2">
+            <DemoTradingPanel
+              selectedStock={selectedStock?.symbol}
+              currentPrice={
+                selectedStock ? stockPrices[stockPrices.length - 1]?.price : 0
+              }
+            />
           </div>
         </div>
 

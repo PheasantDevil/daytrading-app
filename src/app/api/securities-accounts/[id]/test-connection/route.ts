@@ -1,6 +1,6 @@
-import { verifyToken } from '@/lib/auth';
-import { prisma } from '@/lib/database';
-import { decryptSecuritiesCredentials } from '@/lib/securities-encryption';
+import { verifyToken } from '@/core/auth';
+import { prisma } from '@/core/database';
+import { decryptSecuritiesCredentials } from '@/integrations/securities-encryption';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -52,15 +52,14 @@ export async function POST(
 
     // 認証情報を復号化
     const credentials = decryptSecuritiesCredentials({
-      apiKey: account.apiKey,
-      apiSecret: account.apiSecret,
+      apiPassword: account.apiPassword,
       password: account.passwordHash,
-      tradingPassword: account.tradingPasswordHash,
     });
 
-    // SBI証券API接続テスト
-    const connectionTest = await testSbiApiConnection({
+    // kabuステーションAPI接続テスト
+    const connectionTest = await testKabuApiConnection({
       ...credentials,
+      username: account.username,
       accountNumber: account.accountNumber,
     });
 
@@ -97,33 +96,33 @@ export async function POST(
 }
 
 /**
- * SBI証券API接続テスト
+ * kabuステーションAPI接続テスト
  */
-async function testSbiApiConnection(credentials: {
-  apiKey: string;
-  apiSecret: string;
-  username: string;
+async function testKabuApiConnection(credentials: {
+  apiPassword: string;
   password: string;
-  tradingPassword: string;
+  username: string;
   accountNumber: string;
 }) {
   try {
-    // SBI証券API接続テストの実装
-    // 実際のSBI証券API仕様に基づいて実装する必要があります
+    // kabuステーションAPI接続テストの実装
+    // 実際のkabuステーションAPI仕様に基づいて実装する必要があります
 
     // デモ用の接続テスト（実際のAPI呼び出しは実装が必要）
-    const testResponse = await fetch('https://api.sbisec.co.jp/api/test', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${credentials.apiKey}`,
-      },
-      body: JSON.stringify({
-        username: credentials.username,
-        password: credentials.password,
-        accountNumber: credentials.accountNumber,
-      }),
-    });
+    const testResponse = await fetch(
+      'https://localhost:18080/kabusapi/v1/authentication',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-KEY': credentials.apiPassword,
+        },
+        body: JSON.stringify({
+          UserId: credentials.username,
+          Password: credentials.password,
+        }),
+      }
+    );
 
     if (testResponse.ok) {
       return { success: true };
@@ -134,7 +133,7 @@ async function testSbiApiConnection(credentials: {
       };
     }
   } catch (error) {
-    console.error('SBI証券API接続テストエラー:', error);
+    console.error('kabuステーションAPI接続テストエラー:', error);
     return {
       success: false,
       error: 'API接続に失敗しました。認証情報を確認してください。',

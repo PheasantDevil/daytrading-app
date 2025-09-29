@@ -1,14 +1,15 @@
-import { prisma } from '@/lib/database';
-import { stockDataSyncService } from '@/lib/stock-data-sync';
+import { prisma } from '@/core/database';
+import { stockDataSyncService } from '@/integrations/stock-data-sync';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const stockId = parseInt(params.id);
+    const { id } = await params;
+    const stockId = parseInt(id);
 
     if (isNaN(stockId)) {
       return NextResponse.json(createErrorResponse('Invalid stock ID'), {

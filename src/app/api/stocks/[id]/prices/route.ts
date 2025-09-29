@@ -1,13 +1,14 @@
-import { prisma } from '@/lib/database';
+import { prisma } from '@/core/database';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const stockId = parseInt(params.id);
+    const { id } = await params;
+    const stockId = parseInt(id);
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '100');
     const from = searchParams.get('from');

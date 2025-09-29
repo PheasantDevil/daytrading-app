@@ -1,4 +1,4 @@
-import { stockDataSyncService } from '@/lib/stock-data-sync';
+import { stockDataSyncService } from '@/integrations/stock-data-sync';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 import { NextRequest, NextResponse } from 'next/server';
 

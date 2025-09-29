@@ -1,5 +1,5 @@
-import { prisma } from '../database';
-import { redis } from '../redis';
+import { prisma } from '@/core/database';
+import { redis } from '@/core/redis';
 import { FeatureEngineering, MLFeatures } from './feature-engineering';
 import { LinearRegressionPredictor } from './models/linear-regression';
 import { RandomForestPredictor } from './models/random-forest';
@@ -62,7 +62,7 @@ export class PredictionService {
       },
     });
 
-    if (prices.length < 50) {
+    if (prices.length < 20) {
       throw new Error('Insufficient data for feature generation');
     }
 
@@ -81,9 +81,9 @@ export class PredictionService {
     console.log(`Training models for stock ${stockId}...`);
 
     try {
-      const features = await this.generateFeatures(stockId, 200);
+      const features = await this.generateFeatures(stockId, 100);
 
-      if (features.length < 50) {
+      if (features.length < 20) {
         throw new Error('Insufficient training data');
       }
 
@@ -122,7 +122,16 @@ export class PredictionService {
    */
   async predict(stockId: number): Promise<PredictionResult[]> {
     try {
-      const features = await this.generateFeatures(stockId, 50);
+      // まずモデルを学習（まだ学習されていない場合）
+      if (
+        !this.linearRegression.isTrained() ||
+        !this.randomForest.isTrained()
+      ) {
+        console.log('Models not trained, training first...');
+        await this.trainModels(stockId);
+      }
+
+      const features = await this.generateFeatures(stockId, 100);
 
       if (features.length === 0) {
         throw new Error('No features available for prediction');
@@ -189,12 +198,16 @@ export class PredictionService {
         },
       });
 
-      // Redisにキャッシュ
-      await redis.setex(
-        `prediction:${stockId}:${result.modelName}`,
-        3600, // 1時間キャッシュ
-        JSON.stringify(result)
-      );
+      // Redisにキャッシュ（エラーは無視）
+      try {
+        await redis.setex(
+          `prediction:${stockId}:${result.modelName}`,
+          3600, // 1時間キャッシュ
+          JSON.stringify(result)
+        );
+      } catch (error) {
+        console.warn('Redis cache error (ignored):', error);
+      }
     } catch (error) {
       console.error('Error saving prediction:', error);
     }
@@ -217,7 +230,7 @@ export class PredictionService {
         })
       );
     } catch (error) {
-      console.error('Error saving model performance:', error);
+      console.warn('Redis cache error (ignored):', error);
     }
   }
 
@@ -235,7 +248,7 @@ export class PredictionService {
       }
       return null;
     } catch (error) {
-      console.error('Error getting cached prediction:', error);
+      console.warn('Redis cache error (ignored):', error);
       return null;
     }
   }
@@ -253,7 +266,7 @@ export class PredictionService {
       }
       return null;
     } catch (error) {
-      console.error('Error getting model performance:', error);
+      console.warn('Redis cache error (ignored):', error);
       return null;
     }
   }

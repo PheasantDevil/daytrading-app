@@ -1,6 +1,6 @@
-import { verifyToken } from '@/lib/auth';
-import { prisma } from '@/lib/database';
-import { encryptSecuritiesCredentials } from '@/lib/securities-encryption';
+import { verifyToken } from '@/core/auth';
+import { prisma } from '@/core/database';
+import { encryptSecuritiesCredentials } from '@/integrations/securities-encryption';
 import { CreateSecuritiesAccountRequest } from '@/types/securities';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -76,25 +76,15 @@ export async function POST(request: NextRequest) {
     }
 
     const body: CreateSecuritiesAccountRequest = await request.json();
-    const {
-      brokerName,
-      accountNumber,
-      apiKey,
-      apiSecret,
-      username,
-      password,
-      tradingPassword,
-    } = body;
+    const { brokerName, accountNumber, apiPassword, username, password } = body;
 
     // バリデーション
     if (
       !brokerName ||
       !accountNumber ||
-      !apiKey ||
-      !apiSecret ||
+      !apiPassword ||
       !username ||
-      !password ||
-      !tradingPassword
+      !password
     ) {
       return NextResponse.json(
         { success: false, message: '必須項目が不足しています' },
@@ -120,10 +110,8 @@ export async function POST(request: NextRequest) {
 
     // 認証情報を暗号化
     const encryptedCredentials = encryptSecuritiesCredentials({
-      apiKey,
-      apiSecret,
+      apiPassword,
       password,
-      tradingPassword,
     });
 
     // 証券口座を登録
@@ -132,11 +120,9 @@ export async function POST(request: NextRequest) {
         userId,
         brokerName,
         accountNumber,
-        apiKey: encryptedCredentials.apiKey,
-        apiSecret: encryptedCredentials.apiSecret,
+        apiPassword: encryptedCredentials.apiPassword,
         username,
         passwordHash: encryptedCredentials.password,
-        tradingPasswordHash: encryptedCredentials.tradingPassword,
       },
       select: {
         id: true,

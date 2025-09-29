@@ -39,35 +39,27 @@ export function decrypt(encryptedText: string): string {
 }
 
 /**
- * API認証情報を暗号化して保存
+ * kabuステーションAPI認証情報を暗号化して保存
  */
 export function encryptSecuritiesCredentials(credentials: {
-  apiKey: string;
-  apiSecret: string;
+  apiPassword: string;
   password: string;
-  tradingPassword: string;
 }) {
   return {
-    apiKey: encrypt(credentials.apiKey),
-    apiSecret: encrypt(credentials.apiSecret),
+    apiPassword: encrypt(credentials.apiPassword),
     password: encrypt(credentials.password),
-    tradingPassword: encrypt(credentials.tradingPassword),
   };
 }
 
 /**
- * 暗号化されたAPI認証情報を復号化
+ * 暗号化されたkabuステーションAPI認証情報を復号化
  */
 export function decryptSecuritiesCredentials(encryptedCredentials: {
-  apiKey: string;
-  apiSecret: string;
+  apiPassword: string;
   password: string;
-  tradingPassword: string;
 }) {
   return {
-    apiKey: decrypt(encryptedCredentials.apiKey),
-    apiSecret: decrypt(encryptedCredentials.apiSecret),
+    apiPassword: decrypt(encryptedCredentials.apiPassword),
     password: decrypt(encryptedCredentials.password),
-    tradingPassword: decrypt(encryptedCredentials.tradingPassword),
   };
 }
