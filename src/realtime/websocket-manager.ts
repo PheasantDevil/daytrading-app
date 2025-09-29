@@ -3,12 +3,17 @@
  * リアルタイムデータストリーミングとイベント管理
  */
 
-import WebSocket from 'ws';
 import { EventEmitter } from 'events';
+import WebSocket from 'ws';
 
 export interface MarketEvent {
   id: string;
-  type: 'PRICE_UPDATE' | 'VOLUME_SPIKE' | 'PATTERN_DETECTED' | 'NEWS_ALERT' | 'ORDER_FILLED';
+  type:
+    | 'PRICE_UPDATE'
+    | 'VOLUME_SPIKE'
+    | 'PATTERN_DETECTED'
+    | 'NEWS_ALERT'
+    | 'ORDER_FILLED';
   symbol: string;
   data: any;
   timestamp: Date;
@@ -65,7 +70,8 @@ export class WebSocketManager extends EventEmitter {
   private streamProcessor: StreamProcessor;
   private heartbeatInterval: NodeJS.Timeout | null = null;
   private isRunning: boolean = false;
-  private messageCounts: Map<string, { count: number; resetTime: Date }> = new Map();
+  private messageCounts: Map<string, { count: number; resetTime: Date }> =
+    new Map();
 
   constructor(config: WebSocketConfig, streamProcessor: StreamProcessor) {
     super();
@@ -201,13 +207,20 @@ export class WebSocketManager extends EventEmitter {
       if (!connection) return;
 
       // レート制限をチェック
-      if (this.config.rateLimiting.enabled && !this.checkRateLimit(connectionId)) {
-        this.sendError(connectionId, 'RATE_LIMIT_EXCEEDED', 'レート制限を超えました');
+      if (
+        this.config.rateLimiting.enabled &&
+        !this.checkRateLimit(connectionId)
+      ) {
+        this.sendError(
+          connectionId,
+          'RATE_LIMIT_EXCEEDED',
+          'レート制限を超えました'
+        );
         return;
       }
 
       const message = JSON.parse(data.toString());
-      
+
       switch (message.type) {
         case 'SUBSCRIBE':
           this.handleSubscription(connectionId, message.symbols);
@@ -222,11 +235,19 @@ export class WebSocketManager extends EventEmitter {
           this.handleAuthentication(connectionId, message.token);
           break;
         default:
-          this.sendError(connectionId, 'UNKNOWN_MESSAGE_TYPE', '不明なメッセージタイプです');
+          this.sendError(
+            connectionId,
+            'UNKNOWN_MESSAGE_TYPE',
+            '不明なメッセージタイプです'
+          );
       }
     } catch (error) {
       console.error(`❌ メッセージ処理エラー: ${connectionId}`, error);
-      this.sendError(connectionId, 'MESSAGE_PARSE_ERROR', 'メッセージの解析に失敗しました');
+      this.sendError(
+        connectionId,
+        'MESSAGE_PARSE_ERROR',
+        'メッセージの解析に失敗しました'
+      );
     }
   }
 
@@ -239,8 +260,15 @@ export class WebSocketManager extends EventEmitter {
       if (!connection) return;
 
       // 購読数制限をチェック
-      if (connection.subscriptions.size + symbols.length > this.config.maxSubscriptionsPerConnection) {
-        this.sendError(connectionId, 'SUBSCRIPTION_LIMIT_EXCEEDED', '購読数制限を超えました');
+      if (
+        connection.subscriptions.size + symbols.length >
+        this.config.maxSubscriptionsPerConnection
+      ) {
+        this.sendError(
+          connectionId,
+          'SUBSCRIPTION_LIMIT_EXCEEDED',
+          '購読数制限を超えました'
+        );
         return;
       }
 
@@ -254,7 +282,9 @@ export class WebSocketManager extends EventEmitter {
         timestamp: new Date(),
       });
 
-      console.log(`✅ 購読追加: ${connectionId}, シンボル=${symbols.join(', ')}`);
+      console.log(
+        `✅ 購読追加: ${connectionId}, シンボル=${symbols.join(', ')}`
+      );
     } catch (error) {
       console.error(`❌ 購読処理エラー: ${connectionId}`, error);
     }
@@ -278,7 +308,9 @@ export class WebSocketManager extends EventEmitter {
         timestamp: new Date(),
       });
 
-      console.log(`✅ 購読解除: ${connectionId}, シンボル=${symbols.join(', ')}`);
+      console.log(
+        `✅ 購読解除: ${connectionId}, シンボル=${symbols.join(', ')}`
+      );
     } catch (error) {
       console.error(`❌ 購読解除処理エラー: ${connectionId}`, error);
     }
@@ -320,11 +352,19 @@ export class WebSocketManager extends EventEmitter {
           timestamp: new Date(),
         });
       } else {
-        this.sendError(connectionId, 'AUTHENTICATION_FAILED', '認証に失敗しました');
+        this.sendError(
+          connectionId,
+          'AUTHENTICATION_FAILED',
+          '認証に失敗しました'
+        );
       }
     } catch (error) {
       console.error(`❌ 認証処理エラー: ${connectionId}`, error);
-      this.sendError(connectionId, 'AUTHENTICATION_ERROR', '認証処理中にエラーが発生しました');
+      this.sendError(
+        connectionId,
+        'AUTHENTICATION_ERROR',
+        '認証処理中にエラーが発生しました'
+      );
     }
   }
 
@@ -351,7 +391,7 @@ export class WebSocketManager extends EventEmitter {
   async connectToMarketData(symbol: string): Promise<void> {
     try {
       console.log(`🔄 市場データストリーム接続: ${symbol}`);
-      
+
       // 簡略化された市場データ接続
       const streamData: StreamData = {
         symbol,
@@ -391,7 +431,9 @@ export class WebSocketManager extends EventEmitter {
         }
       }
 
-      console.log(`✅ イベントブロードキャスト: ${event.type}, 接続数=${broadcastCount}`);
+      console.log(
+        `✅ イベントブロードキャスト: ${event.type}, 接続数=${broadcastCount}`
+      );
     } catch (error) {
       console.error('❌ イベントブロードキャストエラー:', error);
       throw error;
@@ -448,7 +490,9 @@ export class WebSocketManager extends EventEmitter {
         }
       }
 
-      console.log(`✅ ストリームデータブロードキャスト: ${data.symbol}, 接続数=${broadcastCount}`);
+      console.log(
+        `✅ ストリームデータブロードキャスト: ${data.symbol}, 接続数=${broadcastCount}`
+      );
     } catch (error) {
       console.error('❌ ストリームデータブロードキャストエラー:', error);
     }
@@ -460,7 +504,8 @@ export class WebSocketManager extends EventEmitter {
   private sendMessage(connectionId: string, message: any): void {
     try {
       const connection = this.connections.get(connectionId);
-      if (!connection || connection.socket.readyState !== WebSocket.OPEN) return;
+      if (!connection || connection.socket.readyState !== WebSocket.OPEN)
+        return;
 
       connection.socket.send(JSON.stringify(message));
     } catch (error) {
@@ -471,7 +516,11 @@ export class WebSocketManager extends EventEmitter {
   /**
    * エラーメッセージを送信
    */
-  private sendError(connectionId: string, errorCode: string, message: string): void {
+  private sendError(
+    connectionId: string,
+    errorCode: string,
+    message: string
+  ): void {
     this.sendMessage(connectionId, {
       type: 'ERROR',
       errorCode,
@@ -506,7 +555,10 @@ export class WebSocketManager extends EventEmitter {
     const rateLimit = this.messageCounts.get(connectionId);
 
     if (!rateLimit) {
-      this.messageCounts.set(connectionId, { count: 1, resetTime: new Date(now.getTime() + 1000) });
+      this.messageCounts.set(connectionId, {
+        count: 1,
+        resetTime: new Date(now.getTime() + 1000),
+      });
       return true;
     }
 
@@ -536,14 +588,20 @@ export class WebSocketManager extends EventEmitter {
    */
   getConnectionStats(): any {
     const connections = Array.from(this.connections.values());
-    const authenticatedConnections = connections.filter(c => c.metadata.authenticated);
-    const totalSubscriptions = connections.reduce((sum, c) => sum + c.subscriptions.size, 0);
+    const authenticatedConnections = connections.filter(
+      (c) => c.metadata.authenticated
+    );
+    const totalSubscriptions = connections.reduce(
+      (sum, c) => sum + c.subscriptions.size,
+      0
+    );
 
     return {
       totalConnections: connections.length,
       authenticatedConnections: authenticatedConnections.length,
       totalSubscriptions,
-      averageSubscriptionsPerConnection: connections.length > 0 ? totalSubscriptions / connections.length : 0,
+      averageSubscriptionsPerConnection:
+        connections.length > 0 ? totalSubscriptions / connections.length : 0,
       isRunning: this.isRunning,
     };
   }

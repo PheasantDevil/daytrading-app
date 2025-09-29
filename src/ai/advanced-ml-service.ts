@@ -69,7 +69,14 @@ export interface SentimentAnalysis {
 
 export interface ChartPattern {
   symbol: string;
-  pattern: 'HEAD_AND_SHOULDERS' | 'DOUBLE_TOP' | 'DOUBLE_BOTTOM' | 'TRIANGLE' | 'FLAG' | 'PENNANT' | 'NONE';
+  pattern:
+    | 'HEAD_AND_SHOULDERS'
+    | 'DOUBLE_TOP'
+    | 'DOUBLE_BOTTOM'
+    | 'TRIANGLE'
+    | 'FLAG'
+    | 'PENNANT'
+    | 'NONE';
   confidence: number;
   direction: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
   targetPrice?: number;
@@ -186,7 +193,10 @@ export class AdvancedMLService {
   /**
    * アンサンブル予測を実行
    */
-  async predictWithEnsemble(symbol: string, data: MarketData[]): Promise<EnsemblePrediction> {
+  async predictWithEnsemble(
+    symbol: string,
+    data: MarketData[]
+  ): Promise<EnsemblePrediction> {
     try {
       if (!this.isInitialized) {
         throw new Error('高度なMLサービスが初期化されていません');
@@ -206,7 +216,7 @@ export class AdvancedMLService {
 
         const prediction = await this.predictWithModel(model, data);
         const weight = this.config.ensemble.weights[modelName] || 1.0;
-        
+
         predictions.push({
           model: modelName,
           prediction: prediction.value,
@@ -232,7 +242,7 @@ export class AdvancedMLService {
           break;
 
         case 'MAJORITY_VOTE':
-          const votes = predictions.map(p => p.prediction > 0 ? 1 : -1);
+          const votes = predictions.map((p) => (p.prediction > 0 ? 1 : -1));
           const majority = votes.reduce((sum, vote) => sum + vote, 0);
           ensemblePrediction = majority > 0 ? 1 : -1;
           ensembleConfidence = Math.abs(majority) / votes.length;
@@ -240,12 +250,18 @@ export class AdvancedMLService {
 
         case 'STACKING':
           // スタッキングの実装（簡略化）
-          ensemblePrediction = predictions.reduce((sum, p) => sum + p.prediction, 0) / predictions.length;
-          ensembleConfidence = predictions.reduce((sum, p) => sum + p.confidence, 0) / predictions.length;
+          ensemblePrediction =
+            predictions.reduce((sum, p) => sum + p.prediction, 0) /
+            predictions.length;
+          ensembleConfidence =
+            predictions.reduce((sum, p) => sum + p.confidence, 0) /
+            predictions.length;
           break;
       }
 
-      console.log(`✅ アンサンブル予測完了: ${symbol}, 予測値=${ensemblePrediction.toFixed(4)}, 信頼度=${ensembleConfidence.toFixed(4)}`);
+      console.log(
+        `✅ アンサンブル予測完了: ${symbol}, 予測値=${ensemblePrediction.toFixed(4)}, 信頼度=${ensembleConfidence.toFixed(4)}`
+      );
 
       return {
         symbol,
@@ -263,7 +279,9 @@ export class AdvancedMLService {
   /**
    * 強化学習による戦略最適化
    */
-  async optimizeStrategyWithRL(strategy: any): Promise<ReinforcementLearningResult> {
+  async optimizeStrategyWithRL(
+    strategy: any
+  ): Promise<ReinforcementLearningResult> {
     try {
       if (!this.isInitialized) {
         throw new Error('高度なMLサービスが初期化されていません');
@@ -274,7 +292,9 @@ export class AdvancedMLService {
       }
 
       const result = await this.reinforcementAgent.optimizeStrategy(strategy);
-      console.log(`✅ 強化学習最適化完了: 総報酬=${result.totalReward.toFixed(4)}`);
+      console.log(
+        `✅ 強化学習最適化完了: 総報酬=${result.totalReward.toFixed(4)}`
+      );
       return result;
     } catch (error) {
       console.error('❌ 強化学習最適化エラー:', error);
@@ -324,10 +344,15 @@ export class AdvancedMLService {
       }
 
       const pattern = await this.imageRecognizer.recognizePattern(chartImage);
-      console.log(`✅ チャートパターン認識完了: ${chartImage.symbol}, パターン=${pattern.pattern}, 信頼度=${pattern.confidence.toFixed(4)}`);
+      console.log(
+        `✅ チャートパターン認識完了: ${chartImage.symbol}, パターン=${pattern.pattern}, 信頼度=${pattern.confidence.toFixed(4)}`
+      );
       return pattern;
     } catch (error) {
-      console.error(`❌ チャートパターン認識エラー: ${chartImage.symbol}`, error);
+      console.error(
+        `❌ チャートパターン認識エラー: ${chartImage.symbol}`,
+        error
+      );
       throw error;
     }
   }
@@ -335,7 +360,10 @@ export class AdvancedMLService {
   /**
    * 時系列分析
    */
-  async analyzeTimeSeries(symbol: string, data: MarketData[]): Promise<TimeSeriesAnalysis> {
+  async analyzeTimeSeries(
+    symbol: string,
+    data: MarketData[]
+  ): Promise<TimeSeriesAnalysis> {
     try {
       if (!this.isInitialized) {
         throw new Error('高度なMLサービスが初期化されていません');
@@ -346,7 +374,9 @@ export class AdvancedMLService {
       }
 
       const analysis = await this.timeSeriesAnalyzer.analyze(symbol, data);
-      console.log(`✅ 時系列分析完了: ${symbol}, トレンド=${analysis.trend}, ボラティリティ=${analysis.volatility.toFixed(4)}`);
+      console.log(
+        `✅ 時系列分析完了: ${symbol}, トレンド=${analysis.trend}, ボラティリティ=${analysis.volatility.toFixed(4)}`
+      );
       return analysis;
     } catch (error) {
       console.error(`❌ 時系列分析エラー: ${symbol}`, error);
@@ -397,7 +427,10 @@ export class AdvancedMLService {
   /**
    * モデルで予測を実行
    */
-  private async predictWithModel(model: tf.LayersModel, data: MarketData[]): Promise<{ value: number; confidence: number }> {
+  private async predictWithModel(
+    model: tf.LayersModel,
+    data: MarketData[]
+  ): Promise<{ value: number; confidence: number }> {
     try {
       // データを前処理
       const features = this.preprocessData(data);
@@ -406,7 +439,7 @@ export class AdvancedMLService {
       // 予測を実行
       const prediction = model.predict(input) as tf.Tensor;
       const value = await prediction.data();
-      
+
       // 信頼度を計算（簡略化）
       const confidence = Math.random() * 0.3 + 0.7; // 0.7-1.0の範囲
 
@@ -548,7 +581,10 @@ class NLPProcessor {
   async analyzeSentiment(news: NewsData): Promise<SentimentAnalysis> {
     // 簡略化された感情分析
     const sentiment = Math.random() > 0.5 ? 'POSITIVE' : 'NEGATIVE';
-    const score = sentiment === 'POSITIVE' ? Math.random() * 0.5 + 0.5 : Math.random() * -0.5 - 0.5;
+    const score =
+      sentiment === 'POSITIVE'
+        ? Math.random() * 0.5 + 0.5
+        : Math.random() * -0.5 - 0.5;
 
     return {
       newsId: news.id,
@@ -577,7 +613,15 @@ class ImageRecognizer {
 
   async recognizePattern(chartImage: ChartImage): Promise<ChartPattern> {
     // 簡略化されたパターン認識
-    const patterns: ChartPattern['pattern'][] = ['HEAD_AND_SHOULDERS', 'DOUBLE_TOP', 'DOUBLE_BOTTOM', 'TRIANGLE', 'FLAG', 'PENNANT', 'NONE'];
+    const patterns: ChartPattern['pattern'][] = [
+      'HEAD_AND_SHOULDERS',
+      'DOUBLE_TOP',
+      'DOUBLE_BOTTOM',
+      'TRIANGLE',
+      'FLAG',
+      'PENNANT',
+      'NONE',
+    ];
     const pattern = patterns[Math.floor(Math.random() * patterns.length)];
     const direction = Math.random() > 0.5 ? 'BULLISH' : 'BEARISH';
 
@@ -606,16 +650,26 @@ class TimeSeriesAnalyzer {
     console.log('✅ 時系列分析器初期化完了');
   }
 
-  async analyze(symbol: string, data: MarketData[]): Promise<TimeSeriesAnalysis> {
+  async analyze(
+    symbol: string,
+    data: MarketData[]
+  ): Promise<TimeSeriesAnalysis> {
     // 簡略化された時系列分析
-    const trends: TimeSeriesAnalysis['trend'][] = ['UPWARD', 'DOWNWARD', 'SIDEWAYS'];
+    const trends: TimeSeriesAnalysis['trend'][] = [
+      'UPWARD',
+      'DOWNWARD',
+      'SIDEWAYS',
+    ];
     const trend = trends[Math.floor(Math.random() * trends.length)];
 
-    const forecast = Array.from({ length: this.config.forecastHorizon }, (_, i) => ({
-      value: Math.random() * 100 + 50,
-      confidence: Math.random() * 0.3 + 0.7,
-      timestamp: new Date(Date.now() + i * 24 * 60 * 60 * 1000),
-    }));
+    const forecast = Array.from(
+      { length: this.config.forecastHorizon },
+      (_, i) => ({
+        value: Math.random() * 100 + 50,
+        confidence: Math.random() * 0.3 + 0.7,
+        timestamp: new Date(Date.now() + i * 24 * 60 * 60 * 1000),
+      })
+    );
 
     return {
       symbol,
