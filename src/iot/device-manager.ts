@@ -34,7 +34,15 @@ export interface IoTDevice {
 }
 
 export interface SensorCapability {
-  type: 'TEMPERATURE' | 'HUMIDITY' | 'PRESSURE' | 'LIGHT' | 'MOTION' | 'SOUND' | 'AIR_QUALITY' | 'CUSTOM';
+  type:
+    | 'TEMPERATURE'
+    | 'HUMIDITY'
+    | 'PRESSURE'
+    | 'LIGHT'
+    | 'MOTION'
+    | 'SOUND'
+    | 'AIR_QUALITY'
+    | 'CUSTOM';
   unit: string;
   range: {
     min: number;
@@ -118,7 +126,12 @@ export interface SensorData {
 export interface ProcessedData {
   id: string;
   originalDataId: string;
-  processingType: 'AGGREGATION' | 'FILTERING' | 'ANOMALY_DETECTION' | 'PREDICTION' | 'CUSTOM';
+  processingType:
+    | 'AGGREGATION'
+    | 'FILTERING'
+    | 'ANOMALY_DETECTION'
+    | 'PREDICTION'
+    | 'CUSTOM';
   result: any;
   confidence: number; // 0-1
   processingTime: number; // milliseconds
@@ -129,7 +142,12 @@ export interface ProcessedData {
 export interface AIModel {
   id: string;
   name: string;
-  type: 'CLASSIFICATION' | 'REGRESSION' | 'CLUSTERING' | 'ANOMALY_DETECTION' | 'CUSTOM';
+  type:
+    | 'CLASSIFICATION'
+    | 'REGRESSION'
+    | 'CLUSTERING'
+    | 'ANOMALY_DETECTION'
+    | 'CUSTOM';
   framework: 'TENSORFLOW' | 'PYTORCH' | 'ONNX' | 'CUSTOM';
   inputShape: number[];
   outputShape: number[];
@@ -166,7 +184,12 @@ export interface SensorNetwork {
 
 export interface AnalysisResult {
   networkId: string;
-  analysisType: 'PERFORMANCE' | 'ANOMALY' | 'PREDICTION' | 'OPTIMIZATION' | 'CUSTOM';
+  analysisType:
+    | 'PERFORMANCE'
+    | 'ANOMALY'
+    | 'PREDICTION'
+    | 'OPTIMIZATION'
+    | 'CUSTOM';
   results: {
     metrics: Record<string, number>;
     insights: string[];
@@ -272,7 +295,9 @@ export class IoTDeviceManager {
   /**
    * IoTデバイスを登録
    */
-  async registerDevice(device: Omit<IoTDevice, 'status' | 'lastSeen'>): Promise<void> {
+  async registerDevice(
+    device: Omit<IoTDevice, 'status' | 'lastSeen'>
+  ): Promise<void> {
     try {
       if (this.devices.size >= this.config.devices.maxDevices) {
         throw new Error('最大デバイス数に達しています');
@@ -319,7 +344,10 @@ export class IoTDeviceManager {
   /**
    * センサーデータを処理
    */
-  async processSensorData(deviceId: string, data: Omit<SensorData, 'id' | 'timestamp'>): Promise<ProcessedData> {
+  async processSensorData(
+    deviceId: string,
+    data: Omit<SensorData, 'id' | 'timestamp'>
+  ): Promise<ProcessedData> {
     try {
       if (!this.isInitialized) {
         throw new Error('IoTデバイス管理サービスが初期化されていません');
@@ -342,15 +370,18 @@ export class IoTDeviceManager {
       this.sensorData.set(deviceId, deviceData);
 
       // データを処理
-      const processedData = await this.sensorDataProcessor.processData(sensorData);
-      
+      const processedData =
+        await this.sensorDataProcessor.processData(sensorData);
+
       // 処理済みデータを保存
       const deviceProcessedData = this.processedData.get(deviceId) || [];
       deviceProcessedData.push(processedData);
       this.processedData.set(deviceId, deviceProcessedData);
 
-      console.log(`✅ センサーデータ処理: ${deviceId} - ${data.sensorType} = ${data.value}${data.unit}`);
-      
+      console.log(
+        `✅ センサーデータ処理: ${deviceId} - ${data.sensorType} = ${data.value}${data.unit}`
+      );
+
       return processedData;
     } catch (error) {
       console.error(`❌ センサーデータ処理エラー: ${deviceId}`, error);
@@ -361,7 +392,11 @@ export class IoTDeviceManager {
   /**
    * エッジAIを実行
    */
-  async runEdgeAI(deviceId: string, model: AIModel, input: any): Promise<AIResult> {
+  async runEdgeAI(
+    deviceId: string,
+    model: AIModel,
+    input: any
+  ): Promise<AIResult> {
     try {
       if (!this.isInitialized) {
         throw new Error('IoTデバイス管理サービスが初期化されていません');
@@ -381,9 +416,11 @@ export class IoTDeviceManager {
       }
 
       const result = await this.edgeAI.runInference(model, input, device);
-      
-      console.log(`✅ エッジAI実行: ${deviceId} - ${model.name}, 信頼度=${result.confidence.toFixed(4)}`);
-      
+
+      console.log(
+        `✅ エッジAI実行: ${deviceId} - ${model.name}, 信頼度=${result.confidence.toFixed(4)}`
+      );
+
       return result;
     } catch (error) {
       console.error(`❌ エッジAI実行エラー: ${deviceId}`, error);
@@ -394,7 +431,9 @@ export class IoTDeviceManager {
   /**
    * センサーネットワークを作成
    */
-  async createSensorNetwork(network: Omit<SensorNetwork, 'id' | 'status'>): Promise<string> {
+  async createSensorNetwork(
+    network: Omit<SensorNetwork, 'id' | 'status'>
+  ): Promise<string> {
     try {
       if (!this.isInitialized) {
         throw new Error('IoTデバイス管理サービスが初期化されていません');
@@ -405,7 +444,7 @@ export class IoTDeviceManager {
       }
 
       const networkId = `network_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
+
       const sensorNetwork: SensorNetwork = {
         ...network,
         id: networkId,
@@ -413,9 +452,11 @@ export class IoTDeviceManager {
       };
 
       this.networks.set(networkId, sensorNetwork);
-      
-      console.log(`✅ センサーネットワーク作成: ${networkId} (${network.name})`);
-      
+
+      console.log(
+        `✅ センサーネットワーク作成: ${networkId} (${network.name})`
+      );
+
       return networkId;
     } catch (error) {
       console.error('❌ センサーネットワーク作成エラー:', error);
@@ -437,10 +478,16 @@ export class IoTDeviceManager {
         throw new Error('ネットワークが見つかりません');
       }
 
-      const result = await this.networkAnalyzer.analyze(network, this.devices, this.sensorData);
-      
-      console.log(`✅ ネットワークデータ分析: ${networkId}, インサイト数=${result.results.insights.length}`);
-      
+      const result = await this.networkAnalyzer.analyze(
+        network,
+        this.devices,
+        this.sensorData
+      );
+
+      console.log(
+        `✅ ネットワークデータ分析: ${networkId}, インサイト数=${result.results.insights.length}`
+      );
+
       return result;
     } catch (error) {
       console.error(`❌ ネットワークデータ分析エラー: ${networkId}`, error);
@@ -470,21 +517,29 @@ export class IoTDeviceManager {
    */
   getDeviceStats(): any {
     const devices = Array.from(this.devices.values());
-    const onlineDevices = devices.filter(d => d.status === 'ONLINE');
-    const totalSensorData = Array.from(this.sensorData.values()).reduce((sum, data) => sum + data.length, 0);
-    const totalProcessedData = Array.from(this.processedData.values()).reduce((sum, data) => sum + data.length, 0);
+    const onlineDevices = devices.filter((d) => d.status === 'ONLINE');
+    const totalSensorData = Array.from(this.sensorData.values()).reduce(
+      (sum, data) => sum + data.length,
+      0
+    );
+    const totalProcessedData = Array.from(this.processedData.values()).reduce(
+      (sum, data) => sum + data.length,
+      0
+    );
 
     return {
       totalDevices: devices.length,
       onlineDevices: onlineDevices.length,
-      offlineDevices: devices.filter(d => d.status === 'OFFLINE').length,
+      offlineDevices: devices.filter((d) => d.status === 'OFFLINE').length,
       totalSensorData,
       totalProcessedData,
       aiModels: this.aiModels.size,
       networks: this.networks.size,
-      averageBatteryLevel: devices
-        .filter(d => d.batteryLevel !== undefined)
-        .reduce((sum, d) => sum + (d.batteryLevel || 0), 0) / devices.filter(d => d.batteryLevel !== undefined).length,
+      averageBatteryLevel:
+        devices
+          .filter((d) => d.batteryLevel !== undefined)
+          .reduce((sum, d) => sum + (d.batteryLevel || 0), 0) /
+        devices.filter((d) => d.batteryLevel !== undefined).length,
     };
   }
 
@@ -506,7 +561,7 @@ export class IoTDeviceManager {
 
     for (const [deviceId, device] of this.devices) {
       const timeSinceLastSeen = now.getTime() - device.lastSeen.getTime();
-      
+
       if (timeSinceLastSeen > timeout && device.status === 'ONLINE') {
         device.status = 'OFFLINE';
         console.log(`⚠️ デバイスオフライン: ${deviceId}`);
@@ -561,7 +616,7 @@ class SensorDataProcessor {
     // 簡略化されたデータ処理
     const processingType = this.determineProcessingType(data);
     const result = this.processDataByType(data, processingType);
-    
+
     return {
       id: `processed_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       originalDataId: data.id,
@@ -574,13 +629,23 @@ class SensorDataProcessor {
     };
   }
 
-  private determineProcessingType(data: SensorData): ProcessedData['processingType'] {
+  private determineProcessingType(
+    data: SensorData
+  ): ProcessedData['processingType'] {
     // 簡略化された処理タイプ決定
-    const types: ProcessedData['processingType'][] = ['AGGREGATION', 'FILTERING', 'ANOMALY_DETECTION', 'PREDICTION'];
+    const types: ProcessedData['processingType'][] = [
+      'AGGREGATION',
+      'FILTERING',
+      'ANOMALY_DETECTION',
+      'PREDICTION',
+    ];
     return types[Math.floor(Math.random() * types.length)];
   }
 
-  private processDataByType(data: SensorData, type: ProcessedData['processingType']): any {
+  private processDataByType(
+    data: SensorData,
+    type: ProcessedData['processingType']
+  ): any {
     // 簡略化された処理ロジック
     switch (type) {
       case 'AGGREGATION':
@@ -611,15 +676,19 @@ class EdgeAI {
     console.log('✅ エッジAI初期化完了');
   }
 
-  async runInference(model: AIModel, input: any, device: IoTDevice): Promise<AIResult> {
+  async runInference(
+    model: AIModel,
+    input: any,
+    device: IoTDevice
+  ): Promise<AIResult> {
     // 簡略化されたAI推論
     const startTime = Date.now();
-    
+
     // 推論をシミュレート
-    await new Promise(resolve => setTimeout(resolve, model.inferenceTime));
-    
+    await new Promise((resolve) => setTimeout(resolve, model.inferenceTime));
+
     const inferenceTime = Date.now() - startTime;
-    
+
     return {
       modelId: model.id,
       deviceId: device.id,
@@ -653,7 +722,9 @@ class NetworkAnalyzer {
     sensorData: Map<string, SensorData[]>
   ): Promise<AnalysisResult> {
     // 簡略化されたネットワーク分析
-    const networkDevices = network.devices.map(id => devices.get(id)).filter(Boolean) as IoTDevice[];
+    const networkDevices = network.devices
+      .map((id) => devices.get(id))
+      .filter(Boolean) as IoTDevice[];
     const totalData = networkDevices.reduce((sum, device) => {
       const data = sensorData.get(device.id) || [];
       return sum + data.length;

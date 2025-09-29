@@ -182,7 +182,11 @@ export interface GovernanceProposal {
   id: string;
   title: string;
   description: string;
-  type: 'PARAMETER_CHANGE' | 'TREASURY_SPENDING' | 'CONTRACT_UPGRADE' | 'CUSTOM';
+  type:
+    | 'PARAMETER_CHANGE'
+    | 'TREASURY_SPENDING'
+    | 'CONTRACT_UPGRADE'
+    | 'CUSTOM';
   proposer: string;
   votingPower: number;
   startTime: Date;
@@ -289,7 +293,9 @@ export class DistributedTrading {
   async registerBlockchain(blockchain: Blockchain): Promise<void> {
     try {
       this.blockchains.set(blockchain.id, blockchain);
-      console.log(`✅ ブロックチェーン登録: ${blockchain.id} (${blockchain.name})`);
+      console.log(
+        `✅ ブロックチェーン登録: ${blockchain.id} (${blockchain.name})`
+      );
     } catch (error) {
       console.error(`❌ ブロックチェーン登録エラー: ${blockchain.id}`, error);
       throw error;
@@ -311,14 +317,16 @@ export class DistributedTrading {
       }
 
       const startTime = Date.now();
-      
+
       // 取引を実行
       const result = await this.executeTradeOnBlockchain(trade, blockchain);
-      
+
       const executionTime = Date.now() - startTime;
-      
-      console.log(`✅ 分散取引実行完了: ${trade.id}, 成功=${result.success}, ガス使用量=${result.gasUsed || 0}`);
-      
+
+      console.log(
+        `✅ 分散取引実行完了: ${trade.id}, 成功=${result.success}, ガス使用量=${result.gasUsed || 0}`
+      );
+
       return {
         ...result,
         timestamp: new Date(),
@@ -349,10 +357,13 @@ export class DistributedTrading {
       }
 
       const contractId = `contract_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
+
       // コントラクトをデプロイ
-      const deployment = await this.deployContractToBlockchain(contract, blockchain);
-      
+      const deployment = await this.deployContractToBlockchain(
+        contract,
+        blockchain
+      );
+
       // スマートコントラクトを登録
       const smartContract: SmartContract = {
         id: contractId,
@@ -369,9 +380,11 @@ export class DistributedTrading {
       };
 
       this.contracts.set(contractId, smartContract);
-      
-      console.log(`✅ スマートコントラクトデプロイ完了: ${contractId} -> ${deployment.address}`);
-      
+
+      console.log(
+        `✅ スマートコントラクトデプロイ完了: ${contractId} -> ${deployment.address}`
+      );
+
       return {
         contractId,
         address: deployment.address,
@@ -406,7 +419,11 @@ export class DistributedTrading {
   /**
    * NFTをミント
    */
-  async mintNFT(contractId: string, metadata: NFTMetadata, recipient: string): Promise<NFT> {
+  async mintNFT(
+    contractId: string,
+    metadata: NFTMetadata,
+    recipient: string
+  ): Promise<NFT> {
     try {
       if (!this.isInitialized) {
         throw new Error('分散取引サービスが初期化されていません');
@@ -418,7 +435,7 @@ export class DistributedTrading {
       }
 
       const tokenId = `token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
+
       const nft: NFT = {
         id: `nft_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         tokenId,
@@ -431,7 +448,7 @@ export class DistributedTrading {
       };
 
       console.log(`✅ NFTミント完了: ${nft.id} -> ${recipient}`);
-      
+
       return nft;
     } catch (error) {
       console.error(`❌ NFTミントエラー: ${contractId}`, error);
@@ -455,9 +472,9 @@ export class DistributedTrading {
 
       // NFT取引を実行
       const result = await this.executeNFTTrade(nft, price, marketplace);
-      
+
       console.log(`✅ NFT取引完了: ${nft.id}, 価格=${price}`);
-      
+
       return result;
     } catch (error) {
       console.error(`❌ NFT取引エラー: ${nft.id}`, error);
@@ -468,7 +485,12 @@ export class DistributedTrading {
   /**
    * クロスチェーンブリッジを実行
    */
-  async executeCrossChainBridge(asset: string, amount: number, fromChain: string, toChain: string): Promise<TradeResult> {
+  async executeCrossChainBridge(
+    asset: string,
+    amount: number,
+    fromChain: string,
+    toChain: string
+  ): Promise<TradeResult> {
     try {
       if (!this.isInitialized) {
         throw new Error('分散取引サービスが初期化されていません');
@@ -481,9 +503,11 @@ export class DistributedTrading {
 
       // ブリッジを実行
       const result = await this.executeBridge(asset, amount, bridge);
-      
-      console.log(`✅ クロスチェーンブリッジ完了: ${asset} ${amount} ${fromChain} -> ${toChain}`);
-      
+
+      console.log(
+        `✅ クロスチェーンブリッジ完了: ${asset} ${amount} ${fromChain} -> ${toChain}`
+      );
+
       return result;
     } catch (error) {
       console.error('❌ クロスチェーンブリッジエラー:', error);
@@ -494,7 +518,9 @@ export class DistributedTrading {
   /**
    * ガバナンス提案を作成
    */
-  async createGovernanceProposal(proposal: Omit<GovernanceProposal, 'id' | 'status' | 'votes'>): Promise<string> {
+  async createGovernanceProposal(
+    proposal: Omit<GovernanceProposal, 'id' | 'status' | 'votes'>
+  ): Promise<string> {
     try {
       if (!this.isInitialized) {
         throw new Error('分散取引サービスが初期化されていません');
@@ -505,7 +531,7 @@ export class DistributedTrading {
       }
 
       const proposalId = `proposal_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
+
       const governanceProposal: GovernanceProposal = {
         ...proposal,
         id: proposalId,
@@ -518,9 +544,9 @@ export class DistributedTrading {
       };
 
       this.proposals.set(proposalId, governanceProposal);
-      
+
       console.log(`✅ ガバナンス提案作成: ${proposalId} - ${proposal.title}`);
-      
+
       return proposalId;
     } catch (error) {
       console.error('❌ ガバナンス提案作成エラー:', error);
@@ -531,7 +557,12 @@ export class DistributedTrading {
   /**
    * ガバナンス投票を実行
    */
-  async voteOnProposal(proposalId: string, voter: string, vote: 'FOR' | 'AGAINST' | 'ABSTAIN', votingPower: number): Promise<void> {
+  async voteOnProposal(
+    proposalId: string,
+    voter: string,
+    vote: 'FOR' | 'AGAINST' | 'ABSTAIN',
+    votingPower: number
+  ): Promise<void> {
     try {
       if (!this.isInitialized) {
         throw new Error('分散取引サービスが初期化されていません');
@@ -559,7 +590,9 @@ export class DistributedTrading {
           break;
       }
 
-      console.log(`✅ ガバナンス投票: ${proposalId} - ${vote} (${votingPower}票)`);
+      console.log(
+        `✅ ガバナンス投票: ${proposalId} - ${vote} (${votingPower}票)`
+      );
     } catch (error) {
       console.error(`❌ ガバナンス投票エラー: ${proposalId}`, error);
       throw error;
@@ -569,10 +602,13 @@ export class DistributedTrading {
   /**
    * ブロックチェーン上で取引を実行
    */
-  private async executeTradeOnBlockchain(trade: Trade, blockchain: Blockchain): Promise<TradeResult> {
+  private async executeTradeOnBlockchain(
+    trade: Trade,
+    blockchain: Blockchain
+  ): Promise<TradeResult> {
     // 簡略化された取引実行
     const success = Math.random() > 0.1; // 90%の成功率
-    
+
     if (success) {
       return {
         tradeId: trade.id,
@@ -596,7 +632,10 @@ export class DistributedTrading {
   /**
    * ブロックチェーンにコントラクトをデプロイ
    */
-  private async deployContractToBlockchain(contract: ContractCode, blockchain: Blockchain): Promise<ContractAddress> {
+  private async deployContractToBlockchain(
+    contract: ContractCode,
+    blockchain: Blockchain
+  ): Promise<ContractAddress> {
     // 簡略化されたコントラクトデプロイ
     return {
       address: `0x${Math.random().toString(16).substr(2, 40)}`,
@@ -610,7 +649,11 @@ export class DistributedTrading {
   /**
    * NFT取引を実行
    */
-  private async executeNFTTrade(nft: NFT, price: number, marketplace: NFTMarketplace): Promise<TradeResult> {
+  private async executeNFTTrade(
+    nft: NFT,
+    price: number,
+    marketplace: NFTMarketplace
+  ): Promise<TradeResult> {
     // 簡略化されたNFT取引
     return {
       tradeId: `nft_trade_${Date.now()}`,
@@ -626,7 +669,11 @@ export class DistributedTrading {
   /**
    * ブリッジを実行
    */
-  private async executeBridge(asset: string, amount: number, bridge: CrossChainBridge): Promise<TradeResult> {
+  private async executeBridge(
+    asset: string,
+    amount: number,
+    bridge: CrossChainBridge
+  ): Promise<TradeResult> {
     // 簡略化されたブリッジ実行
     return {
       tradeId: `bridge_${Date.now()}`,

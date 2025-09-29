@@ -3,10 +3,10 @@
  * エッジコンピューティング、量子コンピューティング、ブロックチェーン、IoT統合をテスト
  */
 
-import { EdgeNodeManager } from '../src/edge/edge-node-manager';
-import { QuantumOptimizer } from '../src/quantum/quantum-optimizer';
 import { DistributedTrading } from '../src/blockchain/distributed-trading';
+import { EdgeNodeManager } from '../src/edge/edge-node-manager';
 import { IoTDeviceManager } from '../src/iot/device-manager';
+import { QuantumOptimizer } from '../src/quantum/quantum-optimizer';
 
 async function testEdgeNodeManager(): Promise<void> {
   console.log('\n🧪 エッジノード管理テスト開始...');
@@ -200,17 +200,17 @@ async function testQuantumOptimizer(): Promise<void> {
         {
           symbol: 'MSFT',
           name: 'Microsoft Corporation',
-          price: 300.50,
+          price: 300.5,
           volatility: 0.22,
-          expectedReturn: 0.10,
+          expectedReturn: 0.1,
           correlation: { AAPL: 0.7, GOOGL: 0.5 },
           metadata: { sector: 'Technology' },
         },
         {
           symbol: 'GOOGL',
           name: 'Alphabet Inc.',
-          price: 2500.00,
-          volatility: 0.30,
+          price: 2500.0,
+          volatility: 0.3,
           expectedReturn: 0.15,
           correlation: { AAPL: 0.6, MSFT: 0.5 },
           metadata: { sector: 'Technology' },
@@ -226,13 +226,16 @@ async function testQuantumOptimizer(): Promise<void> {
         },
         {
           type: 'RISK',
-          value: 0.20,
+          value: 0.2,
           operator: 'LESS_THAN',
           description: 'Maximum portfolio risk',
         },
       ];
 
-      const optimizedPortfolio = await quantumOptimizer.optimizePortfolio(assets, constraints);
+      const optimizedPortfolio = await quantumOptimizer.optimizePortfolio(
+        assets,
+        constraints
+      );
       console.log(
         `✅ ポートフォリオ量子最適化: リターン=${optimizedPortfolio.totalReturn.toFixed(4)}, リスク=${optimizedPortfolio.totalRisk.toFixed(4)}, シャープレシオ=${optimizedPortfolio.sharpeRatio.toFixed(4)}`
       );
@@ -265,7 +268,8 @@ async function testQuantumOptimizer(): Promise<void> {
         metadata: {},
       };
 
-      const simulationResult = await quantumOptimizer.quantumSimulation(quantumSystem);
+      const simulationResult =
+        await quantumOptimizer.quantumSimulation(quantumSystem);
       console.log(
         `✅ 量子シミュレーション: フィデリティ=${simulationResult.fidelity.toFixed(4)}, 実行時間=${simulationResult.executionTime}ms`
       );
@@ -277,9 +281,17 @@ async function testQuantumOptimizer(): Promise<void> {
       );
 
       // 量子暗号化テスト
-      const testData = { message: 'Hello Quantum World!', timestamp: new Date() };
-      const encryptedData = await quantumOptimizer.encryptData(testData, quantumKey);
-      console.log(`✅ 量子暗号化: データサイズ=${encryptedData.data.length}バイト`);
+      const testData = {
+        message: 'Hello Quantum World!',
+        timestamp: new Date(),
+      };
+      const encryptedData = await quantumOptimizer.encryptData(
+        testData,
+        quantumKey
+      );
+      console.log(
+        `✅ 量子暗号化: データサイズ=${encryptedData.data.length}バイト`
+      );
 
       // 統計取得テスト
       const stats = quantumOptimizer.getStats();
@@ -374,7 +386,8 @@ async function testDistributedTrading(): Promise<void> {
         metadata: { author: 'system' },
       };
 
-      const contractAddress = await distributedTrading.deployContract(contractCode);
+      const contractAddress =
+        await distributedTrading.deployContract(contractCode);
       console.log(
         `✅ スマートコントラクトデプロイ: アドレス=${contractAddress.address}, ブロック番号=${contractAddress.blockNumber}, ガス使用量=${contractAddress.gasUsed}`
       );
@@ -393,8 +406,14 @@ async function testDistributedTrading(): Promise<void> {
         background_color: '#000000',
       };
 
-      const nft = await distributedTrading.mintNFT('test-contract', nftMetadata, '0x1234567890123456789012345678901234567890');
-      console.log(`✅ NFTミント: ID=${nft.id}, トークンID=${nft.tokenId}, オーナー=${nft.owner}`);
+      const nft = await distributedTrading.mintNFT(
+        'test-contract',
+        nftMetadata,
+        '0x1234567890123456789012345678901234567890'
+      );
+      console.log(
+        `✅ NFTミント: ID=${nft.id}, トークンID=${nft.tokenId}, オーナー=${nft.owner}`
+      );
 
       // NFT取引テスト
       const nftTradeResult = await distributedTrading.tradeNFT(nft, 1.5);
@@ -403,7 +422,12 @@ async function testDistributedTrading(): Promise<void> {
       );
 
       // クロスチェーンブリッジテスト
-      const bridgeResult = await distributedTrading.executeCrossChainBridge('USDC', 1000, 'ethereum_mainnet', 'polygon_mainnet');
+      const bridgeResult = await distributedTrading.executeCrossChainBridge(
+        'USDC',
+        1000,
+        'ethereum_mainnet',
+        'polygon_mainnet'
+      );
       console.log(
         `✅ クロスチェーンブリッジ: 成功=${bridgeResult.success}, トランザクションハッシュ=${bridgeResult.transactionHash}, 実際の金額=${bridgeResult.actualAmount}`
       );
@@ -425,7 +449,12 @@ async function testDistributedTrading(): Promise<void> {
       console.log(`✅ ガバナンス提案作成: ID=${proposalId}`);
 
       // ガバナンス投票テスト
-      await distributedTrading.voteOnProposal(proposalId, '0x1234567890123456789012345678901234567890', 'FOR', 500);
+      await distributedTrading.voteOnProposal(
+        proposalId,
+        '0x1234567890123456789012345678901234567890',
+        'FOR',
+        500
+      );
       console.log('✅ ガバナンス投票: FOR (500票)');
 
       // 統計取得テスト
@@ -535,7 +564,11 @@ async function testIoTDeviceManager(): Promise<void> {
           processing: {
             cpu: { cores: 1, frequency: 100, architecture: 'ARM' },
             memory: { ram: 64, storage: 256 },
-            ai: { supported: true, frameworks: ['TensorFlow Lite'], models: ['temperature_prediction'] },
+            ai: {
+              supported: true,
+              frameworks: ['TensorFlow Lite'],
+              models: ['temperature_prediction'],
+            },
             metadata: {},
           },
           power: {
@@ -593,7 +626,11 @@ async function testIoTDeviceManager(): Promise<void> {
             cpu: { cores: 4, frequency: 1000, architecture: 'x86' },
             memory: { ram: 2048, storage: 8192 },
             gpu: { cores: 256, frequency: 800 },
-            ai: { supported: true, frameworks: ['TensorFlow', 'PyTorch'], models: ['object_detection', 'anomaly_detection'] },
+            ai: {
+              supported: true,
+              frameworks: ['TensorFlow', 'PyTorch'],
+              models: ['object_detection', 'anomaly_detection'],
+            },
             metadata: {},
           },
           power: {
@@ -610,25 +647,31 @@ async function testIoTDeviceManager(): Promise<void> {
       console.log('✅ IoTデバイス登録: 2個');
 
       // センサーデータ処理テスト
-      const processedData1 = await iotDeviceManager.processSensorData('sensor-001', {
-        deviceId: 'sensor-001',
-        sensorType: 'TEMPERATURE',
-        value: 23.5,
-        unit: '°C',
-        quality: 0.95,
-        location: { latitude: 35.6762, longitude: 139.6503 },
-        metadata: { calibration: 'recent' },
-      });
+      const processedData1 = await iotDeviceManager.processSensorData(
+        'sensor-001',
+        {
+          deviceId: 'sensor-001',
+          sensorType: 'TEMPERATURE',
+          value: 23.5,
+          unit: '°C',
+          quality: 0.95,
+          location: { latitude: 35.6762, longitude: 139.6503 },
+          metadata: { calibration: 'recent' },
+        }
+      );
 
-      const processedData2 = await iotDeviceManager.processSensorData('sensor-001', {
-        deviceId: 'sensor-001',
-        sensorType: 'HUMIDITY',
-        value: 65.2,
-        unit: '%RH',
-        quality: 0.92,
-        location: { latitude: 35.6762, longitude: 139.6503 },
-        metadata: { calibration: 'recent' },
-      });
+      const processedData2 = await iotDeviceManager.processSensorData(
+        'sensor-001',
+        {
+          deviceId: 'sensor-001',
+          sensorType: 'HUMIDITY',
+          value: 65.2,
+          unit: '%RH',
+          quality: 0.92,
+          location: { latitude: 35.6762, longitude: 139.6503 },
+          metadata: { calibration: 'recent' },
+        }
+      );
 
       console.log(
         `✅ センサーデータ処理: 温度=${processedData1.result}, 湿度=${processedData2.result}, 信頼度=${processedData1.confidence.toFixed(4)}`
@@ -651,10 +694,16 @@ async function testIoTDeviceManager(): Promise<void> {
       };
 
       await iotDeviceManager.registerAIModel(aiModel);
-      console.log(`✅ AIモデル登録: ${aiModel.name}, 精度=${aiModel.accuracy.toFixed(4)}`);
+      console.log(
+        `✅ AIモデル登録: ${aiModel.name}, 精度=${aiModel.accuracy.toFixed(4)}`
+      );
 
       // エッジAI実行テスト
-      const aiResult = await iotDeviceManager.runEdgeAI('sensor-001', aiModel, [23.5, 65.2, 1013.25, 0.5, 0.3, 0.8, 0.2, 0.1, 0.9, 0.4]);
+      const aiResult = await iotDeviceManager.runEdgeAI(
+        'sensor-001',
+        aiModel,
+        [23.5, 65.2, 1013.25, 0.5, 0.3, 0.8, 0.2, 0.1, 0.9, 0.4]
+      );
       console.log(
         `✅ エッジAI実行: 予測=${aiResult.output.prediction}, 信頼度=${aiResult.confidence.toFixed(4)}, 推論時間=${aiResult.inferenceTime}ms`
       );
@@ -673,7 +722,8 @@ async function testIoTDeviceManager(): Promise<void> {
       console.log(`✅ センサーネットワーク作成: ID=${networkId}`);
 
       // ネットワークデータ分析テスト
-      const analysisResult = await iotDeviceManager.analyzeNetworkData(networkId);
+      const analysisResult =
+        await iotDeviceManager.analyzeNetworkData(networkId);
       console.log(
         `✅ ネットワークデータ分析: デバイス数=${analysisResult.results.metrics.deviceCount}, 総データポイント=${analysisResult.results.metrics.totalDataPoints}, ネットワークヘルス=${analysisResult.results.metrics.networkHealth.toFixed(4)}`
       );
@@ -697,38 +747,134 @@ async function testIntegrationWorkflow(): Promise<void> {
   try {
     // エッジノード管理
     const edgeNodeManager = new EdgeNodeManager({
-      nodes: { maxNodes: 5, heartbeatInterval: 30000, taskTimeout: 300000, resourceThreshold: 80 },
-      tasks: { maxConcurrentTasks: 3, retryDelay: 5000, maxRetries: 2, priorityWeights: { LOW: 1, MEDIUM: 2, HIGH: 3, CRITICAL: 4 } },
-      sync: { enabled: true, interval: 60000, batchSize: 50, conflictResolution: 'LAST_WRITE_WINS' },
-      optimization: { enabled: true, algorithm: 'LEAST_LOADED', latencyThreshold: 100 },
+      nodes: {
+        maxNodes: 5,
+        heartbeatInterval: 30000,
+        taskTimeout: 300000,
+        resourceThreshold: 80,
+      },
+      tasks: {
+        maxConcurrentTasks: 3,
+        retryDelay: 5000,
+        maxRetries: 2,
+        priorityWeights: { LOW: 1, MEDIUM: 2, HIGH: 3, CRITICAL: 4 },
+      },
+      sync: {
+        enabled: true,
+        interval: 60000,
+        batchSize: 50,
+        conflictResolution: 'LAST_WRITE_WINS',
+      },
+      optimization: {
+        enabled: true,
+        algorithm: 'LEAST_LOADED',
+        latencyThreshold: 100,
+      },
     });
 
     // 量子最適化
     const quantumOptimizer = new QuantumOptimizer({
-      processors: { maxProcessors: 3, defaultProcessor: 'default_simulator', timeout: 300000, retryAttempts: 2 },
-      optimization: { algorithm: 'QAOA', maxIterations: 50, convergenceThreshold: 0.001, penaltyWeight: 1.0 },
-      machineLearning: { algorithm: 'VQC', maxEpochs: 25, learningRate: 0.01, batchSize: 16 },
-      simulation: { maxQubits: 10, maxDepth: 50, shots: 500, backend: 'SIMULATOR' },
-      cryptography: { algorithm: 'BB84', keyLength: 128, securityLevel: 64, expirationTime: 1800000 },
+      processors: {
+        maxProcessors: 3,
+        defaultProcessor: 'default_simulator',
+        timeout: 300000,
+        retryAttempts: 2,
+      },
+      optimization: {
+        algorithm: 'QAOA',
+        maxIterations: 50,
+        convergenceThreshold: 0.001,
+        penaltyWeight: 1.0,
+      },
+      machineLearning: {
+        algorithm: 'VQC',
+        maxEpochs: 25,
+        learningRate: 0.01,
+        batchSize: 16,
+      },
+      simulation: {
+        maxQubits: 10,
+        maxDepth: 50,
+        shots: 500,
+        backend: 'SIMULATOR',
+      },
+      cryptography: {
+        algorithm: 'BB84',
+        keyLength: 128,
+        securityLevel: 64,
+        expirationTime: 1800000,
+      },
     });
 
     // 分散取引
     const distributedTrading = new DistributedTrading({
-      blockchains: { supported: ['ethereum_mainnet'], default: 'ethereum_mainnet', gasMultiplier: 1.1, maxGasPrice: 50000000000 },
-      contracts: { autoDeploy: true, verificationEnabled: true, upgradeable: true },
-      defi: { enabled: true, protocols: ['uniswap_v3'], autoCompound: true, riskManagement: true },
-      nft: { enabled: true, marketplaces: ['opensea'], autoListing: true, royaltyManagement: true },
-      crossChain: { enabled: true, bridges: ['ethereum_polygon'], autoBridge: true },
-      governance: { enabled: true, votingPower: 'TOKEN_BASED', quorumThreshold: 0.05 },
+      blockchains: {
+        supported: ['ethereum_mainnet'],
+        default: 'ethereum_mainnet',
+        gasMultiplier: 1.1,
+        maxGasPrice: 50000000000,
+      },
+      contracts: {
+        autoDeploy: true,
+        verificationEnabled: true,
+        upgradeable: true,
+      },
+      defi: {
+        enabled: true,
+        protocols: ['uniswap_v3'],
+        autoCompound: true,
+        riskManagement: true,
+      },
+      nft: {
+        enabled: true,
+        marketplaces: ['opensea'],
+        autoListing: true,
+        royaltyManagement: true,
+      },
+      crossChain: {
+        enabled: true,
+        bridges: ['ethereum_polygon'],
+        autoBridge: true,
+      },
+      governance: {
+        enabled: true,
+        votingPower: 'TOKEN_BASED',
+        quorumThreshold: 0.05,
+      },
     });
 
     // IoTデバイス管理
     const iotDeviceManager = new IoTDeviceManager({
-      devices: { maxDevices: 50, heartbeatInterval: 30000, dataRetentionDays: 15, autoDiscovery: true },
-      sensors: { maxSensorsPerDevice: 5, samplingRate: 1, dataCompression: true, qualityThreshold: 0.8 },
-      ai: { enabled: true, maxModelsPerDevice: 3, inferenceTimeout: 3000, modelUpdateInterval: 1800000 },
-      network: { maxNetworks: 5, autoTopology: true, loadBalancing: true, failoverEnabled: true },
-      security: { enabled: true, encryption: true, authentication: true, accessControl: true },
+      devices: {
+        maxDevices: 50,
+        heartbeatInterval: 30000,
+        dataRetentionDays: 15,
+        autoDiscovery: true,
+      },
+      sensors: {
+        maxSensorsPerDevice: 5,
+        samplingRate: 1,
+        dataCompression: true,
+        qualityThreshold: 0.8,
+      },
+      ai: {
+        enabled: true,
+        maxModelsPerDevice: 3,
+        inferenceTimeout: 3000,
+        modelUpdateInterval: 1800000,
+      },
+      network: {
+        maxNetworks: 5,
+        autoTopology: true,
+        loadBalancing: true,
+        failoverEnabled: true,
+      },
+      security: {
+        enabled: true,
+        encryption: true,
+        authentication: true,
+        accessControl: true,
+      },
     });
 
     // 統合ワークフロー実行
@@ -749,8 +895,19 @@ async function testIntegrationWorkflow(): Promise<void> {
       await edgeNodeManager.registerNode({
         id: 'edge-quantum-01',
         name: 'Quantum Edge Node',
-        location: { latitude: 35.6762, longitude: 139.6503, region: 'Tokyo', timezone: 'Asia/Tokyo' },
-        capabilities: { cpu: 16, memory: 32, storage: 1000, network: 2000, quantum: true },
+        location: {
+          latitude: 35.6762,
+          longitude: 139.6503,
+          region: 'Tokyo',
+          timezone: 'Asia/Tokyo',
+        },
+        capabilities: {
+          cpu: 16,
+          memory: 32,
+          storage: 1000,
+          network: 2000,
+          quantum: true,
+        },
         metadata: { quantumEnabled: true },
       });
       console.log('✅ 量子エッジノード登録');
@@ -765,12 +922,47 @@ async function testIntegrationWorkflow(): Promise<void> {
         manufacturer: 'Quantum Corp',
         model: 'QuantumSense',
         version: '1.0.0',
-        location: { latitude: 35.6762, longitude: 139.6503, altitude: 10, indoor: true, room: 'Quantum Lab' },
+        location: {
+          latitude: 35.6762,
+          longitude: 139.6503,
+          altitude: 10,
+          indoor: true,
+          room: 'Quantum Lab',
+        },
         capabilities: {
-          sensors: [{ type: 'CUSTOM', unit: 'quantum', range: { min: 0, max: 1 }, accuracy: 0.001, resolution: 0.0001, samplingRate: 10, metadata: {} }],
+          sensors: [
+            {
+              type: 'CUSTOM',
+              unit: 'quantum',
+              range: { min: 0, max: 1 },
+              accuracy: 0.001,
+              resolution: 0.0001,
+              samplingRate: 10,
+              metadata: {},
+            },
+          ],
           actuators: [],
-          communication: [{ type: 'WIFI', protocol: '802.11ax', frequency: 6000, range: 150, dataRate: 2000000000, powerConsumption: 1.0, metadata: {} }],
-          processing: { cpu: { cores: 8, frequency: 2000, architecture: 'ARM' }, memory: { ram: 512, storage: 1024 }, ai: { supported: true, frameworks: ['Quantum ML'], models: ['quantum_classification'] }, metadata: {} },
+          communication: [
+            {
+              type: 'WIFI',
+              protocol: '802.11ax',
+              frequency: 6000,
+              range: 150,
+              dataRate: 2000000000,
+              powerConsumption: 1.0,
+              metadata: {},
+            },
+          ],
+          processing: {
+            cpu: { cores: 8, frequency: 2000, architecture: 'ARM' },
+            memory: { ram: 512, storage: 1024 },
+            ai: {
+              supported: true,
+              frameworks: ['Quantum ML'],
+              models: ['quantum_classification'],
+            },
+            metadata: {},
+          },
           power: { source: 'AC', voltage: 220, consumption: 5, metadata: {} },
         },
         firmwareVersion: '1.0.0',
@@ -782,12 +974,40 @@ async function testIntegrationWorkflow(): Promise<void> {
     // 4. 量子最適化実行
     if (quantumInitialized) {
       const assets = [
-        { symbol: 'BTC', name: 'Bitcoin', price: 50000, volatility: 0.4, expectedReturn: 0.2, correlation: {}, metadata: {} },
-        { symbol: 'ETH', name: 'Ethereum', price: 3000, volatility: 0.5, expectedReturn: 0.25, correlation: {}, metadata: {} },
+        {
+          symbol: 'BTC',
+          name: 'Bitcoin',
+          price: 50000,
+          volatility: 0.4,
+          expectedReturn: 0.2,
+          correlation: {},
+          metadata: {},
+        },
+        {
+          symbol: 'ETH',
+          name: 'Ethereum',
+          price: 3000,
+          volatility: 0.5,
+          expectedReturn: 0.25,
+          correlation: {},
+          metadata: {},
+        },
       ];
-      const constraints = [{ type: 'BUDGET', value: 100000, operator: 'LESS_THAN', description: 'Budget limit' }];
-      const portfolio = await quantumOptimizer.optimizePortfolio(assets, constraints);
-      console.log(`✅ 量子ポートフォリオ最適化: リターン=${portfolio.totalReturn.toFixed(4)}, リスク=${portfolio.totalRisk.toFixed(4)}`);
+      const constraints = [
+        {
+          type: 'BUDGET',
+          value: 100000,
+          operator: 'LESS_THAN',
+          description: 'Budget limit',
+        },
+      ];
+      const portfolio = await quantumOptimizer.optimizePortfolio(
+        assets,
+        constraints
+      );
+      console.log(
+        `✅ 量子ポートフォリオ最適化: リターン=${portfolio.totalReturn.toFixed(4)}, リスク=${portfolio.totalRisk.toFixed(4)}`
+      );
     }
 
     // 5. 分散取引実行
@@ -795,7 +1015,11 @@ async function testIntegrationWorkflow(): Promise<void> {
       const trade = {
         id: 'quantum-trade-001',
         type: 'BUY' as const,
-        asset: { symbol: 'ETH', address: '0x0000000000000000000000000000000000000000', decimals: 18 },
+        asset: {
+          symbol: 'ETH',
+          address: '0x0000000000000000000000000000000000000000',
+          decimals: 18,
+        },
         amount: 0.1,
         price: 3000,
         totalValue: 300,
@@ -807,20 +1031,27 @@ async function testIntegrationWorkflow(): Promise<void> {
         metadata: { quantumOptimized: true },
       };
       const tradeResult = await distributedTrading.executeTrade(trade);
-      console.log(`✅ 量子最適化取引: 成功=${tradeResult.success}, ガス使用量=${tradeResult.gasUsed}`);
+      console.log(
+        `✅ 量子最適化取引: 成功=${tradeResult.success}, ガス使用量=${tradeResult.gasUsed}`
+      );
     }
 
     // 6. IoTデータ処理
     if (iotInitialized) {
-      const processedData = await iotDeviceManager.processSensorData('quantum-sensor-01', {
-        deviceId: 'quantum-sensor-01',
-        sensorType: 'QUANTUM_STATE',
-        value: 0.707,
-        unit: 'quantum',
-        quality: 0.99,
-        metadata: { superposition: true },
-      });
-      console.log(`✅ 量子センサーデータ処理: 値=${processedData.result}, 信頼度=${processedData.confidence.toFixed(4)}`);
+      const processedData = await iotDeviceManager.processSensorData(
+        'quantum-sensor-01',
+        {
+          deviceId: 'quantum-sensor-01',
+          sensorType: 'QUANTUM_STATE',
+          value: 0.707,
+          unit: 'quantum',
+          quality: 0.99,
+          metadata: { superposition: true },
+        }
+      );
+      console.log(
+        `✅ 量子センサーデータ処理: 値=${processedData.result}, 信頼度=${processedData.confidence.toFixed(4)}`
+      );
     }
 
     // 7. 統計取得
@@ -830,10 +1061,18 @@ async function testIntegrationWorkflow(): Promise<void> {
     const iotStats = iotDeviceManager.getDeviceStats();
 
     console.log(`✅ 統合統計:`);
-    console.log(`  - エッジ: 総ノード数=${edgeStats.totalNodes}, オンライン=${edgeStats.onlineNodes}, 総タスク数=${edgeStats.totalTasks}`);
-    console.log(`  - 量子: プロセッサー数=${quantumStats.processors}, 回路数=${quantumStats.circuits}, モデル数=${quantumStats.models}`);
-    console.log(`  - 取引: ブロックチェーン数=${tradingStats.blockchains}, コントラクト数=${tradingStats.contracts}, DeFiプロトコル数=${tradingStats.defiProtocols}`);
-    console.log(`  - IoT: 総デバイス数=${iotStats.totalDevices}, オンライン=${iotStats.onlineDevices}, AIモデル数=${iotStats.aiModels}`);
+    console.log(
+      `  - エッジ: 総ノード数=${edgeStats.totalNodes}, オンライン=${edgeStats.onlineNodes}, 総タスク数=${edgeStats.totalTasks}`
+    );
+    console.log(
+      `  - 量子: プロセッサー数=${quantumStats.processors}, 回路数=${quantumStats.circuits}, モデル数=${quantumStats.models}`
+    );
+    console.log(
+      `  - 取引: ブロックチェーン数=${tradingStats.blockchains}, コントラクト数=${tradingStats.contracts}, DeFiプロトコル数=${tradingStats.defiProtocols}`
+    );
+    console.log(
+      `  - IoT: 総デバイス数=${iotStats.totalDevices}, オンライン=${iotStats.onlineDevices}, AIモデル数=${iotStats.aiModels}`
+    );
 
     // 8. サービス停止
     edgeNodeManager.stop();

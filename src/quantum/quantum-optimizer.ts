@@ -35,7 +35,18 @@ export interface QuantumCircuit {
 
 export interface QuantumGate {
   id: string;
-  type: 'X' | 'Y' | 'Z' | 'H' | 'CNOT' | 'CZ' | 'RX' | 'RY' | 'RZ' | 'SWAP' | 'CUSTOM';
+  type:
+    | 'X'
+    | 'Y'
+    | 'Z'
+    | 'H'
+    | 'CNOT'
+    | 'CZ'
+    | 'RX'
+    | 'RY'
+    | 'RZ'
+    | 'SWAP'
+    | 'CUSTOM';
   qubits: number[];
   parameters?: number[];
   matrix?: number[][];
@@ -245,7 +256,9 @@ export class QuantumOptimizer {
       }
 
       this.processors.set(processor.id, processor);
-      console.log(`✅ 量子プロセッサー登録: ${processor.id} (${processor.name})`);
+      console.log(
+        `✅ 量子プロセッサー登録: ${processor.id} (${processor.name})`
+      );
     } catch (error) {
       console.error(`❌ 量子プロセッサー登録エラー: ${processor.id}`, error);
       throw error;
@@ -255,7 +268,10 @@ export class QuantumOptimizer {
   /**
    * ポートフォリオを量子最適化
    */
-  async optimizePortfolio(assets: Asset[], constraints: Constraint[]): Promise<OptimizedPortfolio> {
+  async optimizePortfolio(
+    assets: Asset[],
+    constraints: Constraint[]
+  ): Promise<OptimizedPortfolio> {
     try {
       if (!this.isInitialized) {
         throw new Error('量子最適化サービスが初期化されていません');
@@ -267,21 +283,35 @@ export class QuantumOptimizer {
       }
 
       const startTime = Date.now();
-      
+
       // 量子回路を構築
-      const circuit = await this.buildPortfolioOptimizationCircuit(assets, constraints);
+      const circuit = await this.buildPortfolioOptimizationCircuit(
+        assets,
+        constraints
+      );
       this.circuits.set(circuit.id, circuit);
 
       // 量子最適化を実行
-      const result = await this.hybridSolver.optimize(circuit, processor, assets, constraints);
-      
+      const result = await this.hybridSolver.optimize(
+        circuit,
+        processor,
+        assets,
+        constraints
+      );
+
       const executionTime = Date.now() - startTime;
 
       // 結果をポートフォリオ形式に変換
-      const optimizedPortfolio = this.convertToPortfolio(result, assets, executionTime);
-      
-      console.log(`✅ ポートフォリオ量子最適化完了: リターン=${optimizedPortfolio.totalReturn.toFixed(4)}, リスク=${optimizedPortfolio.totalRisk.toFixed(4)}`);
-      
+      const optimizedPortfolio = this.convertToPortfolio(
+        result,
+        assets,
+        executionTime
+      );
+
+      console.log(
+        `✅ ポートフォリオ量子最適化完了: リターン=${optimizedPortfolio.totalReturn.toFixed(4)}, リスク=${optimizedPortfolio.totalRisk.toFixed(4)}`
+      );
+
       return optimizedPortfolio;
     } catch (error) {
       console.error('❌ ポートフォリオ量子最適化エラー:', error);
@@ -305,9 +335,11 @@ export class QuantumOptimizer {
 
       const model = await this.quantumML.trainModel(trainingData, processor);
       this.models.set(model.id, model);
-      
-      console.log(`✅ 量子機械学習完了: 精度=${model.accuracy.toFixed(4)}, 損失=${model.loss.toFixed(4)}`);
-      
+
+      console.log(
+        `✅ 量子機械学習完了: 精度=${model.accuracy.toFixed(4)}, 損失=${model.loss.toFixed(4)}`
+      );
+
       return model;
     } catch (error) {
       console.error('❌ 量子機械学習エラー:', error);
@@ -330,9 +362,11 @@ export class QuantumOptimizer {
       }
 
       const result = await this.quantumSimulator.simulate(system, processor);
-      
-      console.log(`✅ 量子シミュレーション完了: システム=${system.id}, フィデリティ=${result.fidelity.toFixed(4)}`);
-      
+
+      console.log(
+        `✅ 量子シミュレーション完了: システム=${system.id}, フィデリティ=${result.fidelity.toFixed(4)}`
+      );
+
       return result;
     } catch (error) {
       console.error(`❌ 量子シミュレーションエラー: ${system.id}`, error);
@@ -351,9 +385,9 @@ export class QuantumOptimizer {
 
       const key = await this.quantumCrypto.generateKey();
       this.keys.set(key.id, key);
-      
+
       console.log(`✅ 量子暗号キー生成完了: ${key.id}, 長さ=${key.length}`);
-      
+
       return key;
     } catch (error) {
       console.error('❌ 量子暗号キー生成エラー:', error);
@@ -371,9 +405,11 @@ export class QuantumOptimizer {
       }
 
       const encryptedData = await this.quantumCrypto.encrypt(data, key);
-      
-      console.log(`✅ 量子暗号化完了: データサイズ=${JSON.stringify(data).length}バイト`);
-      
+
+      console.log(
+        `✅ 量子暗号化完了: データサイズ=${JSON.stringify(data).length}バイト`
+      );
+
       return encryptedData;
     } catch (error) {
       console.error('❌ 量子暗号化エラー:', error);
@@ -396,10 +432,13 @@ export class QuantumOptimizer {
   /**
    * ポートフォリオ最適化回路を構築
    */
-  private async buildPortfolioOptimizationCircuit(assets: Asset[], constraints: Constraint[]): Promise<QuantumCircuit> {
+  private async buildPortfolioOptimizationCircuit(
+    assets: Asset[],
+    constraints: Constraint[]
+  ): Promise<QuantumCircuit> {
     const circuitId = `portfolio_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const qubits = Math.ceil(Math.log2(assets.length));
-    
+
     const gates: QuantumGate[] = [];
     const measurements: QuantumMeasurement[] = [];
 
@@ -447,11 +486,15 @@ export class QuantumOptimizer {
   /**
    * 結果をポートフォリオ形式に変換
    */
-  private convertToPortfolio(result: any, assets: Asset[], executionTime: number): OptimizedPortfolio {
+  private convertToPortfolio(
+    result: any,
+    assets: Asset[],
+    executionTime: number
+  ): OptimizedPortfolio {
     // 簡略化された変換ロジック
     const weights = Array.from({ length: assets.length }, () => Math.random());
     const totalWeight = weights.reduce((sum, w) => sum + w, 0);
-    const normalizedWeights = weights.map(w => w / totalWeight);
+    const normalizedWeights = weights.map((w) => w / totalWeight);
 
     const portfolioAssets = assets.map((asset, index) => ({
       asset,
@@ -460,8 +503,16 @@ export class QuantumOptimizer {
       risk: asset.volatility,
     }));
 
-    const totalReturn = portfolioAssets.reduce((sum, item) => sum + item.expectedReturn * item.weight, 0);
-    const totalRisk = Math.sqrt(portfolioAssets.reduce((sum, item) => sum + item.risk * item.weight * item.weight, 0));
+    const totalReturn = portfolioAssets.reduce(
+      (sum, item) => sum + item.expectedReturn * item.weight,
+      0
+    );
+    const totalRisk = Math.sqrt(
+      portfolioAssets.reduce(
+        (sum, item) => sum + item.risk * item.weight * item.weight,
+        0
+      )
+    );
     const sharpeRatio = totalReturn / totalRisk;
 
     return {
@@ -510,7 +561,9 @@ export class QuantumOptimizer {
       circuits: this.circuits.size,
       models: this.models.size,
       keys: this.keys.size,
-      availableProcessors: Array.from(this.processors.values()).filter(p => p.status === 'AVAILABLE').length,
+      availableProcessors: Array.from(this.processors.values()).filter(
+        (p) => p.status === 'AVAILABLE'
+      ).length,
     };
   }
 
@@ -552,7 +605,12 @@ class HybridSolver {
     console.log('✅ ハイブリッドソルバー初期化完了');
   }
 
-  async optimize(circuit: QuantumCircuit, processor: QuantumProcessor, assets: Asset[], constraints: Constraint[]): Promise<any> {
+  async optimize(
+    circuit: QuantumCircuit,
+    processor: QuantumProcessor,
+    assets: Asset[],
+    constraints: Constraint[]
+  ): Promise<any> {
     // 簡略化された量子最適化
     return {
       success: true,
@@ -576,7 +634,10 @@ class QuantumML {
     console.log('✅ 量子機械学習初期化完了');
   }
 
-  async trainModel(trainingData: DataPoint[], processor: QuantumProcessor): Promise<QuantumModel> {
+  async trainModel(
+    trainingData: DataPoint[],
+    processor: QuantumProcessor
+  ): Promise<QuantumModel> {
     // 簡略化された量子機械学習
     const model: QuantumModel = {
       id: `model_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -615,7 +676,9 @@ class QuantumCrypto {
     const key: QuantumKey = {
       id: `key_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       type: 'BB84',
-      key: Array.from({ length: this.config.keyLength }, () => Math.random().toString(36).substr(2, 1)).join(''),
+      key: Array.from({ length: this.config.keyLength }, () =>
+        Math.random().toString(36).substr(2, 1)
+      ).join(''),
       length: this.config.keyLength,
       securityLevel: this.config.securityLevel,
       createdAt: new Date(),
@@ -651,18 +714,28 @@ class QuantumSimulator {
     console.log('✅ 量子シミュレーター初期化完了');
   }
 
-  async simulate(system: QuantumSystem, processor: QuantumProcessor): Promise<SimulationResult> {
+  async simulate(
+    system: QuantumSystem,
+    processor: QuantumProcessor
+  ): Promise<SimulationResult> {
     // 簡略化された量子シミュレーション
     return {
       systemId: system.id,
-      finalState: Array.from({ length: system.hamiltonian.length }, () => Math.random()),
-      observables: system.observables.reduce((acc, obs) => {
-        acc[obs] = Math.random();
-        return acc;
-      }, {} as Record<string, number>),
+      finalState: Array.from({ length: system.hamiltonian.length }, () =>
+        Math.random()
+      ),
+      observables: system.observables.reduce(
+        (acc, obs) => {
+          acc[obs] = Math.random();
+          return acc;
+        },
+        {} as Record<string, number>
+      ),
       evolution: Array.from({ length: 10 }, (_, i) => ({
-        time: i * system.evolutionTime / 10,
-        state: Array.from({ length: system.hamiltonian.length }, () => Math.random()),
+        time: (i * system.evolutionTime) / 10,
+        state: Array.from({ length: system.hamiltonian.length }, () =>
+          Math.random()
+        ),
       })),
       executionTime: Math.random() * 1000,
       fidelity: Math.random() * 0.3 + 0.7,
