@@ -25,16 +25,32 @@ export class Logger {
     return levels[level] >= levels[this.level];
   }
 
-  private formatMessage(level: string, message: string, ...args: any[]): string {
+  private formatMessage(
+    level: string,
+    message: string,
+    ...args: any[]
+  ): string {
     const timestamp = new Date().toISOString();
-    const formattedArgs = args.length > 0 ? ' ' + args.map(arg => 
-      typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
-    ).join(' ') : '';
-    
+    const formattedArgs =
+      args.length > 0
+        ? ' ' +
+          args
+            .map((arg) =>
+              typeof arg === 'object'
+                ? JSON.stringify(arg, null, 2)
+                : String(arg)
+            )
+            .join(' ')
+        : '';
+
     return `[${timestamp}] [${level.toUpperCase()}] [${this.name}] ${message}${formattedArgs}`;
   }
 
-  private log(level: 'debug' | 'info' | 'warn' | 'error', message: string, ...args: any[]): void {
+  private log(
+    level: 'debug' | 'info' | 'warn' | 'error',
+    message: string,
+    ...args: any[]
+  ): void {
     if (!this.shouldLog(level)) return;
 
     const formattedMessage = this.formatMessage(level, message, ...args);

@@ -1,6 +1,6 @@
-import { Logger } from '../src/utils/logger';
 import { BrokerIntegrationService } from '../src/brokers/broker-integration-service';
 import { sbiConfig } from '../src/config/sbi-config';
+import { Logger } from '../src/utils/logger';
 
 const logger = new Logger('SbiConnectionTest');
 
@@ -68,7 +68,9 @@ async function testSbiConnection(): Promise<boolean> {
     logger.info('ポジション情報の取得テスト...');
     try {
       const positions = await sbiBroker.getPositions();
-      logger.info(`✅ ポジション情報の取得が成功しました: ${positions.length}件`);
+      logger.info(
+        `✅ ポジション情報の取得が成功しました: ${positions.length}件`
+      );
     } catch (error) {
       logger.error('❌ ポジション情報の取得に失敗しました:', error);
       return false;

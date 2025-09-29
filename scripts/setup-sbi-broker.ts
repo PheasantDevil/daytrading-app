@@ -1,6 +1,6 @@
-import { Logger } from '../src/utils/logger';
 import { BrokerIntegrationService } from '../src/brokers/broker-integration-service';
 import { sbiConfig } from '../src/config/sbi-config';
+import { Logger } from '../src/utils/logger';
 
 const logger = new Logger('SbiSetup');
 

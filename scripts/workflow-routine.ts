@@ -16,14 +16,14 @@ async function runCommand(command: string, description: string): Promise<void> {
   try {
     logger.info(`🔄 ${description}...`);
     const { stdout, stderr } = await execAsync(command);
-    
+
     if (stdout) {
       logger.info(`✅ ${description}が完了しました`);
       if (stdout.trim()) {
         logger.info(`出力: ${stdout.trim()}`);
       }
     }
-    
+
     if (stderr) {
       logger.warn(`警告: ${stderr.trim()}`);
     }
@@ -35,7 +35,7 @@ async function runCommand(command: string, description: string): Promise<void> {
 
 async function workflowRoutine(options: WorkflowOptions): Promise<void> {
   const { branchName, commitMessage, prTitle, prBody } = options;
-  
+
   logger.info('🚀 ワークフロールーティンを開始します...');
   logger.info(`ブランチ名: ${branchName}`);
   logger.info(`コミットメッセージ: ${commitMessage}`);
@@ -43,56 +43,64 @@ async function workflowRoutine(options: WorkflowOptions): Promise<void> {
   try {
     // Step 1: 最新のmainブランチから作業ブランチをcheckout
     logger.info('📋 Step 1: 最新のmainブランチから作業ブランチをcheckout');
-    
+
     // 現在のブランチを確認
     await runCommand('git branch --show-current', '現在のブランチ確認');
-    
+
     // mainブランチに切り替え
     await runCommand('git checkout main', 'mainブランチに切り替え');
-    
+
     // 最新の変更を取得
     await runCommand('git pull origin main', '最新の変更を取得');
-    
+
     // 作業ブランチを作成・切り替え
-    await runCommand(`git checkout -b ${branchName}`, '作業ブランチを作成・切り替え');
-    
+    await runCommand(
+      `git checkout -b ${branchName}`,
+      '作業ブランチを作成・切り替え'
+    );
+
     logger.info('✅ Step 1が完了しました');
 
     // Step 2: 変更をコミット
     logger.info('📋 Step 2: 変更をコミット');
-    
+
     // 変更をステージング
     await runCommand('git add .', '変更をステージング');
-    
+
     // コミット
     await runCommand(`git commit -m "${commitMessage}"`, '変更をコミット');
-    
+
     logger.info('✅ Step 2が完了しました');
 
     // Step 3: ブランチをプッシュ
     logger.info('📋 Step 3: ブランチをプッシュ');
-    
+
     await runCommand(`git push origin ${branchName}`, 'ブランチをプッシュ');
-    
+
     logger.info('✅ Step 3が完了しました');
 
     // Step 4: PRを作成
     logger.info('📋 Step 4: PRを作成');
-    
+
     const prCommand = `gh pr create --title "${prTitle}" --body "${prBody}" --base main`;
     await runCommand(prCommand, 'PRを作成');
-    
+
     logger.info('✅ Step 4が完了しました');
 
     // Step 5: PRをマージ
     logger.info('📋 Step 5: PRをマージ');
-    
+
     // PRの番号を取得
-    const { stdout: prNumber } = await execAsync(`gh pr list --head ${branchName} --json number --jq '.[0].number'`);
+    const { stdout: prNumber } = await execAsync(
+      `gh pr list --head ${branchName} --json number --jq '.[0].number'`
+    );
     const prNum = prNumber.trim();
-    
+
     if (prNum && prNum !== 'null') {
-      await runCommand(`gh pr merge ${prNum} --merge --delete-branch`, 'PRをマージ');
+      await runCommand(
+        `gh pr merge ${prNum} --merge --delete-branch`,
+        'PRをマージ'
+      );
       logger.info('✅ Step 5が完了しました');
     } else {
       logger.warn('⚠️ PR番号を取得できませんでした。手動でマージしてください');
@@ -100,10 +108,10 @@ async function workflowRoutine(options: WorkflowOptions): Promise<void> {
 
     // Step 6: ローカルのmainブランチを更新
     logger.info('📋 Step 6: ローカルのmainブランチを更新');
-    
+
     await runCommand('git checkout main', 'mainブランチに切り替え');
     await runCommand('git pull origin main', '最新の変更を取得');
-    
+
     logger.info('✅ Step 6が完了しました');
 
     logger.info('🎉 ワークフロールーティンが完了しました');
@@ -112,7 +120,6 @@ async function workflowRoutine(options: WorkflowOptions): Promise<void> {
     logger.info(`- コミット: ${commitMessage}`);
     logger.info(`- PR: ${prTitle}`);
     logger.info('- マージ: 完了');
-
   } catch (error) {
     logger.error('❌ ワークフロールーティンに失敗しました:', error);
     process.exit(1);
@@ -122,7 +129,8 @@ async function workflowRoutine(options: WorkflowOptions): Promise<void> {
 // デフォルトのワークフローオプション
 const defaultOptions: WorkflowOptions = {
   branchName: 'feature/sbi-securities-setup',
-  commitMessage: 'SBI証券API設定とワークフロールーティンの実装\n\n- SBI証券API設定ガイドの作成\n- SBI証券専用設定ファイルの実装\n- SBI証券接続テストスクリプトの作成\n- ワークフロールーティンの自動化\n- 手動設定手順の詳細化\n\nSBI証券に特化した自動売買システムの設定が完了しました。',
+  commitMessage:
+    'SBI証券API設定とワークフロールーティンの実装\n\n- SBI証券API設定ガイドの作成\n- SBI証券専用設定ファイルの実装\n- SBI証券接続テストスクリプトの作成\n- ワークフロールーティンの自動化\n- 手動設定手順の詳細化\n\nSBI証券に特化した自動売買システムの設定が完了しました。',
   prTitle: 'SBI証券API設定とワークフロールーティンの実装',
   prBody: `## SBI証券API設定の実装
 
@@ -173,8 +181,10 @@ if (args.length === 0) {
   logger.error('❌ 引数が不足しています');
   logger.info('使用方法:');
   logger.info('  npm run workflow  # デフォルトオプションで実行');
-  logger.info('  npm run workflow <branchName> <commitMessage> <prTitle> <prBody>  # カスタムオプションで実行');
+  logger.info(
+    '  npm run workflow <branchName> <commitMessage> <prTitle> <prBody>  # カスタムオプションで実行'
+  );
   process.exit(1);
 }
 
-export { workflowRoutine, WorkflowOptions };
+export { WorkflowOptions, workflowRoutine };
