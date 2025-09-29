@@ -120,7 +120,7 @@ export class OnlineLearner {
    * 学習サイクルを実行
    */
   private async performLearningCycle(): Promise<void> {
-    const updatePromises = Array.from(this.models.keys()).map(modelId => 
+    const updatePromises = Array.from(this.models.keys()).map((modelId) =>
       this.updateModel(modelId)
     );
 
@@ -155,7 +155,7 @@ export class OnlineLearner {
 
       // 増分学習を実行
       const newMetrics = await this.performIncrementalLearning(modelId, buffer);
-      
+
       // 精度低下をチェック
       const accuracyDrop = currentMetrics.accuracy - newMetrics.accuracy;
       if (accuracyDrop > this.config.retrainThreshold) {
@@ -165,7 +165,6 @@ export class OnlineLearner {
       } else {
         await this.updateMetrics(modelId, 'INCREMENTAL', newMetrics);
       }
-
     } catch (error) {
       console.error(`❌ ${modelId} モデル更新エラー:`, error);
     }
@@ -259,7 +258,8 @@ export class OnlineLearner {
     let correct = 0;
     for (let i = 0; i < predictions.length; i++) {
       const predDirection = predictions[i] > actuals[i] ? 1 : -1;
-      const actualDirection = actuals[i] > (actuals[i - 1] || actuals[i]) ? 1 : -1;
+      const actualDirection =
+        actuals[i] > (actuals[i - 1] || actuals[i]) ? 1 : -1;
       if (predDirection === actualDirection) correct++;
     }
     return (correct / predictions.length) * 100;
@@ -296,7 +296,7 @@ export class OnlineLearner {
    * コールバックを通知
    */
   private notifyCallbacks(update: ModelUpdate): void {
-    this.updateCallbacks.forEach(callback => {
+    this.updateCallbacks.forEach((callback) => {
       try {
         callback(update);
       } catch (error) {

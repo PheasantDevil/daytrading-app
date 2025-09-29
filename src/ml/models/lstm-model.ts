@@ -44,7 +44,7 @@ export class LSTMModel {
     try {
       // TensorFlow.jsを動的インポート
       const tf = await import('@tensorflow/tfjs');
-      
+
       // シーケンシャルモデルを作成
       this.model = tf.sequential({
         layers: [
@@ -56,7 +56,7 @@ export class LSTMModel {
             dropout: this.config.dropout,
             recurrentDropout: this.config.dropout,
           }),
-          
+
           // 2番目のLSTM層
           tf.layers.lstm({
             units: Math.floor(this.config.hiddenUnits / 2),
@@ -64,18 +64,18 @@ export class LSTMModel {
             dropout: this.config.dropout,
             recurrentDropout: this.config.dropout,
           }),
-          
+
           // ドロップアウト層
           tf.layers.dropout({
             rate: this.config.dropout,
           }),
-          
+
           // 全結合層
           tf.layers.dense({
             units: 32,
             activation: 'relu',
           }),
-          
+
           // 出力層
           tf.layers.dense({
             units: 1,
@@ -109,7 +109,7 @@ export class LSTMModel {
     // データを正規化
     const min = Math.min(...data);
     const max = Math.max(...data);
-    const scaledData = data.map(value => (value - min) / (max - min));
+    const scaledData = data.map((value) => (value - min) / (max - min));
 
     // シーケンスデータを作成
     const features: number[][] = [];
@@ -137,7 +137,7 @@ export class LSTMModel {
 
     try {
       console.log('🔄 LSTMモデル訓練開始...');
-      
+
       // データを前処理
       const { features, targets, scaler } = this.preprocessData(data);
       this.scaler = scaler;
@@ -148,15 +148,15 @@ export class LSTMModel {
 
       // TensorFlow.jsを動的インポート
       const tf = await import('@tensorflow/tfjs');
-      
+
       // データをテンソルに変換
       const featureTensor = tf.tensor3d(
-        features.map(seq => seq.map(val => [val])),
+        features.map((seq) => seq.map((val) => [val])),
         [features.length, this.config.sequenceLength, 1]
       );
-      
+
       const targetTensor = tf.tensor2d(
-        targets.map(val => [val]),
+        targets.map((val) => [val]),
         [targets.length, 1]
       );
 
@@ -192,41 +192,47 @@ export class LSTMModel {
     try {
       // TensorFlow.jsを動的インポート
       const tf = await import('@tensorflow/tfjs');
-      
+
       // 入力データを正規化
-      const normalizedData = inputData.map(value => 
-        (value - this.scaler.min) / (this.scaler.max - this.scaler.min)
+      const normalizedData = inputData.map(
+        (value) =>
+          (value - this.scaler.min) / (this.scaler.max - this.scaler.min)
       );
 
       // 最後のシーケンスを取得
       const sequence = normalizedData.slice(-this.config.sequenceLength);
-      
+
       // テンソルに変換
       const inputTensor = tf.tensor3d(
-        [sequence.map(val => [val])],
+        [sequence.map((val) => [val])],
         [1, this.config.sequenceLength, 1]
       );
 
       // 予測を実行
       const prediction = await this.model.predict(inputTensor);
       const predictionArray = await prediction.data();
-      
+
       // 予測値を逆正規化
-      const denormalizedPrediction = predictionArray[0] * (this.scaler.max - this.scaler.min) + this.scaler.min;
-      
+      const denormalizedPrediction =
+        predictionArray[0] * (this.scaler.max - this.scaler.min) +
+        this.scaler.min;
+
       // メモリを解放
       inputTensor.dispose();
       prediction.dispose();
 
       // 信頼度を計算（簡略化）
-      const confidence = this.calculateConfidence(inputData, denormalizedPrediction);
-      
+      const confidence = this.calculateConfidence(
+        inputData,
+        denormalizedPrediction
+      );
+
       // トレンドを判定
       const trend = this.determineTrend(inputData, denormalizedPrediction);
-      
+
       // ボラティリティを計算
       const volatility = this.calculateVolatility(inputData);
-      
+
       // 複数ステップ先の予測
       const nextPrices = await this.predictMultipleSteps(inputData, 5);
 
@@ -246,7 +252,10 @@ export class LSTMModel {
   /**
    * 複数ステップ先の予測
    */
-  private async predictMultipleSteps(inputData: number[], steps: number): Promise<number[]> {
+  private async predictMultipleSteps(
+    inputData: number[],
+    steps: number
+  ): Promise<number[]> {
     const predictions: number[] = [];
     let currentData = [...inputData];
 
@@ -273,22 +282,25 @@ export class LSTMModel {
     const recentVolatility = this.calculateVolatility(inputData);
     const priceChange = Math.abs(prediction - inputData[inputData.length - 1]);
     const changePercent = (priceChange / inputData[inputData.length - 1]) * 100;
-    
+
     // ボラティリティが低く、変化率が適度な場合に高い信頼度
     let confidence = 100;
     confidence -= recentVolatility * 2; // ボラティリティが高いと信頼度低下
     confidence -= Math.min(changePercent * 5, 50); // 変化率が大きいと信頼度低下
-    
+
     return Math.max(confidence, 0);
   }
 
   /**
    * トレンドを判定
    */
-  private determineTrend(inputData: number[], prediction: number): 'UP' | 'DOWN' | 'SIDEWAYS' {
+  private determineTrend(
+    inputData: number[],
+    prediction: number
+  ): 'UP' | 'DOWN' | 'SIDEWAYS' {
     const currentPrice = inputData[inputData.length - 1];
     const changePercent = ((prediction - currentPrice) / currentPrice) * 100;
-    
+
     if (changePercent > 1) return 'UP';
     if (changePercent < -1) return 'DOWN';
     return 'SIDEWAYS';
@@ -299,15 +311,17 @@ export class LSTMModel {
    */
   private calculateVolatility(data: number[]): number {
     if (data.length < 2) return 0;
-    
+
     const returns = [];
     for (let i = 1; i < data.length; i++) {
       returns.push((data[i] - data[i - 1]) / data[i - 1]);
     }
-    
+
     const mean = returns.reduce((sum, ret) => sum + ret, 0) / returns.length;
-    const variance = returns.reduce((sum, ret) => sum + Math.pow(ret - mean, 2), 0) / returns.length;
-    
+    const variance =
+      returns.reduce((sum, ret) => sum + Math.pow(ret - mean, 2), 0) /
+      returns.length;
+
     return Math.sqrt(variance) * 100; // パーセンテージで返す
   }
 
@@ -322,7 +336,7 @@ export class LSTMModel {
     try {
       // TensorFlow.jsを動的インポート
       const tf = await import('@tensorflow/tfjs');
-      
+
       await this.model.save(`file://${path}`);
       console.log(`✅ モデルを保存しました: ${path}`);
     } catch (error) {
@@ -338,7 +352,7 @@ export class LSTMModel {
     try {
       // TensorFlow.jsを動的インポート
       const tf = await import('@tensorflow/tfjs');
-      
+
       this.model = await tf.loadLayersModel(`file://${path}`);
       this.isTrained = true;
       console.log(`✅ モデルを読み込みました: ${path}`);

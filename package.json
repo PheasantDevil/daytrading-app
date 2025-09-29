@@ -15,6 +15,7 @@
     "type-check": "tsc --noEmit",
     "db:seed": "tsx prisma/seed.ts",
     "test:phase1": "tsx scripts/test-phase1-features.ts",
+    "test:phase2": "tsx scripts/test-phase2-features.ts",
     "docker:dev": "docker-compose -f docker-compose.dev.yml up",
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up",

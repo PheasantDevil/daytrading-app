@@ -101,12 +101,14 @@ export class BacktestEngine {
    * @returns バックテスト結果
    */
   async runBacktest(
-    strategy: (data: any) => Promise<Array<{
-      symbol: string;
-      action: 'BUY' | 'SELL' | 'HOLD';
-      quantity?: number;
-      price?: number;
-    }>>,
+    strategy: (data: any) => Promise<
+      Array<{
+        symbol: string;
+        action: 'BUY' | 'SELL' | 'HOLD';
+        quantity?: number;
+        price?: number;
+      }>
+    >,
     priceData: Array<{
       date: Date;
       symbol: string;
@@ -118,26 +120,29 @@ export class BacktestEngine {
     }>
   ): Promise<BacktestResult> {
     console.log('🔄 バックテスト開始...');
-    
+
     // 価格データを日付順にソート
-    const sortedData = priceData.sort((a, b) => a.date.getTime() - b.date.getTime());
-    
+    const sortedData = priceData.sort(
+      (a, b) => a.date.getTime() - b.date.getTime()
+    );
+
     // 日付範囲でフィルタリング
     const filteredData = sortedData.filter(
-      data => data.date >= this.config.startDate && data.date <= this.config.endDate
+      (data) =>
+        data.date >= this.config.startDate && data.date <= this.config.endDate
     );
-    
+
     // 日付ごとに処理
     for (const data of filteredData) {
       await this.processDay(data, strategy);
-      
+
       // エクイティを記録
       this.recordEquity(data.date);
     }
-    
+
     // 結果を生成
     const result = this.generateResult();
-    
+
     console.log('✅ バックテスト完了');
     return result;
   }
@@ -157,25 +162,37 @@ export class BacktestEngine {
       close: number;
       volume: number;
     },
-    strategy: (data: any) => Promise<Array<{
-      symbol: string;
-      action: 'BUY' | 'SELL' | 'HOLD';
-      quantity?: number;
-      price?: number;
-    }>>
+    strategy: (data: any) => Promise<
+      Array<{
+        symbol: string;
+        action: 'BUY' | 'SELL' | 'HOLD';
+        quantity?: number;
+        price?: number;
+      }>
+    >
   ): Promise<void> {
     // 戦略を実行
     const signals = await strategy(data);
-    
+
     // 各シグナルを処理
     for (const signal of signals) {
       if (signal.action === 'BUY') {
-        await this.executeBuy(signal.symbol, signal.quantity || 0, data.close, data.date);
+        await this.executeBuy(
+          signal.symbol,
+          signal.quantity || 0,
+          data.close,
+          data.date
+        );
       } else if (signal.action === 'SELL') {
-        await this.executeSell(signal.symbol, signal.quantity || 0, data.close, data.date);
+        await this.executeSell(
+          signal.symbol,
+          signal.quantity || 0,
+          data.close,
+          data.date
+        );
       }
     }
-    
+
     // ポジションを更新
     this.updatePositions(data.symbol, data.close);
   }
@@ -199,20 +216,23 @@ export class BacktestEngine {
       price,
       price * (1 - this.config.riskParameters.stopLossPercent / 100)
     );
-    
+
     const actualQuantity = Math.min(quantity, positionSize);
-    
+
     if (actualQuantity <= 0) {
       return; // リスク制限により取引不可
     }
-    
+
     // スリッページを適用
     const slippage = price * (this.config.slippage / 100);
     const netPrice = price + slippage;
-    
+
     // 手数料を計算
-    const commission = FeeCalculator.calculateCommission(actualQuantity * netPrice, 'sbi');
-    
+    const commission = FeeCalculator.calculateCommission(
+      actualQuantity * netPrice,
+      'sbi'
+    );
+
     // 取引を記録
     const trade: Trade = {
       id: `trade_${Date.now()}_${Math.random()}`,
@@ -225,16 +245,19 @@ export class BacktestEngine {
       slippage: slippage,
       netPrice: netPrice,
     };
-    
+
     this.trades.push(trade);
-    
+
     // ポジションを更新
     const existingPosition = this.positions.get(symbol);
     if (existingPosition) {
       // 既存ポジションに追加
       const totalQuantity = existingPosition.quantity + actualQuantity;
-      const averagePrice = (existingPosition.entryPrice * existingPosition.quantity + netPrice * actualQuantity) / totalQuantity;
-      
+      const averagePrice =
+        (existingPosition.entryPrice * existingPosition.quantity +
+          netPrice * actualQuantity) /
+        totalQuantity;
+
       this.positions.set(symbol, {
         symbol,
         quantity: totalQuantity,
@@ -256,9 +279,9 @@ export class BacktestEngine {
         unrealizedPnLPercent: ((price - netPrice) / netPrice) * 100,
       });
     }
-    
+
     // 資本を更新
-    this.currentCapital -= (actualQuantity * netPrice + commission.total);
+    this.currentCapital -= actualQuantity * netPrice + commission.total;
   }
 
   /**
@@ -278,16 +301,19 @@ export class BacktestEngine {
     if (!position || position.quantity <= 0) {
       return; // ポジションなし
     }
-    
+
     const actualQuantity = Math.min(quantity, position.quantity);
-    
+
     // スリッページを適用
     const slippage = price * (this.config.slippage / 100);
     const netPrice = price - slippage;
-    
+
     // 手数料を計算
-    const commission = FeeCalculator.calculateCommission(actualQuantity * netPrice, 'sbi');
-    
+    const commission = FeeCalculator.calculateCommission(
+      actualQuantity * netPrice,
+      'sbi'
+    );
+
     // 取引を記録
     const trade: Trade = {
       id: `trade_${Date.now()}_${Math.random()}`,
@@ -300,9 +326,9 @@ export class BacktestEngine {
       slippage: slippage,
       netPrice: netPrice,
     };
-    
+
     this.trades.push(trade);
-    
+
     // ポジションを更新
     const remainingQuantity = position.quantity - actualQuantity;
     if (remainingQuantity <= 0) {
@@ -314,12 +340,13 @@ export class BacktestEngine {
         ...position,
         quantity: remainingQuantity,
         unrealizedPnL: (price - position.entryPrice) * remainingQuantity,
-        unrealizedPnLPercent: ((price - position.entryPrice) / position.entryPrice) * 100,
+        unrealizedPnLPercent:
+          ((price - position.entryPrice) / position.entryPrice) * 100,
       });
     }
-    
+
     // 資本を更新
-    this.currentCapital += (actualQuantity * netPrice - commission.total);
+    this.currentCapital += actualQuantity * netPrice - commission.total;
   }
 
   /**
@@ -331,8 +358,10 @@ export class BacktestEngine {
     const position = this.positions.get(symbol);
     if (position) {
       position.currentPrice = currentPrice;
-      position.unrealizedPnL = (currentPrice - position.entryPrice) * position.quantity;
-      position.unrealizedPnLPercent = ((currentPrice - position.entryPrice) / position.entryPrice) * 100;
+      position.unrealizedPnL =
+        (currentPrice - position.entryPrice) * position.quantity;
+      position.unrealizedPnLPercent =
+        ((currentPrice - position.entryPrice) / position.entryPrice) * 100;
     }
   }
 
@@ -342,16 +371,19 @@ export class BacktestEngine {
    */
   private recordEquity(date: Date): void {
     let totalValue = this.currentCapital;
-    
+
     // 未実現損益を加算
     for (const position of this.positions.values()) {
       totalValue += position.unrealizedPnL;
     }
-    
+
     // ドローダウンを計算
-    const peakValue = Math.max(...this.equity.map(e => e.value), this.config.initialCapital);
+    const peakValue = Math.max(
+      ...this.equity.map((e) => e.value),
+      this.config.initialCapital
+    );
     const drawdown = ((peakValue - totalValue) / peakValue) * 100;
-    
+
     this.equity.push({
       date,
       value: totalValue,
@@ -365,23 +397,29 @@ export class BacktestEngine {
    */
   private generateResult(): BacktestResult {
     const totalTrades = this.trades.length;
-    const winningTrades = this.trades.filter(trade => {
+    const winningTrades = this.trades.filter((trade) => {
       if (trade.side === 'SELL') {
-        const buyTrade = this.trades.find(t => t.symbol === trade.symbol && t.side === 'BUY' && t.timestamp < trade.timestamp);
+        const buyTrade = this.trades.find(
+          (t) =>
+            t.symbol === trade.symbol &&
+            t.side === 'BUY' &&
+            t.timestamp < trade.timestamp
+        );
         return buyTrade && trade.netPrice > buyTrade.netPrice;
       }
       return false;
     }).length;
-    
+
     const losingTrades = totalTrades - winningTrades;
     const winRate = totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0;
-    
-    const finalValue = this.equity[this.equity.length - 1]?.value || this.config.initialCapital;
+
+    const finalValue =
+      this.equity[this.equity.length - 1]?.value || this.config.initialCapital;
     const totalReturn = finalValue - this.config.initialCapital;
     const totalReturnPercent = (totalReturn / this.config.initialCapital) * 100;
-    
-    const maxDrawdown = Math.max(...this.equity.map(e => e.drawdown));
-    
+
+    const maxDrawdown = Math.max(...this.equity.map((e) => e.drawdown));
+
     return {
       config: this.config,
       trades: this.trades,
@@ -405,7 +443,7 @@ export class BacktestEngine {
       equity: this.equity,
       riskMetrics: {
         portfolioRisk: 0, // 簡略化
-        positionRisks: Array.from(this.positions.values()).map(p => ({
+        positionRisks: Array.from(this.positions.values()).map((p) => ({
           symbol: p.symbol,
           risk: p.unrealizedPnL,
         })),

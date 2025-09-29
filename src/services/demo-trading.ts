@@ -64,10 +64,14 @@ export class DemoTradingService {
 
     // スリッページを適用
     const slippageAmount = price * this.slippage;
-    const netPrice = side === 'BUY' ? price + slippageAmount : price - slippageAmount;
+    const netPrice =
+      side === 'BUY' ? price + slippageAmount : price - slippageAmount;
 
     // 手数料を計算
-    const commission = FeeCalculator.calculateCommission(quantity * netPrice, 'sbi');
+    const commission = FeeCalculator.calculateCommission(
+      quantity * netPrice,
+      'sbi'
+    );
 
     // 買い注文の場合、資金チェック
     if (side === 'BUY') {
@@ -121,10 +125,10 @@ export class DemoTradingService {
     const amount = order.quantity * order.netPrice;
 
     if (order.side === 'BUY') {
-      this.currentBalance -= (amount + order.commission);
+      this.currentBalance -= amount + order.commission;
       this.updatePosition(order.symbol, order.quantity, order.netPrice, 'BUY');
     } else {
-      this.currentBalance += (amount - order.commission);
+      this.currentBalance += amount - order.commission;
       this.updatePosition(order.symbol, order.quantity, order.netPrice, 'SELL');
     }
   }
@@ -240,7 +244,7 @@ export class DemoTradingService {
     dailyLossStatus: boolean;
     recommendations: string[];
   } {
-    const positions = Array.from(this.positions.values()).map(p => ({
+    const positions = Array.from(this.positions.values()).map((p) => ({
       symbol: p.symbol,
       size: p.quantity,
       entryPrice: p.averagePrice,
@@ -248,7 +252,7 @@ export class DemoTradingService {
     }));
 
     const dailyPnL = this.getTotalAssets() - this.initialBalance;
-    
+
     return this.riskManager.generateRiskReport(
       positions,
       this.currentBalance,
@@ -276,14 +280,16 @@ export class DemoTradingService {
   /**
    * リスクパラメータを更新
    */
-  updateRiskParameters(newParameters: Partial<{
-    maxPositionSize: number;
-    maxPortfolioRisk: number;
-    stopLossPercent: number;
-    takeProfitPercent: number;
-    maxDailyLoss: number;
-    maxDrawdown: number;
-  }>): void {
+  updateRiskParameters(
+    newParameters: Partial<{
+      maxPositionSize: number;
+      maxPortfolioRisk: number;
+      stopLossPercent: number;
+      takeProfitPercent: number;
+      maxDailyLoss: number;
+      maxDrawdown: number;
+    }>
+  ): void {
     this.riskManager.updateRiskParameters(newParameters);
   }
 

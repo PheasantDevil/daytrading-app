@@ -54,7 +54,7 @@ export class TechnicalAnalyzer {
    */
   static calculateSMA(prices: number[], period: number): number {
     if (prices.length < period) return 0;
-    
+
     const sum = prices.slice(-period).reduce((acc, price) => acc + price, 0);
     return sum / period;
   }
@@ -67,14 +67,14 @@ export class TechnicalAnalyzer {
    */
   static calculateEMA(prices: number[], period: number): number {
     if (prices.length < period) return 0;
-    
+
     const multiplier = 2 / (period + 1);
     let ema = prices[0];
-    
+
     for (let i = 1; i < prices.length; i++) {
-      ema = (prices[i] * multiplier) + (ema * (1 - multiplier));
+      ema = prices[i] * multiplier + ema * (1 - multiplier);
     }
-    
+
     return ema;
   }
 
@@ -86,22 +86,24 @@ export class TechnicalAnalyzer {
    */
   static calculateRSI(prices: number[], period: number = 14): number {
     if (prices.length < period + 1) return 50;
-    
+
     const changes = [];
     for (let i = 1; i < prices.length; i++) {
       changes.push(prices[i] - prices[i - 1]);
     }
-    
-    const gains = changes.map(change => change > 0 ? change : 0);
-    const losses = changes.map(change => change < 0 ? Math.abs(change) : 0);
-    
-    const avgGain = gains.slice(-period).reduce((acc, gain) => acc + gain, 0) / period;
-    const avgLoss = losses.slice(-period).reduce((acc, loss) => acc + loss, 0) / period;
-    
+
+    const gains = changes.map((change) => (change > 0 ? change : 0));
+    const losses = changes.map((change) => (change < 0 ? Math.abs(change) : 0));
+
+    const avgGain =
+      gains.slice(-period).reduce((acc, gain) => acc + gain, 0) / period;
+    const avgLoss =
+      losses.slice(-period).reduce((acc, loss) => acc + loss, 0) / period;
+
     if (avgLoss === 0) return 100;
-    
+
     const rs = avgGain / avgLoss;
-    return 100 - (100 / (1 + rs));
+    return 100 - 100 / (1 + rs);
   }
 
   /**
@@ -121,16 +123,16 @@ export class TechnicalAnalyzer {
     if (prices.length < slowPeriod) {
       return { macd: 0, signal: 0, histogram: 0 };
     }
-    
+
     const ema12 = this.calculateEMA(prices, fastPeriod);
     const ema26 = this.calculateEMA(prices, slowPeriod);
     const macd = ema12 - ema26;
-    
+
     // シグナルライン（MACDのEMA）
     const macdValues = [macd];
     const signal = this.calculateEMA(macdValues, signalPeriod);
     const histogram = macd - signal;
-    
+
     return { macd, signal, histogram };
   }
 
@@ -149,18 +151,20 @@ export class TechnicalAnalyzer {
     if (prices.length < period) {
       return { upper: 0, middle: 0, lower: 0, width: 0 };
     }
-    
+
     const sma = this.calculateSMA(prices, period);
     const recentPrices = prices.slice(-period);
-    
+
     // 標準偏差を計算
-    const variance = recentPrices.reduce((acc, price) => acc + Math.pow(price - sma, 2), 0) / period;
+    const variance =
+      recentPrices.reduce((acc, price) => acc + Math.pow(price - sma, 2), 0) /
+      period;
     const standardDeviation = Math.sqrt(variance);
-    
-    const upper = sma + (stdDev * standardDeviation);
-    const lower = sma - (stdDev * standardDeviation);
+
+    const upper = sma + stdDev * standardDeviation;
+    const lower = sma - stdDev * standardDeviation;
     const width = (upper - lower) / sma;
-    
+
     return { upper, middle: sma, lower, width };
   }
 
@@ -180,24 +184,28 @@ export class TechnicalAnalyzer {
     kPeriod: number = 14,
     dPeriod: number = 3
   ): { k: number; d: number } {
-    if (highPrices.length < kPeriod || lowPrices.length < kPeriod || closePrices.length < kPeriod) {
+    if (
+      highPrices.length < kPeriod ||
+      lowPrices.length < kPeriod ||
+      closePrices.length < kPeriod
+    ) {
       return { k: 50, d: 50 };
     }
-    
+
     const recentHighs = highPrices.slice(-kPeriod);
     const recentLows = lowPrices.slice(-kPeriod);
     const recentCloses = closePrices.slice(-kPeriod);
-    
+
     const highestHigh = Math.max(...recentHighs);
     const lowestLow = Math.min(...recentLows);
     const currentClose = recentCloses[recentCloses.length - 1];
-    
+
     const k = ((currentClose - lowestLow) / (highestHigh - lowestLow)) * 100;
-    
+
     // Dライン（Kの移動平均）
     const kValues = [k];
     const d = this.calculateSMA(kValues, dPeriod);
-    
+
     return { k, d };
   }
 
@@ -214,11 +222,11 @@ export class TechnicalAnalyzer {
     if (volumes.length < period) {
       return { sma: 0, ratio: 1 };
     }
-    
+
     const sma = this.calculateSMA(volumes, period);
     const currentVolume = volumes[volumes.length - 1];
     const ratio = currentVolume / sma;
-    
+
     return { sma, ratio };
   }
 
@@ -239,12 +247,12 @@ export class TechnicalAnalyzer {
         volume: { sma: 0, ratio: 1 },
       };
     }
-    
-    const closes = priceData.map(d => d.close);
-    const highs = priceData.map(d => d.high);
-    const lows = priceData.map(d => d.low);
-    const volumes = priceData.map(d => d.volume);
-    
+
+    const closes = priceData.map((d) => d.close);
+    const highs = priceData.map((d) => d.high);
+    const lows = priceData.map((d) => d.low);
+    const volumes = priceData.map((d) => d.volume);
+
     return {
       sma: {
         period5: this.calculateSMA(closes, 5),
@@ -277,7 +285,7 @@ export class TechnicalAnalyzer {
     const signals: string[] = [];
     let bullishSignals = 0;
     let bearishSignals = 0;
-    
+
     // SMA分析
     if (indicators.sma.period5 > indicators.sma.period20) {
       bullishSignals++;
@@ -286,7 +294,7 @@ export class TechnicalAnalyzer {
       bearishSignals++;
       signals.push('SMA5 < SMA20');
     }
-    
+
     // RSI分析
     if (indicators.rsi > 70) {
       bearishSignals++;
@@ -295,7 +303,7 @@ export class TechnicalAnalyzer {
       bullishSignals++;
       signals.push('RSI oversold');
     }
-    
+
     // MACD分析
     if (indicators.macd.macd > indicators.macd.signal) {
       bullishSignals++;
@@ -304,7 +312,7 @@ export class TechnicalAnalyzer {
       bearishSignals++;
       signals.push('MACD bearish');
     }
-    
+
     // ボリンジャーバンド分析
     const currentPrice = indicators.sma.period20; // 仮の現在価格
     if (currentPrice > indicators.bollinger.upper) {
@@ -314,7 +322,7 @@ export class TechnicalAnalyzer {
       bullishSignals++;
       signals.push('Price below lower Bollinger');
     }
-    
+
     // ストキャスティクス分析
     if (indicators.stochastic.k > 80) {
       bearishSignals++;
@@ -323,17 +331,20 @@ export class TechnicalAnalyzer {
       bullishSignals++;
       signals.push('Stochastic oversold');
     }
-    
+
     const totalSignals = bullishSignals + bearishSignals;
-    const strength = totalSignals > 0 ? (Math.abs(bullishSignals - bearishSignals) / totalSignals) * 100 : 0;
-    
+    const strength =
+      totalSignals > 0
+        ? (Math.abs(bullishSignals - bearishSignals) / totalSignals) * 100
+        : 0;
+
     let trend: 'BULLISH' | 'BEARISH' | 'NEUTRAL' = 'NEUTRAL';
     if (bullishSignals > bearishSignals) {
       trend = 'BULLISH';
     } else if (bearishSignals > bullishSignals) {
       trend = 'BEARISH';
     }
-    
+
     return { trend, strength, signals };
   }
 }
