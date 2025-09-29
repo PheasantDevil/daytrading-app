@@ -52,16 +52,18 @@ export class RiskManager {
   ): number {
     // リスク金額を計算
     const riskAmount = accountBalance * (riskPercent / 100);
-    
+
     // 1株あたりのリスクを計算
     const riskPerShare = Math.abs(entryPrice - stopLossPrice);
-    
+
     // ポジションサイズを計算
     const positionSize = Math.floor(riskAmount / riskPerShare);
-    
+
     // 最大ポジションサイズを適用
-    const maxPositionSize = Math.floor(this.riskParameters.maxPositionSize / entryPrice);
-    
+    const maxPositionSize = Math.floor(
+      this.riskParameters.maxPositionSize / entryPrice
+    );
+
     return Math.min(positionSize, maxPositionSize);
   }
 
@@ -79,19 +81,23 @@ export class RiskManager {
   ): PositionRisk {
     const positionValue = positionSize * currentPrice;
     const riskAmount = positionSize * Math.abs(entryPrice - currentPrice);
-    
+
     // ストップロス価格を計算
-    const stopLossPrice = entryPrice * (1 - this.riskParameters.stopLossPercent / 100);
-    
+    const stopLossPrice =
+      entryPrice * (1 - this.riskParameters.stopLossPercent / 100);
+
     // テイクプロフィット価格を計算
-    const takeProfitPrice = entryPrice * (1 + this.riskParameters.takeProfitPercent / 100);
-    
+    const takeProfitPrice =
+      entryPrice * (1 + this.riskParameters.takeProfitPercent / 100);
+
     // リスクリワード比を計算
-    const riskRewardRatio = (takeProfitPrice - entryPrice) / (entryPrice - stopLossPrice);
-    
+    const riskRewardRatio =
+      (takeProfitPrice - entryPrice) / (entryPrice - stopLossPrice);
+
     // リスク制限内かチェック
-    const isWithinRiskLimit = positionValue <= this.riskParameters.maxPositionSize;
-    
+    const isWithinRiskLimit =
+      positionValue <= this.riskParameters.maxPositionSize;
+
     return {
       positionSize,
       riskAmount,
@@ -119,22 +125,24 @@ export class RiskManager {
   ): PortfolioRisk {
     let totalValue = 0;
     let totalRisk = 0;
-    
+
     // 各ポジションのリスクを計算
     for (const position of positions) {
       const positionValue = position.size * position.currentPrice;
-      const positionRisk = position.size * Math.abs(position.entryPrice - position.currentPrice);
-      
+      const positionRisk =
+        position.size * Math.abs(position.entryPrice - position.currentPrice);
+
       totalValue += positionValue;
       totalRisk += positionRisk;
     }
-    
+
     // リスク率を計算
     const riskPercentage = (totalRisk / accountBalance) * 100;
-    
+
     // リスク制限内かチェック
-    const isWithinRiskLimit = riskPercentage <= this.riskParameters.maxPortfolioRisk;
-    
+    const isWithinRiskLimit =
+      riskPercentage <= this.riskParameters.maxPortfolioRisk;
+
     // 推奨アクションを決定
     let recommendedAction: 'HOLD' | 'REDUCE' | 'STOP' = 'HOLD';
     if (riskPercentage > this.riskParameters.maxPortfolioRisk * 1.5) {
@@ -142,7 +150,7 @@ export class RiskManager {
     } else if (riskPercentage > this.riskParameters.maxPortfolioRisk) {
       recommendedAction = 'REDUCE';
     }
-    
+
     return {
       totalValue,
       totalRisk,
@@ -211,29 +219,39 @@ export class RiskManager {
     recommendations: string[];
   } {
     const portfolioRisk = this.analyzePortfolioRisk(positions, accountBalance);
-    
-    const positionRisks = positions.map(position =>
-      this.analyzePositionRisk(position.size, position.entryPrice, position.currentPrice)
+
+    const positionRisks = positions.map((position) =>
+      this.analyzePositionRisk(
+        position.size,
+        position.entryPrice,
+        position.currentPrice
+      )
     );
-    
+
     const dailyLossStatus = this.checkDailyLossLimit(dailyPnL);
-    
+
     const recommendations: string[] = [];
-    
+
     if (!portfolioRisk.isWithinRiskLimit) {
-      recommendations.push('ポートフォリオリスクが制限を超えています。ポジションを縮小してください。');
+      recommendations.push(
+        'ポートフォリオリスクが制限を超えています。ポジションを縮小してください。'
+      );
     }
-    
+
     if (!dailyLossStatus) {
-      recommendations.push('日次損失制限に達しました。取引を停止してください。');
+      recommendations.push(
+        '日次損失制限に達しました。取引を停止してください。'
+      );
     }
-    
+
     if (portfolioRisk.recommendedAction === 'STOP') {
-      recommendations.push('緊急停止が必要です。全ポジションをクローズしてください。');
+      recommendations.push(
+        '緊急停止が必要です。全ポジションをクローズしてください。'
+      );
     } else if (portfolioRisk.recommendedAction === 'REDUCE') {
       recommendations.push('リスク軽減のため、ポジションを縮小してください。');
     }
-    
+
     return {
       portfolioRisk,
       positionRisks,

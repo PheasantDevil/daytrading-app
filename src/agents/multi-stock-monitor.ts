@@ -3,7 +3,7 @@
  * 複数の銘柄を並列で監視し、分析結果を統合
  */
 
-import { TechnicalAnalyzer, PriceData } from './technical-analyzer';
+import { PriceData, TechnicalAnalyzer } from './technical-analyzer';
 
 export interface StockMonitorConfig {
   symbols: string[];
@@ -107,13 +107,13 @@ export class MultiStockMonitor {
    */
   private async performInitialAnalysis(): Promise<void> {
     console.log('📊 初期分析実行中...');
-    
-    const promises = this.config.symbols.map(symbol => 
+
+    const promises = this.config.symbols.map((symbol) =>
       this.analyzeStock(symbol)
     );
 
     const results = await Promise.allSettled(promises);
-    
+
     results.forEach((result, index) => {
       if (result.status === 'fulfilled' && result.value) {
         this.analyses.set(this.config.symbols[index], result.value);
@@ -130,12 +130,12 @@ export class MultiStockMonitor {
    * 分析を更新
    */
   private async updateAnalyses(): Promise<void> {
-    const promises = Array.from(this.analyses.keys()).map(symbol => 
+    const promises = Array.from(this.analyses.keys()).map((symbol) =>
       this.analyzeStock(symbol)
     );
 
     const results = await Promise.allSettled(promises);
-    
+
     results.forEach((result, index) => {
       const symbol = Array.from(this.analyses.keys())[index];
       if (result.status === 'fulfilled' && result.value) {
@@ -160,17 +160,22 @@ export class MultiStockMonitor {
       }
 
       // テクニカル指標を計算
-      const technicalIndicators = TechnicalAnalyzer.calculateAllIndicators(priceData);
-      
+      const technicalIndicators =
+        TechnicalAnalyzer.calculateAllIndicators(priceData);
+
       // トレンド分析
       const trend = TechnicalAnalyzer.analyzeTrend(technicalIndicators);
-      
+
       // リスクレベルを計算
       const riskLevel = this.calculateRiskLevel(technicalIndicators, trend);
-      
+
       // 推奨アクションを決定
-      const recommendation = this.determineRecommendation(technicalIndicators, trend, riskLevel);
-      
+      const recommendation = this.determineRecommendation(
+        technicalIndicators,
+        trend,
+        riskLevel
+      );
+
       // 信頼度を計算
       const confidence = this.calculateConfidence(technicalIndicators, trend);
 
@@ -206,7 +211,7 @@ export class MultiStockMonitor {
     // ここではモックデータを返す
     const mockData: PriceData[] = [];
     const basePrice = 1000 + Math.random() * 500;
-    
+
     for (let i = 0; i < 100; i++) {
       const price = basePrice + (Math.random() - 0.5) * 100;
       mockData.push({
@@ -218,36 +223,39 @@ export class MultiStockMonitor {
         volume: Math.floor(Math.random() * 1000000),
       });
     }
-    
+
     return mockData;
   }
 
   /**
    * リスクレベルを計算
    */
-  private calculateRiskLevel(indicators: any, trend: any): 'LOW' | 'MEDIUM' | 'HIGH' {
+  private calculateRiskLevel(
+    indicators: any,
+    trend: any
+  ): 'LOW' | 'MEDIUM' | 'HIGH' {
     let riskScore = 0;
-    
+
     // RSI分析
     if (indicators.rsi > 80 || indicators.rsi < 20) {
       riskScore += 30;
     }
-    
+
     // ボリンジャーバンド分析
     if (indicators.bollinger.width > 0.1) {
       riskScore += 20;
     }
-    
+
     // 出来高分析
     if (indicators.volume.ratio > 2) {
       riskScore += 25;
     }
-    
+
     // トレンド強度
     if (trend.strength < 30) {
       riskScore += 25;
     }
-    
+
     if (riskScore >= 70) return 'HIGH';
     if (riskScore >= 40) return 'MEDIUM';
     return 'LOW';
@@ -265,14 +273,14 @@ export class MultiStockMonitor {
     if (riskLevel === 'HIGH') {
       return 'HOLD';
     }
-    
+
     // トレンド分析に基づく判断
     if (trend.trend === 'BULLISH' && trend.strength > 60) {
       return 'BUY';
     } else if (trend.trend === 'BEARISH' && trend.strength > 60) {
       return 'SELL';
     }
-    
+
     return 'HOLD';
   }
 
@@ -281,25 +289,25 @@ export class MultiStockMonitor {
    */
   private calculateConfidence(indicators: any, trend: any): number {
     let confidence = 0;
-    
+
     // トレンド強度
     confidence += trend.strength * 0.4;
-    
+
     // RSI信頼度
     if (indicators.rsi > 70 || indicators.rsi < 30) {
       confidence += 30;
     }
-    
+
     // MACD信頼度
     if (Math.abs(indicators.macd.histogram) > 0.5) {
       confidence += 20;
     }
-    
+
     // 出来高信頼度
     if (indicators.volume.ratio > 1.5) {
       confidence += 10;
     }
-    
+
     return Math.min(confidence, 100);
   }
 
@@ -308,7 +316,7 @@ export class MultiStockMonitor {
    */
   async analyzePortfolio(): Promise<PortfolioAnalysis> {
     const analyses = Array.from(this.analyses.values());
-    
+
     if (analyses.length === 0) {
       return {
         totalValue: 0,
@@ -323,22 +331,34 @@ export class MultiStockMonitor {
     }
 
     // 基本統計
-    const totalValue = analyses.reduce((sum, analysis) => sum + analysis.currentPrice, 0);
-    const totalPnL = analyses.reduce((sum, analysis) => sum + analysis.change, 0);
+    const totalValue = analyses.reduce(
+      (sum, analysis) => sum + analysis.currentPrice,
+      0
+    );
+    const totalPnL = analyses.reduce(
+      (sum, analysis) => sum + analysis.change,
+      0
+    );
     const totalPnLPercent = (totalPnL / totalValue) * 100;
 
     // リスクスコア
-    const riskScore = analyses.reduce((sum, analysis) => {
-      const riskWeight = analysis.riskLevel === 'HIGH' ? 3 : analysis.riskLevel === 'MEDIUM' ? 2 : 1;
-      return sum + (riskWeight * analysis.confidence);
-    }, 0) / analyses.length;
+    const riskScore =
+      analyses.reduce((sum, analysis) => {
+        const riskWeight =
+          analysis.riskLevel === 'HIGH'
+            ? 3
+            : analysis.riskLevel === 'MEDIUM'
+              ? 2
+              : 1;
+        return sum + riskWeight * analysis.confidence;
+      }, 0) / analyses.length;
 
     // 分散度
     const diversification = Math.min(analyses.length * 10, 100);
 
     // パフォーマンス分析
     const performers = analyses
-      .map(analysis => ({
+      .map((analysis) => ({
         symbol: analysis.symbol,
         performance: analysis.changePercent,
       }))
@@ -349,8 +369,8 @@ export class MultiStockMonitor {
 
     // 推奨事項
     const recommendations = analyses
-      .filter(analysis => analysis.recommendation !== 'HOLD')
-      .map(analysis => ({
+      .filter((analysis) => analysis.recommendation !== 'HOLD')
+      .map((analysis) => ({
         symbol: analysis.symbol,
         action: analysis.recommendation,
         reason: analysis.trend.signals.join(', '),
@@ -382,7 +402,7 @@ export class MultiStockMonitor {
    */
   private notifyCallbacks(): void {
     const analyses = Array.from(this.analyses.values());
-    this.updateCallbacks.forEach(callback => {
+    this.updateCallbacks.forEach((callback) => {
       try {
         callback(analyses);
       } catch (error) {

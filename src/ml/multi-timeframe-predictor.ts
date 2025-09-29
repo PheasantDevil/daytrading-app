@@ -3,7 +3,7 @@
  * 1分、5分、15分、1時間等の複数時間軸での予測
  */
 
-import { LSTMModel, LSTMPrediction } from './models/lstm-model';
+import { LSTMModel } from './models/lstm-model';
 
 export interface TimeframeConfig {
   name: string;
@@ -46,13 +46,15 @@ export class MultiTimeframePredictor {
   private models: Map<string, LSTMModel> = new Map();
   private isInitialized: boolean = false;
 
-  constructor(timeframes: TimeframeConfig[] = [
-    { name: '1m', interval: 1, sequenceLength: 60, predictionSteps: 5 },
-    { name: '5m', interval: 5, sequenceLength: 48, predictionSteps: 4 },
-    { name: '15m', interval: 15, sequenceLength: 32, predictionSteps: 3 },
-    { name: '1h', interval: 60, sequenceLength: 24, predictionSteps: 2 },
-    { name: '4h', interval: 240, sequenceLength: 12, predictionSteps: 2 },
-  ]) {
+  constructor(
+    timeframes: TimeframeConfig[] = [
+      { name: '1m', interval: 1, sequenceLength: 60, predictionSteps: 5 },
+      { name: '5m', interval: 5, sequenceLength: 48, predictionSteps: 4 },
+      { name: '15m', interval: 15, sequenceLength: 32, predictionSteps: 3 },
+      { name: '1h', interval: 60, sequenceLength: 24, predictionSteps: 2 },
+      { name: '4h', interval: 240, sequenceLength: 12, predictionSteps: 2 },
+    ]
+  ) {
     this.timeframes = timeframes;
   }
 
@@ -107,11 +109,11 @@ export class MultiTimeframePredictor {
 
     for (let i = 1; i < priceData.length; i++) {
       const dataTime = priceData[i].timestamp.getTime();
-      
+
       if (dataTime - currentTime >= intervalMs) {
         // 新しい時間軸のデータポイント
         aggregatedData.push(currentOHLC.close);
-        
+
         currentTime = dataTime;
         currentOHLC = {
           open: priceData[i].open,
@@ -154,7 +156,7 @@ export class MultiTimeframePredictor {
 
         // 時間軸データを準備
         const timeframeData = this.prepareTimeframeData(priceData, timeframe);
-        
+
         if (timeframeData.length < timeframe.sequenceLength + 10) {
           console.warn(`⚠️ ${timeframe.name} のデータが不足しています`);
           return;
@@ -175,7 +177,10 @@ export class MultiTimeframePredictor {
   /**
    * 複数時間軸で予測を実行
    */
-  async predict(symbol: string, priceData: PriceData[]): Promise<MultiTimeframePrediction> {
+  async predict(
+    symbol: string,
+    priceData: PriceData[]
+  ): Promise<MultiTimeframePrediction> {
     if (!this.isInitialized) {
       await this.initialize();
     }
@@ -193,7 +198,7 @@ export class MultiTimeframePredictor {
 
         // 時間軸データを準備
         const timeframeData = this.prepareTimeframeData(priceData, timeframe);
-        
+
         if (timeframeData.length < timeframe.sequenceLength) {
           console.warn(`⚠️ ${timeframe.name} のデータが不足しています`);
           continue;
@@ -221,14 +226,16 @@ export class MultiTimeframePredictor {
   /**
    * コンセンサスを計算
    */
-  private calculateConsensus(timeframePredictions: { [timeframe: string]: any }): {
+  private calculateConsensus(timeframePredictions: {
+    [timeframe: string]: any;
+  }): {
     trend: 'UP' | 'DOWN' | 'SIDEWAYS';
     confidence: number;
     volatility: number;
     recommendation: 'BUY' | 'SELL' | 'HOLD';
   } {
     const predictions = Object.values(timeframePredictions);
-    
+
     if (predictions.length === 0) {
       return {
         trend: 'SIDEWAYS',
@@ -251,8 +258,9 @@ export class MultiTimeframePredictor {
     });
 
     // 最も多い投票のトレンドを決定
-    const consensusTrend = Object.entries(trendVotes)
-      .sort(([, a], [, b]) => b - a)[0][0] as 'UP' | 'DOWN' | 'SIDEWAYS';
+    const consensusTrend = Object.entries(trendVotes).sort(
+      ([, a], [, b]) => b - a
+    )[0][0] as 'UP' | 'DOWN' | 'SIDEWAYS';
 
     // 平均信頼度とボラティリティ
     const avgConfidence = totalConfidence / predictions.length;
@@ -279,7 +287,7 @@ export class MultiTimeframePredictor {
    */
   private calculateTimeframeWeights(): { [timeframe: string]: number } {
     const weights: { [timeframe: string]: number } = {};
-    
+
     // 短時間軸ほど重みを大きく（短期トレンド重視）
     this.timeframes.forEach((timeframe, index) => {
       const weight = 1 / (index + 1);
@@ -313,11 +321,17 @@ export class MultiTimeframePredictor {
         }
 
         // テストデータを準備
-        const timeframeData = this.prepareTimeframeData(historicalData, timeframe);
+        const timeframeData = this.prepareTimeframeData(
+          historicalData,
+          timeframe
+        );
         const testData = timeframeData.slice(-testPeriod);
         const trainData = timeframeData.slice(0, -testPeriod);
 
-        if (testData.length === 0 || trainData.length < timeframe.sequenceLength) {
+        if (
+          testData.length === 0 ||
+          trainData.length < timeframe.sequenceLength
+        ) {
           continue;
         }
 
@@ -330,7 +344,7 @@ export class MultiTimeframePredictor {
           const prediction = await model.predict(inputData);
           predictions.push(prediction.prediction);
           actuals.push(testData[i]);
-          
+
           // 次の予測のためにデータを更新
           trainData.push(testData[i]);
         }
@@ -356,7 +370,8 @@ export class MultiTimeframePredictor {
     let correct = 0;
     for (let i = 0; i < predictions.length; i++) {
       const predDirection = predictions[i] > actuals[i] ? 1 : -1;
-      const actualDirection = actuals[i] > (actuals[i - 1] || actuals[i]) ? 1 : -1;
+      const actualDirection =
+        actuals[i] > (actuals[i - 1] || actuals[i]) ? 1 : -1;
       if (predDirection === actualDirection) correct++;
     }
     return (correct / predictions.length) * 100;
@@ -382,13 +397,15 @@ export class MultiTimeframePredictor {
    * モデルを保存
    */
   async saveModels(basePath: string): Promise<void> {
-    const savePromises = Array.from(this.models.entries()).map(async ([timeframe, model]) => {
-      try {
-        await model.saveModel(`${basePath}/lstm_${timeframe}.json`);
-      } catch (error) {
-        console.error(`❌ ${timeframe} モデル保存エラー:`, error);
+    const savePromises = Array.from(this.models.entries()).map(
+      async ([timeframe, model]) => {
+        try {
+          await model.saveModel(`${basePath}/lstm_${timeframe}.json`);
+        } catch (error) {
+          console.error(`❌ ${timeframe} モデル保存エラー:`, error);
+        }
       }
-    });
+    );
 
     await Promise.allSettled(savePromises);
     console.log('✅ 複数時間軸モデル保存完了');
@@ -417,7 +434,7 @@ export class MultiTimeframePredictor {
    * 利用可能な時間軸を取得
    */
   getAvailableTimeframes(): string[] {
-    return this.timeframes.map(tf => tf.name);
+    return this.timeframes.map((tf) => tf.name);
   }
 
   /**

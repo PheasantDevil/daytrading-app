@@ -100,28 +100,29 @@ export class FeeCalculator {
     amount: number,
     company: string = 'sbi'
   ): FeeCalculationResult {
-    const feeStructure = this.FEE_STRUCTURES[company] || this.FEE_STRUCTURES.sbi;
-    
+    const feeStructure =
+      this.FEE_STRUCTURES[company] || this.FEE_STRUCTURES.sbi;
+
     // 手数料計算
     let baseCommission = 0;
-    
+
     for (const rate of feeStructure.rates) {
       if (amount >= rate.minAmount && amount < rate.maxAmount) {
         baseCommission = amount * rate.rate;
         break;
       }
     }
-    
+
     // 最小・最大手数料の適用
     baseCommission = Math.max(baseCommission, feeStructure.minFee);
     baseCommission = Math.min(baseCommission, feeStructure.maxFee);
-    
+
     // 消費税計算（8%）
     const tax = Math.floor(baseCommission * 0.08);
-    
+
     // 合計手数料
     const total = baseCommission + tax;
-    
+
     return {
       commission: baseCommission,
       tax: tax,
@@ -148,7 +149,7 @@ export class FeeCalculator {
   ): number {
     const buyFee = this.calculateCommission(buyAmount, company);
     const sellFee = this.calculateCommission(sellAmount, company);
-    
+
     return buyFee.total + sellFee.total;
   }
 
@@ -164,7 +165,11 @@ export class FeeCalculator {
     sellAmount: number,
     company: string = 'sbi'
   ): number {
-    const totalCommission = this.calculateTotalCommission(buyAmount, sellAmount, company);
+    const totalCommission = this.calculateTotalCommission(
+      buyAmount,
+      sellAmount,
+      company
+    );
     return sellAmount - buyAmount - totalCommission;
   }
 
