@@ -1,5 +1,5 @@
-import { prisma } from './database';
-import { redis } from './redis';
+import { prisma } from '@/core/database';
+import { redis } from '@/core/redis';
 import { StockApiResponse, stockApiService } from './stock-api';
 
 export class StockDataSyncService {
@@ -96,7 +96,7 @@ export class StockDataSyncService {
         data: {
           stockId,
           price: price.price,
-          volume: BigInt(price.volume),
+          volume: price.volume,
           high: price.high,
           low: price.low,
           open: price.open,
@@ -171,7 +171,7 @@ export class StockDataSyncService {
           },
           update: {
             price: data.close,
-            volume: BigInt(data.volume),
+            volume: data.volume,
             high: data.high,
             low: data.low,
             open: data.open,
@@ -180,7 +180,7 @@ export class StockDataSyncService {
           create: {
             stockId,
             price: data.close,
-            volume: BigInt(data.volume),
+            volume: data.volume,
             high: data.high,
             low: data.low,
             open: data.open,

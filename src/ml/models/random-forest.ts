@@ -26,6 +26,13 @@ export class RandomForestPredictor {
   private model: RandomForestModel | null = null;
 
   /**
+   * モデルが学習済みかどうか
+   */
+  isTrained(): boolean {
+    return this.model !== null;
+  }
+
+  /**
    * 特徴量を数値配列に変換
    */
   private extractFeatures(features: MLFeatures): number[] {

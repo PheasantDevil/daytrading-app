@@ -44,6 +44,13 @@ export class LinearRegressionPredictor {
   }
 
   /**
+   * モデルが学習済みかどうか
+   */
+  isTrained(): boolean {
+    return this.model !== null;
+  }
+
+  /**
    * モデルを学習
    */
   train(trainingData: MLFeatures[]): void {

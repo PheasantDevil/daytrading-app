@@ -1,9 +1,9 @@
-import { verifyToken } from '@/lib/auth';
-import { prisma } from '@/lib/database';
+import { verifyToken } from '@/core/auth';
+import { prisma } from '@/core/database';
 import {
   decryptSecuritiesCredentials,
   encryptSecuritiesCredentials,
-} from '@/lib/securities-encryption';
+} from '@/integrations/securities-encryption';
 import { UpdateSecuritiesAccountRequest } from '@/types/securities';
 import { NextRequest, NextResponse } from 'next/server';
 

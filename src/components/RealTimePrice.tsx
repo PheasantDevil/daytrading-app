@@ -1,6 +1,6 @@
 'use client';
 
-import { StockApiResponse } from '@/lib/stock-api';
+import { StockApiResponse } from '@/integrations/stock-api';
 import { useEffect, useState } from 'react';
 
 interface RealTimePriceProps {

@@ -1,4 +1,4 @@
-import { predictionService } from '@/lib/ml/prediction-service';
+import { predictionService } from '@/ml/prediction-service';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 import { NextRequest, NextResponse } from 'next/server';
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { PredictionResult } from '@/lib/ml/prediction-service';
+import { PredictionResult } from '@/ml/prediction-service';
 import { useEffect, useState } from 'react';
 
 interface PredictionDisplayProps {
