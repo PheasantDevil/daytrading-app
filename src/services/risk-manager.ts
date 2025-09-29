@@ -37,6 +37,13 @@ export class RiskManager {
   }
 
   /**
+   * リスク管理を初期化
+   */
+  async initialize(): Promise<void> {
+    console.log('✅ リスク管理初期化完了');
+  }
+
+  /**
    * ポジションサイジングを計算
    * @param accountBalance 口座残高
    * @param entryPrice エントリー価格
