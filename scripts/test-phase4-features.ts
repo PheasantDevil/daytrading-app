@@ -4,13 +4,13 @@
  */
 
 import { AWSIntegration } from '../src/cloud/aws-integration';
-import { LoadBalancer } from '../src/scalability/load-balancer';
 import { ApplicationMonitor } from '../src/monitoring/application-monitor';
+import { LoadBalancer } from '../src/scalability/load-balancer';
 import { AuthManager } from '../src/security/auth-manager';
 
 async function testAWSIntegration(): Promise<void> {
   console.log('\n🧪 AWS統合テスト開始...');
-  
+
   try {
     const awsIntegration = new AWSIntegration({
       region: 'us-east-1',
@@ -75,7 +75,9 @@ async function testAWSIntegration(): Promise<void> {
 
       // 状態取得テスト
       const status = awsIntegration.getStatus();
-      console.log(`✅ AWS統合状態: 初期化=${status.initialized}, サービス=${JSON.stringify(status.services)}`);
+      console.log(
+        `✅ AWS統合状態: 初期化=${status.initialized}, サービス=${JSON.stringify(status.services)}`
+      );
     }
 
     console.log('✅ AWS統合テスト完了');
@@ -86,7 +88,7 @@ async function testAWSIntegration(): Promise<void> {
 
 async function testLoadBalancer(): Promise<void> {
   console.log('\n🧪 負荷分散器テスト開始...');
-  
+
   try {
     const loadBalancer = new LoadBalancer({
       strategy: {
@@ -160,14 +162,18 @@ async function testLoadBalancer(): Promise<void> {
         };
 
         const response = await loadBalancer.distributeRequest(request);
-        console.log(`✅ リクエスト分散: インスタンス=${response.instanceId}, レスポンス時間=${response.responseTime}ms`);
+        console.log(
+          `✅ リクエスト分散: インスタンス=${response.instanceId}, レスポンス時間=${response.responseTime}ms`
+        );
       } catch (error) {
         console.log('⚠️ リクエスト分散失敗（予想通り）');
       }
 
       // 統計取得テスト
       const stats = loadBalancer.getStats();
-      console.log(`✅ 負荷分散器統計: 総リクエスト=${stats.totalRequests}, 成功=${stats.successfulRequests}, 失敗=${stats.failedRequests}`);
+      console.log(
+        `✅ 負荷分散器統計: 総リクエスト=${stats.totalRequests}, 成功=${stats.successfulRequests}, 失敗=${stats.failedRequests}`
+      );
 
       // インスタンス一覧取得テスト
       const instances = loadBalancer.getInstances();
@@ -186,7 +192,7 @@ async function testLoadBalancer(): Promise<void> {
 
 async function testApplicationMonitor(): Promise<void> {
   console.log('\n🧪 アプリケーション監視テスト開始...');
-  
+
   try {
     const applicationMonitor = new ApplicationMonitor({
       metrics: {
@@ -269,7 +275,9 @@ async function testApplicationMonitor(): Promise<void> {
 
       // ヘルスステータス取得テスト
       const healthStatus = await applicationMonitor.getHealthStatus();
-      console.log(`✅ ヘルスステータス: ${healthStatus.status}, チェック数=${healthStatus.checks.length}`);
+      console.log(
+        `✅ ヘルスステータス: ${healthStatus.status}, チェック数=${healthStatus.checks.length}`
+      );
 
       // アラート取得テスト
       const alerts = applicationMonitor.getAlerts(false);
@@ -278,7 +286,7 @@ async function testApplicationMonitor(): Promise<void> {
       if (alerts.length > 0) {
         const alert = alerts[0];
         console.log(`  - アラート: ${alert.title} (${alert.severity})`);
-        
+
         // アラート解決テスト
         applicationMonitor.resolveAlert(alert.id);
         console.log('✅ アラート解決');
@@ -290,7 +298,9 @@ async function testApplicationMonitor(): Promise<void> {
 
       // 統計取得テスト
       const stats = applicationMonitor.getStats();
-      console.log(`✅ 監視統計: 稼働時間=${stats.uptime}ms, メトリクス数=${stats.metricsCount}, アラート数=${stats.activeAlertsCount}`);
+      console.log(
+        `✅ 監視統計: 稼働時間=${stats.uptime}ms, メトリクス数=${stats.metricsCount}, アラート数=${stats.activeAlertsCount}`
+      );
 
       // 監視停止
       applicationMonitor.stop();
@@ -305,7 +315,7 @@ async function testApplicationMonitor(): Promise<void> {
 
 async function testAuthManager(): Promise<void> {
   console.log('\n🧪 認証管理テスト開始...');
-  
+
   try {
     const authManager = new AuthManager({
       jwt: {
@@ -354,9 +364,11 @@ async function testAuthManager(): Promise<void> {
       });
 
       console.log(`✅ 認証テスト: ${authResult.success ? '成功' : '失敗'}`);
-      
+
       if (authResult.success && authResult.user && authResult.token) {
-        console.log(`  - ユーザー: ${authResult.user.email} (${authResult.user.role})`);
+        console.log(
+          `  - ユーザー: ${authResult.user.email} (${authResult.user.role})`
+        );
         console.log(`  - トークン: ${authResult.token.substring(0, 20)}...`);
 
         // トークン検証テスト
@@ -365,15 +377,31 @@ async function testAuthManager(): Promise<void> {
 
         if (verifyResult.valid && verifyResult.user) {
           // 認可テスト
-          const canTrade = await authManager.authorize(verifyResult.user, 'trading', 'write');
-          const canViewReports = await authManager.authorize(verifyResult.user, 'reports', 'read');
-          const canAdmin = await authManager.authorize(verifyResult.user, 'admin', 'write');
+          const canTrade = await authManager.authorize(
+            verifyResult.user,
+            'trading',
+            'write'
+          );
+          const canViewReports = await authManager.authorize(
+            verifyResult.user,
+            'reports',
+            'read'
+          );
+          const canAdmin = await authManager.authorize(
+            verifyResult.user,
+            'admin',
+            'write'
+          );
 
-          console.log(`✅ 認可テスト: 取引=${canTrade}, レポート閲覧=${canViewReports}, 管理=${canAdmin}`);
+          console.log(
+            `✅ 認可テスト: 取引=${canTrade}, レポート閲覧=${canViewReports}, 管理=${canAdmin}`
+          );
 
           // MFA有効化テスト
           const mfaSetup = await authManager.enableMFA(verifyResult.user.id);
-          console.log(`✅ MFA有効化: シークレット=${mfaSetup.secret.substring(0, 10)}..., バックアップコード数=${mfaSetup.backupCodes.length}`);
+          console.log(
+            `✅ MFA有効化: シークレット=${mfaSetup.secret.substring(0, 10)}..., バックアップコード数=${mfaSetup.backupCodes.length}`
+          );
 
           // MFA無効化テスト
           await authManager.disableMFA(verifyResult.user.id);
@@ -382,13 +410,16 @@ async function testAuthManager(): Promise<void> {
       }
 
       // ユーザー作成テスト
-      const newUser = await authManager.createUser({
-        email: 'test@example.com',
-        username: 'testuser',
-        role: 'VIEWER',
-        permissions: ['portfolio:read'],
-        isActive: true,
-      }, 'testpassword123');
+      const newUser = await authManager.createUser(
+        {
+          email: 'test@example.com',
+          username: 'testuser',
+          role: 'VIEWER',
+          permissions: ['portfolio:read'],
+          isActive: true,
+        },
+        'testpassword123'
+      );
 
       console.log(`✅ ユーザー作成: ${newUser.email} (${newUser.role})`);
 
@@ -415,7 +446,7 @@ async function testAuthManager(): Promise<void> {
 
 async function testIntegrationWorkflow(): Promise<void> {
   console.log('\n🧪 統合ワークフローテスト開始...');
-  
+
   try {
     // AWS統合
     const awsIntegration = new AWSIntegration({
@@ -423,19 +454,43 @@ async function testIntegrationWorkflow(): Promise<void> {
       accessKeyId: 'test-key',
       secretAccessKey: 'test-secret',
       s3: { bucket: 'test-bucket', region: 'us-east-1' },
-      rds: { endpoint: 'test-endpoint', port: 5432, database: 'test-db', username: 'test-user', password: 'test-password' },
-      lambda: { region: 'us-east-1', functions: { 'test-function': 'test-function-name' } },
+      rds: {
+        endpoint: 'test-endpoint',
+        port: 5432,
+        database: 'test-db',
+        username: 'test-user',
+        password: 'test-password',
+      },
+      lambda: {
+        region: 'us-east-1',
+        functions: { 'test-function': 'test-function-name' },
+      },
       cloudWatch: { namespace: 'TestApp', region: 'us-east-1' },
     });
 
     // 負荷分散器
     const loadBalancer = new LoadBalancer({
       strategy: { name: 'ROUND_ROBIN', parameters: {} },
-      healthCheck: { enabled: true, interval: 30000, timeout: 5000, path: '/health', expectedStatus: 200, retries: 3 },
+      healthCheck: {
+        enabled: true,
+        interval: 30000,
+        timeout: 5000,
+        path: '/health',
+        expectedStatus: 200,
+        retries: 3,
+      },
       maxRetries: 3,
       retryDelay: 1000,
-      circuitBreaker: { enabled: true, failureThreshold: 5, recoveryTimeout: 60000 },
-      stickySession: { enabled: true, cookieName: 'session-id', maxAge: 3600000 },
+      circuitBreaker: {
+        enabled: true,
+        failureThreshold: 5,
+        recoveryTimeout: 60000,
+      },
+      stickySession: {
+        enabled: true,
+        cookieName: 'session-id',
+        maxAge: 3600000,
+      },
     });
 
     // アプリケーション監視
@@ -448,11 +503,38 @@ async function testIntegrationWorkflow(): Promise<void> {
 
     // 認証管理
     const authManager = new AuthManager({
-      jwt: { secret: 'test-secret-key', expiresIn: '1h', refreshExpiresIn: '7d', issuer: 'test-app', audience: 'test-users' },
-      password: { minLength: 8, requireUppercase: true, requireLowercase: true, requireNumbers: true, requireSpecialChars: false },
-      session: { maxSessions: 5, sessionTimeout: 3600000, rememberMeDuration: 2592000000 },
-      mfa: { enabled: true, issuer: 'TestApp', algorithm: 'SHA1', digits: 6, period: 30 },
-      security: { maxLoginAttempts: 5, lockoutDuration: 300000, requireEmailVerification: false, passwordResetExpiry: 3600000 },
+      jwt: {
+        secret: 'test-secret-key',
+        expiresIn: '1h',
+        refreshExpiresIn: '7d',
+        issuer: 'test-app',
+        audience: 'test-users',
+      },
+      password: {
+        minLength: 8,
+        requireUppercase: true,
+        requireLowercase: true,
+        requireNumbers: true,
+        requireSpecialChars: false,
+      },
+      session: {
+        maxSessions: 5,
+        sessionTimeout: 3600000,
+        rememberMeDuration: 2592000000,
+      },
+      mfa: {
+        enabled: true,
+        issuer: 'TestApp',
+        algorithm: 'SHA1',
+        digits: 6,
+        period: 30,
+      },
+      security: {
+        maxLoginAttempts: 5,
+        lockoutDuration: 300000,
+        requireEmailVerification: false,
+        passwordResetExpiry: 3600000,
+      },
     });
 
     // 統合ワークフロー実行
@@ -464,7 +546,9 @@ async function testIntegrationWorkflow(): Promise<void> {
     const monitorStarted = await applicationMonitor.start();
     const authInitialized = await authManager.initialize();
 
-    console.log(`✅ サービス初期化: AWS=${awsInitialized}, LB=${lbInitialized}, Monitor=${monitorStarted}, Auth=${authInitialized}`);
+    console.log(
+      `✅ サービス初期化: AWS=${awsInitialized}, LB=${lbInitialized}, Monitor=${monitorStarted}, Auth=${authInitialized}`
+    );
 
     // 2. インスタンス追加
     if (lbInitialized) {
@@ -509,8 +593,12 @@ async function testIntegrationWorkflow(): Promise<void> {
     const authUsers = authManager.getAllUsers();
 
     console.log(`✅ 統計取得:`);
-    console.log(`  - 負荷分散器: 総リクエスト=${lbStats.totalRequests}, アクティブインスタンス=${lbStats.activeInstances}`);
-    console.log(`  - 監視: 稼働時間=${monitorStats.uptime}ms, メトリクス数=${monitorStats.metricsCount}`);
+    console.log(
+      `  - 負荷分散器: 総リクエスト=${lbStats.totalRequests}, アクティブインスタンス=${lbStats.activeInstances}`
+    );
+    console.log(
+      `  - 監視: 稼働時間=${monitorStats.uptime}ms, メトリクス数=${monitorStats.metricsCount}`
+    );
     console.log(`  - 認証: ユーザー数=${authUsers.length}`);
 
     // 6. サービス停止
@@ -528,14 +616,14 @@ async function testIntegrationWorkflow(): Promise<void> {
 
 async function runAllTests(): Promise<void> {
   console.log('🚀 Phase4機能テスト開始...');
-  
+
   try {
     await testAWSIntegration();
     await testLoadBalancer();
     await testApplicationMonitor();
     await testAuthManager();
     await testIntegrationWorkflow();
-    
+
     console.log('\n✅ Phase4機能テスト完了');
   } catch (error) {
     console.error('❌ Phase4機能テストエラー:', error);
