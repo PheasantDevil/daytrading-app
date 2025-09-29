@@ -1,3 +1,6 @@
+import { FeeCalculator } from './fee-calculator';
+import { RiskManager } from './risk-manager';
+
 export interface DemoOrder {
   id: string;
   symbol: string;
@@ -7,6 +10,9 @@ export interface DemoOrder {
   status: 'PENDING' | 'FILLED' | 'CANCELLED';
   createdAt: Date;
   filledAt?: Date;
+  commission: number;
+  slippage: number;
+  netPrice: number;
 }
 
 export interface DemoPosition {
@@ -24,8 +30,19 @@ export class DemoTradingService {
   private orders: Map<string, DemoOrder> = new Map();
   private initialBalance = 1000000; // 100万円のデモ資金
   private currentBalance = this.initialBalance;
+  private riskManager: RiskManager;
+  private slippage = 0.001; // 0.1%のスリッページ
 
-  private constructor() {}
+  private constructor() {
+    this.riskManager = new RiskManager({
+      maxPositionSize: 100000, // 10万円
+      maxPortfolioRisk: 10, // 10%
+      stopLossPercent: 5, // 5%
+      takeProfitPercent: 10, // 10%
+      maxDailyLoss: 50000, // 5万円
+      maxDrawdown: 20, // 20%
+    });
+  }
 
   public static getInstance(): DemoTradingService {
     if (!DemoTradingService.instance) {
@@ -45,9 +62,16 @@ export class DemoTradingService {
   ): Promise<DemoOrder> {
     const orderId = `demo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+    // スリッページを適用
+    const slippageAmount = price * this.slippage;
+    const netPrice = side === 'BUY' ? price + slippageAmount : price - slippageAmount;
+
+    // 手数料を計算
+    const commission = FeeCalculator.calculateCommission(quantity * netPrice, 'sbi');
+
     // 買い注文の場合、資金チェック
     if (side === 'BUY') {
-      const requiredAmount = quantity * price;
+      const requiredAmount = quantity * netPrice + commission.total;
       if (requiredAmount > this.currentBalance) {
         throw new Error('Insufficient funds');
       }
@@ -69,6 +93,9 @@ export class DemoTradingService {
       price,
       status: 'PENDING',
       createdAt: new Date(),
+      commission: commission.total,
+      slippage: slippageAmount,
+      netPrice: netPrice,
     };
 
     this.orders.set(orderId, order);
@@ -91,14 +118,14 @@ export class DemoTradingService {
     order.status = 'FILLED';
     order.filledAt = new Date();
 
-    const amount = order.quantity * order.price;
+    const amount = order.quantity * order.netPrice;
 
     if (order.side === 'BUY') {
-      this.currentBalance -= amount;
-      this.updatePosition(order.symbol, order.quantity, order.price, 'BUY');
+      this.currentBalance -= (amount + order.commission);
+      this.updatePosition(order.symbol, order.quantity, order.netPrice, 'BUY');
     } else {
-      this.currentBalance += amount;
-      this.updatePosition(order.symbol, order.quantity, order.price, 'SELL');
+      this.currentBalance += (amount - order.commission);
+      this.updatePosition(order.symbol, order.quantity, order.netPrice, 'SELL');
     }
   }
 
@@ -202,6 +229,62 @@ export class DemoTradingService {
       return true;
     }
     return false;
+  }
+
+  /**
+   * リスク管理レポートを生成
+   */
+  generateRiskReport(): {
+    portfolioRisk: any;
+    positionRisks: any[];
+    dailyLossStatus: boolean;
+    recommendations: string[];
+  } {
+    const positions = Array.from(this.positions.values()).map(p => ({
+      symbol: p.symbol,
+      size: p.quantity,
+      entryPrice: p.averagePrice,
+      currentPrice: p.currentPrice,
+    }));
+
+    const dailyPnL = this.getTotalAssets() - this.initialBalance;
+    
+    return this.riskManager.generateRiskReport(
+      positions,
+      this.currentBalance,
+      dailyPnL
+    );
+  }
+
+  /**
+   * ポジションサイジングを計算
+   */
+  calculatePositionSize(
+    symbol: string,
+    entryPrice: number,
+    stopLossPrice: number,
+    riskPercent: number = 2
+  ): number {
+    return this.riskManager.calculatePositionSize(
+      this.currentBalance,
+      entryPrice,
+      stopLossPrice,
+      riskPercent
+    );
+  }
+
+  /**
+   * リスクパラメータを更新
+   */
+  updateRiskParameters(newParameters: Partial<{
+    maxPositionSize: number;
+    maxPortfolioRisk: number;
+    stopLossPercent: number;
+    takeProfitPercent: number;
+    maxDailyLoss: number;
+    maxDrawdown: number;
+  }>): void {
+    this.riskManager.updateRiskParameters(newParameters);
   }
 
   /**
