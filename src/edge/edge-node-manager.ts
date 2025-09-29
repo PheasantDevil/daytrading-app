@@ -165,7 +165,9 @@ export class EdgeNodeManager {
   /**
    * エッジノードを登録
    */
-  async registerNode(node: Omit<EdgeNode, 'status' | 'lastHeartbeat' | 'tasks' | 'resources'>): Promise<void> {
+  async registerNode(
+    node: Omit<EdgeNode, 'status' | 'lastHeartbeat' | 'tasks' | 'resources'>
+  ): Promise<void> {
     try {
       if (this.nodes.size >= this.config.nodes.maxNodes) {
         throw new Error('最大ノード数に達しています');
@@ -220,7 +222,10 @@ export class EdgeNodeManager {
   /**
    * タスクをエッジノードにデプロイ
    */
-  async deployToEdge(nodeId: string, task: Omit<EdgeTask, 'id' | 'status' | 'createdAt' | 'retryCount'>): Promise<string> {
+  async deployToEdge(
+    nodeId: string,
+    task: Omit<EdgeTask, 'id' | 'status' | 'createdAt' | 'retryCount'>
+  ): Promise<string> {
     try {
       const node = this.nodes.get(nodeId);
       if (!node) {
@@ -233,7 +238,12 @@ export class EdgeNodeManager {
 
       // リソース要件をチェック
       const availableResources = this.calculateAvailableResources(node);
-      if (!this.checkResourceRequirements(task.resourceRequirements, availableResources)) {
+      if (
+        !this.checkResourceRequirements(
+          task.resourceRequirements,
+          availableResources
+        )
+      ) {
         throw new Error('リソースが不足しています');
       }
 
@@ -262,19 +272,30 @@ export class EdgeNodeManager {
   /**
    * 分散タスクを実行
    */
-  async executeDistributedTask(task: Omit<EdgeTask, 'id' | 'status' | 'createdAt' | 'retryCount'>, targetNodes?: string[]): Promise<AggregatedResult> {
+  async executeDistributedTask(
+    task: Omit<EdgeTask, 'id' | 'status' | 'createdAt' | 'retryCount'>,
+    targetNodes?: string[]
+  ): Promise<AggregatedResult> {
     try {
-      const availableNodes = targetNodes 
-        ? targetNodes.filter(id => this.nodes.has(id) && this.nodes.get(id)!.status === 'ONLINE')
-        : Array.from(this.nodes.values()).filter(node => node.status === 'ONLINE');
+      const availableNodes = targetNodes
+        ? targetNodes.filter(
+            (id) =>
+              this.nodes.has(id) && this.nodes.get(id)!.status === 'ONLINE'
+          )
+        : Array.from(this.nodes.values()).filter(
+            (node) => node.status === 'ONLINE'
+          );
 
       if (availableNodes.length === 0) {
         throw new Error('利用可能なノードがありません');
       }
 
       // 最適なノードを選択
-      const selectedNodes = await this.optimizationEngine.selectOptimalNodes(task, availableNodes);
-      
+      const selectedNodes = await this.optimizationEngine.selectOptimalNodes(
+        task,
+        availableNodes
+      );
+
       // 各ノードにタスクをデプロイ
       const taskPromises = selectedNodes.map(async (node) => {
         const taskId = await this.deployToEdge(node.id, task);
@@ -284,13 +305,18 @@ export class EdgeNodeManager {
       // 全タスクの完了を待つ
       const results = await Promise.allSettled(taskPromises);
       const successfulResults = results
-        .filter((result): result is PromiseFulfilledResult<ProcessingResult> => result.status === 'fulfilled')
-        .map(result => result.value);
+        .filter(
+          (result): result is PromiseFulfilledResult<ProcessingResult> =>
+            result.status === 'fulfilled'
+        )
+        .map((result) => result.value);
 
       // 結果を集約
       const aggregatedResult = await this.aggregateResults(successfulResults);
-      console.log(`✅ 分散タスク実行完了: ${successfulResults.length}/${selectedNodes.length} 成功`);
-      
+      console.log(
+        `✅ 分散タスク実行完了: ${successfulResults.length}/${selectedNodes.length} 成功`
+      );
+
       return aggregatedResult;
     } catch (error) {
       console.error('❌ 分散タスク実行エラー:', error);
@@ -332,7 +358,9 @@ export class EdgeNodeManager {
   /**
    * タスクの完了を待つ
    */
-  private async waitForTaskCompletion(taskId: string): Promise<ProcessingResult> {
+  private async waitForTaskCompletion(
+    taskId: string
+  ): Promise<ProcessingResult> {
     return new Promise((resolve, reject) => {
       const checkInterval = setInterval(() => {
         const task = this.tasks.get(taskId);
@@ -374,21 +402,32 @@ export class EdgeNodeManager {
   /**
    * 結果を集約
    */
-  private async aggregateResults(results: ProcessingResult[]): Promise<AggregatedResult> {
+  private async aggregateResults(
+    results: ProcessingResult[]
+  ): Promise<AggregatedResult> {
     const taskId = results[0]?.taskId || 'unknown';
-    const totalExecutionTime = Math.max(...results.map(r => r.executionTime));
-    
+    const totalExecutionTime = Math.max(...results.map((r) => r.executionTime));
+
     const averageResourceUsage = {
-      cpu: results.reduce((sum, r) => sum + r.resourceUsage.cpu, 0) / results.length,
-      memory: results.reduce((sum, r) => sum + r.resourceUsage.memory, 0) / results.length,
-      storage: results.reduce((sum, r) => sum + r.resourceUsage.storage, 0) / results.length,
-      network: results.reduce((sum, r) => sum + r.resourceUsage.network, 0) / results.length,
+      cpu:
+        results.reduce((sum, r) => sum + r.resourceUsage.cpu, 0) /
+        results.length,
+      memory:
+        results.reduce((sum, r) => sum + r.resourceUsage.memory, 0) /
+        results.length,
+      storage:
+        results.reduce((sum, r) => sum + r.resourceUsage.storage, 0) /
+        results.length,
+      network:
+        results.reduce((sum, r) => sum + r.resourceUsage.network, 0) /
+        results.length,
     };
 
     // 簡略化された集約ロジック
     const aggregatedResult = {
       success: results.length > 0,
-      averageResult: results.reduce((sum, r) => sum + (r.result || 0), 0) / results.length,
+      averageResult:
+        results.reduce((sum, r) => sum + (r.result || 0), 0) / results.length,
       confidence: results.length / (results.length + 1), // 簡略化
     };
 
@@ -405,19 +444,26 @@ export class EdgeNodeManager {
   /**
    * 利用可能リソースを計算
    */
-  private calculateAvailableResources(node: EdgeNode): EdgeTask['resourceRequirements'] {
+  private calculateAvailableResources(
+    node: EdgeNode
+  ): EdgeTask['resourceRequirements'] {
     return {
       cpu: node.capabilities.cpu * (1 - node.resources.cpuUsage / 100),
       memory: node.capabilities.memory * (1 - node.resources.memoryUsage / 100),
-      storage: node.capabilities.storage * (1 - node.resources.storageUsage / 100),
-      network: node.capabilities.network * (1 - node.resources.networkUsage / 100),
+      storage:
+        node.capabilities.storage * (1 - node.resources.storageUsage / 100),
+      network:
+        node.capabilities.network * (1 - node.resources.networkUsage / 100),
     };
   }
 
   /**
    * リソース要件をチェック
    */
-  private checkResourceRequirements(requirements: EdgeTask['resourceRequirements'], available: EdgeTask['resourceRequirements']): boolean {
+  private checkResourceRequirements(
+    requirements: EdgeTask['resourceRequirements'],
+    available: EdgeTask['resourceRequirements']
+  ): boolean {
     return (
       requirements.cpu <= available.cpu &&
       requirements.memory <= available.memory &&
@@ -431,7 +477,7 @@ export class EdgeNodeManager {
    */
   private findNodeByTaskId(taskId: string): EdgeNode | undefined {
     for (const node of this.nodes.values()) {
-      if (node.tasks.some(task => task.id === taskId)) {
+      if (node.tasks.some((task) => task.id === taskId)) {
         return node;
       }
     }
@@ -467,8 +513,9 @@ export class EdgeNodeManager {
     const timeout = this.config.nodes.heartbeatInterval * 2;
 
     for (const [nodeId, node] of this.nodes) {
-      const timeSinceLastHeartbeat = now.getTime() - node.lastHeartbeat.getTime();
-      
+      const timeSinceLastHeartbeat =
+        now.getTime() - node.lastHeartbeat.getTime();
+
       if (timeSinceLastHeartbeat > timeout && node.status === 'ONLINE') {
         node.status = 'OFFLINE';
         console.log(`⚠️ ノードオフライン: ${nodeId}`);
@@ -490,21 +537,32 @@ export class EdgeNodeManager {
    */
   getNodeStats(): any {
     const nodes = Array.from(this.nodes.values());
-    const onlineNodes = nodes.filter(n => n.status === 'ONLINE');
+    const onlineNodes = nodes.filter((n) => n.status === 'ONLINE');
     const totalTasks = nodes.reduce((sum, n) => sum + n.tasks.length, 0);
-    const runningTasks = nodes.reduce((sum, n) => sum + n.tasks.filter(t => t.status === 'RUNNING').length, 0);
+    const runningTasks = nodes.reduce(
+      (sum, n) => sum + n.tasks.filter((t) => t.status === 'RUNNING').length,
+      0
+    );
 
     return {
       totalNodes: nodes.length,
       onlineNodes: onlineNodes.length,
-      offlineNodes: nodes.filter(n => n.status === 'OFFLINE').length,
+      offlineNodes: nodes.filter((n) => n.status === 'OFFLINE').length,
       totalTasks,
       runningTasks,
       averageResourceUsage: {
-        cpu: nodes.reduce((sum, n) => sum + n.resources.cpuUsage, 0) / nodes.length,
-        memory: nodes.reduce((sum, n) => sum + n.resources.memoryUsage, 0) / nodes.length,
-        storage: nodes.reduce((sum, n) => sum + n.resources.storageUsage, 0) / nodes.length,
-        network: nodes.reduce((sum, n) => sum + n.resources.networkUsage, 0) / nodes.length,
+        cpu:
+          nodes.reduce((sum, n) => sum + n.resources.cpuUsage, 0) /
+          nodes.length,
+        memory:
+          nodes.reduce((sum, n) => sum + n.resources.memoryUsage, 0) /
+          nodes.length,
+        storage:
+          nodes.reduce((sum, n) => sum + n.resources.storageUsage, 0) /
+          nodes.length,
+        network:
+          nodes.reduce((sum, n) => sum + n.resources.networkUsage, 0) /
+          nodes.length,
       },
     };
   }
@@ -562,12 +620,13 @@ class TaskScheduler {
     // 簡略化されたタスクスケジューリング
     task.status = 'RUNNING';
     task.startedAt = new Date();
-    
+
     // タスクの実行をシミュレート
     setTimeout(() => {
       task.status = 'COMPLETED';
       task.completedAt = new Date();
-      task.actualDuration = task.completedAt.getTime() - task.startedAt!.getTime();
+      task.actualDuration =
+        task.completedAt.getTime() - task.startedAt!.getTime();
       task.output = { result: 'Task completed successfully' };
     }, task.estimatedDuration);
   }
@@ -612,7 +671,10 @@ class OptimizationEngine {
     console.log('✅ 最適化エンジン初期化完了');
   }
 
-  async selectOptimalNodes(task: EdgeTask, availableNodes: EdgeNode[]): Promise<EdgeNode[]> {
+  async selectOptimalNodes(
+    task: EdgeTask,
+    availableNodes: EdgeNode[]
+  ): Promise<EdgeNode[]> {
     // 簡略化されたノード選択
     return availableNodes.slice(0, Math.min(3, availableNodes.length));
   }

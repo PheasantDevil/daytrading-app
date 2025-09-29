@@ -20,6 +20,7 @@
     "test:phase4": "tsx scripts/test-phase4-features.ts",
     "test:phase5": "tsx scripts/test-phase5-features.ts",
     "test:phase6": "tsx scripts/test-phase6-features.ts",
+    "test:phase7": "tsx scripts/test-phase7-features.ts",
     "docker:dev": "docker-compose -f docker-compose.dev.yml up",
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up",
