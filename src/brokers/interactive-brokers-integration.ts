@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events';
 import { Logger } from '../utils/logger';
+import { MockIBApi, MockIBContract, MockIBOrder } from './mock-ib-api';
 import {
   BaseBrokerIntegration,
   BrokerAccount,
@@ -46,9 +47,18 @@ export class InteractiveBrokersIntegration extends BaseBrokerIntegration {
   private orderId: number = 1;
   private positions: Map<string, BrokerPosition> = new Map();
   private orders: Map<string, BrokerOrder> = new Map();
+  private mockApi: MockIBApi;
 
   constructor(config: IBConfig) {
     super(config);
+    
+    // モックAPIの初期化
+    this.mockApi = new MockIBApi({
+      host: config.host,
+      port: config.port,
+      clientId: config.clientId,
+      accountId: config.accountId,
+    });
   }
 
   /**
@@ -59,22 +69,12 @@ export class InteractiveBrokersIntegration extends BaseBrokerIntegration {
       this.logger.info('Interactive Brokersに接続中...');
       this.connectionStatus = 'connecting';
 
-      // TWS/IB Gateway接続の実装
-      // 実際の実装では、@stoqey/ib や ib パッケージを使用
-      // const ib = new IBApi({
-      //   host: this.config.host,
-      //   port: this.config.port,
-      //   clientId: this.config.clientId,
-      // });
-      //
-      // await ib.connect();
-
-      // シミュレーション
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // モックAPIに接続
+      await this.mockApi.connect();
 
       this.isConnected = true;
       this.connectionStatus = 'connected';
-      this.logger.info('Interactive Brokersに接続しました');
+      this.logger.info('Interactive Brokersに接続しました（モックAPI使用）');
       this.logger.info(
         `モード: ${this.config.paperTrading ? 'ペーパートレーディング' : '本番取引'}`
       );
@@ -93,7 +93,8 @@ export class InteractiveBrokersIntegration extends BaseBrokerIntegration {
     try {
       this.logger.info('Interactive Brokersから切断中...');
 
-      // 実際の実装では、ib.disconnect()を呼び出し
+      // モックAPIから切断
+      await this.mockApi.disconnect();
 
       this.isConnected = false;
       this.connectionStatus = 'disconnected';
@@ -114,15 +115,30 @@ export class InteractiveBrokersIntegration extends BaseBrokerIntegration {
     }
 
     try {
-      // 実際の実装では、ib.reqAccountSummary()を呼び出し
+      // モックAPIから仮想口座情報を取得
+      const virtualAccount = this.mockApi.getVirtualAccount();
+      const positions: BrokerPosition[] = [];
+      
+      for (const [symbol, pos] of virtualAccount.positions.entries()) {
+        positions.push({
+          symbol,
+          side: pos.position > 0 ? 'long' : 'short',
+          quantity: Math.abs(pos.position),
+          entryPrice: pos.averageCost,
+          currentPrice: pos.marketPrice,
+          unrealizedPnL: pos.unrealizedPnL,
+          marginUsed: Math.abs(pos.marketValue),
+        });
+      }
+
       const account: BrokerAccount = {
         accountId: this.config.accountId,
-        balance: this.config.paperTrading ? 100000 : 50000, // Mock data
+        balance: virtualAccount.balance,
         currency: 'USD',
-        marginAvailable: this.config.paperTrading ? 95000 : 45000,
-        marginUsed: 5000,
-        positions: Array.from(this.positions.values()),
-        orders: Array.from(this.orders.values()),
+        marginAvailable: virtualAccount.balance,
+        marginUsed: positions.reduce((sum, p) => sum + p.marginUsed, 0),
+        positions,
+        orders: [],
       };
 
       return account;
@@ -141,8 +157,8 @@ export class InteractiveBrokersIntegration extends BaseBrokerIntegration {
     }
 
     try {
-      // 実際の実装では、ib.reqPositions()を呼び出し
-      return Array.from(this.positions.values());
+      const account = await this.getAccount();
+      return account.positions;
     } catch (error) {
       this.logger.error('ポジション情報の取得に失敗しました:', error);
       throw error;
@@ -186,7 +202,7 @@ export class InteractiveBrokersIntegration extends BaseBrokerIntegration {
       );
 
       // Contract定義
-      const contract: IBContract = {
+      const contract: MockIBContract = {
         symbol: orderRequest.symbol,
         secType: 'STK',
         exchange: 'SMART',
@@ -194,7 +210,8 @@ export class InteractiveBrokersIntegration extends BaseBrokerIntegration {
       };
 
       // Order定義
-      const order: IBOrder = {
+      const order: MockIBOrder = {
+        orderId: this.orderId,
         action: orderRequest.side.toUpperCase() as 'BUY' | 'SELL',
         totalQuantity: orderRequest.quantity,
         orderType: this.mapOrderType(orderRequest.type),
@@ -202,19 +219,22 @@ export class InteractiveBrokersIntegration extends BaseBrokerIntegration {
         tif: 'DAY',
       };
 
-      // 実際の実装では、ib.placeOrder(orderId, contract, order)を呼び出し
+      // モックAPIで注文を発注
+      await this.mockApi.placeOrder(this.orderId, contract, order);
+      
+      const executionPrice = orderRequest.price || this.mockApi.getMarketPrice(orderRequest.symbol);
 
       const brokerOrder: BrokerOrder = {
         orderId: `ib_${this.orderId++}`,
         symbol: orderRequest.symbol,
         side: orderRequest.side,
         quantity: orderRequest.quantity,
-        price: orderRequest.price || 0,
+        price: executionPrice,
         type: orderRequest.type,
         status: 'filled',
         timestamp: new Date(),
         filledQuantity: orderRequest.quantity,
-        averagePrice: orderRequest.price || 0,
+        averagePrice: executionPrice,
       };
 
       this.orders.set(brokerOrder.orderId, brokerOrder);
@@ -259,18 +279,25 @@ export class InteractiveBrokersIntegration extends BaseBrokerIntegration {
     }
 
     try {
-      // 実際の実装では、ib.reqMktData()を呼び出し
+      // モックAPIから市場価格を取得
+      const price = this.mockApi.getMarketPrice(symbol);
+      const bid = price - 0.05;
+      const ask = price + 0.05;
+      const high24h = price * 1.02;
+      const low24h = price * 0.98;
+      const change24h = price * 0.01;
+      
       const marketData: BrokerMarketData = {
         symbol,
-        price: 150.25 + Math.random() * 10,
-        bid: 150.2 + Math.random() * 10,
-        ask: 150.3 + Math.random() * 10,
+        price,
+        bid,
+        ask,
         volume: Math.floor(1000000 + Math.random() * 500000),
         timestamp: new Date(),
-        high24h: 155.0,
-        low24h: 148.5,
-        change24h: 1.75,
-        changePercent24h: 1.17,
+        high24h,
+        low24h,
+        change24h,
+        changePercent24h: (change24h / (price - change24h)) * 100,
       };
 
       return marketData;

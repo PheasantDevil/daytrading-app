@@ -24,6 +24,7 @@
     "test:auto-trading": "tsx scripts/test-auto-trading-features.ts",
     "setup:ib": "tsx scripts/setup-interactive-brokers.ts",
     "test:ib-connection": "tsx scripts/test-interactive-brokers.ts",
+    "test:paper-trading": "tsx scripts/test-paper-trading-system.ts",
     "workflow": "tsx scripts/workflow-routine.ts",
     "docker:dev": "docker-compose -f docker-compose.dev.yml up",
     "docker:build": "docker-compose build",
