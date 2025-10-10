@@ -13,6 +13,7 @@
 **ファイル**: `src/trading/day-trading-scheduler.ts` (365行)
 
 **主要機能**:
+
 - ✅ 時間ベース自動実行（cron）
 - ✅ 購入フェーズ（11:00）
 - ✅ 売却フェーズ（13:00-15:00、1分間隔）
@@ -27,6 +28,7 @@
 **ファイル**: `src/config/day-trading-config.ts`
 
 **設定項目**:
+
 - スケジュール（購入/売却/強制決済時刻）
 - シグナルソース（5サイト）
 - 過半数判定閾値
@@ -55,7 +57,7 @@
 
 13:00 ───┐
          │ 売却監視フェーズ（1分間隔）
-         │ 
+         │
          │ ループ:
          │ ├─ 現在価格チェック
          │ ├─ 損益計算
@@ -128,17 +130,17 @@ Step 4: 購入実行
 private async executeBuyPhase(): Promise<void> {
   // 1. 候補銘柄スクリーニング
   const candidates = await this.screenCandidates();
-  
+
   // 2. シグナル集約
   const signals = await this.signalAggregator.aggregateMultipleSignals(candidates);
-  
+
   // 3. 最適候補選択
   const best = this.signalAggregator.selectBestBuyCandidate(signals);
-  
+
   if (best) {
     // 4. 購入実行
     await this.executeBuy(best.symbol, best);
-    
+
     // 売却監視開始
     this.startSellMonitoring();
   }
@@ -206,35 +208,35 @@ private async executeBuyPhase(): Promise<void> {
 ```typescript
 private async executeSellPhase(): Promise<void> {
   if (!this.currentPosition) return;
-  
+
   // 現在価格取得
   const marketData = await this.marketDataService.getMarketData(
     this.currentPosition.symbol
   );
   const currentPrice = marketData.price;
-  
+
   // 損益計算
-  const profitRate = (currentPrice - this.currentPosition.entryPrice) / 
+  const profitRate = (currentPrice - this.currentPosition.entryPrice) /
                      this.currentPosition.entryPrice;
-  
+
   // 緊急ストップロス（-5%）
   if (profitRate <= this.config.riskManagement.emergencyStopLoss) {
     await this.executeSell('緊急ストップロス');
     return;
   }
-  
+
   // ストップロス（-3%）
   if (profitRate <= this.config.riskManagement.stopLoss) {
     await this.executeSell('ストップロス');
     return;
   }
-  
+
   // テイクプロフィット（+5%）
   if (profitRate >= this.config.riskManagement.takeProfit) {
     const signal = await this.signalAggregator.aggregateSignals(
       this.currentPosition.symbol
     );
-    
+
     if (signal.shouldSell || profitRate >= 0.07) {
       await this.executeSell(`目標達成 (+${(profitRate * 100).toFixed(2)}%)`);
     }
@@ -256,21 +258,21 @@ private async executeSellPhase(): Promise<void> {
     - GOOGL: 2/5サイトがBUY (40%)
     - MSFT: 3/5サイトがBUY (60%)
     - TSLA: 1/5サイトがBUY (20%)
-  
+
   最適候補: AAPL (80%)
   購入: AAPL × 50株 @ $200.00
 
 13:00 ─ 売却監視開始
   AAPL: $201.00 (+0.5%) → 保持
-  
+
 13:30 ─ 売却チェック
   AAPL: $208.00 (+4.0%) → 保持（目標未達）
-  
+
 14:15 ─ 売却チェック
   AAPL: $210.50 (+5.25%) → 目標達成！
   シグナル確認: 3/5サイトがSELL (60%) → 過半数
   売却: AAPL × 50株 @ $210.50
-  
+
   損益: +$525 (+5.25%)
 ```
 
@@ -282,11 +284,11 @@ private async executeSellPhase(): Promise<void> {
 
 13:00 ─ 売却監視開始
   GOOGL: $148.00 (-1.33%) → 保持
-  
+
 13:45 ─ 売却チェック
   GOOGL: $145.50 (-3.0%) → ストップロス発動！
   売却: GOOGL × 30株 @ $145.50
-  
+
   損益: -$135 (-3.0%)
 ```
 
@@ -299,33 +301,33 @@ private async executeSellPhase(): Promise<void> {
 ```typescript
 export const defaultDayTradingConfig: DayTradingConfig = {
   schedule: {
-    buyTime: '11:00',              // 11:00 AM
-    sellCheckStart: '13:00',       // 1:00 PM
-    sellCheckInterval: 60000,      // 1分ごと
-    forceCloseTime: '15:00',       // 3:00 PM
+    buyTime: '11:00', // 11:00 AM
+    sellCheckStart: '13:00', // 1:00 PM
+    sellCheckInterval: 60000, // 1分ごと
+    forceCloseTime: '15:00', // 3:00 PM
     timezone: 'America/New_York',
   },
-  
+
   riskManagement: {
-    stopLoss: -0.03,               // -3%
-    takeProfit: 0.05,              // +5%
-    maxPositionSize: 10000,        // $10,000
-    maxDailyTrades: 1,             // 1日1取引
-    emergencyStopLoss: -0.05,      // -5%
+    stopLoss: -0.03, // -3%
+    takeProfit: 0.05, // +5%
+    maxPositionSize: 10000, // $10,000
+    maxDailyTrades: 1, // 1日1取引
+    emergencyStopLoss: -0.05, // -5%
   },
-  
+
   screening: {
-    minVolume: 1000000,            // 100万株
-    minPrice: 10,                  // $10
-    maxPrice: 500,                 // $500
+    minVolume: 1000000, // 100万株
+    minPrice: 10, // $10
+    maxPrice: 500, // $500
     excludeSectors: [],
-    candidateCount: 10,            // 上位10銘柄
+    candidateCount: 10, // 上位10銘柄
   },
-  
+
   trading: {
-    enabled: false,                // デフォルトは無効
-    paperTrading: true,            // ペーパートレーディング
-    confirmBeforeTrade: true,      // 取引前確認
+    enabled: false, // デフォルトは無効
+    paperTrading: true, // ペーパートレーディング
+    confirmBeforeTrade: true, // 取引前確認
     maxRetries: 3,
   },
 };
@@ -339,8 +341,8 @@ const aggressiveConfig = {
   ...defaultDayTradingConfig,
   riskManagement: {
     ...defaultDayTradingConfig.riskManagement,
-    takeProfit: 0.03,      // +3%で利確（早め）
-    maxDailyTrades: 3,     // 1日3取引まで
+    takeProfit: 0.03, // +3%で利確（早め）
+    maxDailyTrades: 3, // 1日3取引まで
   },
 };
 
@@ -349,8 +351,8 @@ const conservativeConfig = {
   ...defaultDayTradingConfig,
   riskManagement: {
     ...defaultDayTradingConfig.riskManagement,
-    stopLoss: -0.02,       // -2%でストップ（早め）
-    takeProfit: 0.07,      // +7%で利確（慎重）
+    stopLoss: -0.02, // -2%でストップ（早め）
+    takeProfit: 0.07, // +7%で利確（慎重）
   },
 };
 ```
@@ -362,11 +364,13 @@ const conservativeConfig = {
 **ファイル**: `scripts/test-day-trading-scheduler.ts`
 
 **実行方法**:
+
 ```bash
 npm run practice:day-trading
 ```
 
 **テスト内容**:
+
 1. セットアップ（IB、市場データ、シグナル統合）
 2. イベントリスナー設定
 3. テストモード実行（即座に購入→売却）
@@ -374,6 +378,7 @@ npm run practice:day-trading
 5. デイリーレポート生成
 
 **出力例**:
+
 ```
 🔧 === セットアップ ===
 ✅ Interactive Brokers接続完了
@@ -437,7 +442,7 @@ npm run practice:day-trading
 【取引履歴】
 1. BUY AAPL × 50株 @ $175.50
    理由: シグナル集約: 4/5サイトが推奨
-   
+
 2. SELL AAPL × 50株 @ $184.48
    理由: 目標達成 (+5.12%)
    損益: 5.12% ($449.00)
@@ -452,6 +457,7 @@ npm run practice:day-trading
 ### 3段階の保護機能
 
 #### レベル1: 緊急ストップロス（-5%）
+
 ```typescript
 if (profitRate <= -0.05) {
   // 無条件で即座に売却
@@ -463,6 +469,7 @@ if (profitRate <= -0.05) {
 **目的**: 大損失を防ぐ最終防衛ライン
 
 #### レベル2: 通常ストップロス（-3%）
+
 ```typescript
 if (profitRate <= -0.03) {
   // 即座に売却
@@ -474,11 +481,12 @@ if (profitRate <= -0.03) {
 **目的**: 損失を最小限に抑える
 
 #### レベル3: テイクプロフィット（+5%）
+
 ```typescript
 if (profitRate >= 0.05) {
   // シグナル確認後に判断
   const signal = await this.signalAggregator.aggregateSignals(symbol);
-  
+
   if (signal.shouldSell || profitRate >= 0.07) {
     await this.executeSell('目標達成');
   }
@@ -495,7 +503,7 @@ if (profitRate >= 0.05) {
 
 ```typescript
 const todayTrades = this.tradeHistory.filter(
-  t => t.date.toDateString() === today && t.action === 'BUY'
+  (t) => t.date.toDateString() === today && t.action === 'BUY'
 ).length;
 
 if (todayTrades >= this.config.riskManagement.maxDailyTrades) {
@@ -508,12 +516,11 @@ if (todayTrades >= this.config.riskManagement.maxDailyTrades) {
 ### 最大ポジションサイズ
 
 ```typescript
-const quantity = Math.floor(
-  this.config.riskManagement.maxPositionSize / price
-);
+const quantity = Math.floor(this.config.riskManagement.maxPositionSize / price);
 ```
 
 **例**:
+
 - 最大ポジションサイズ: $10,000
 - 株価: $200
 - 購入数量: 50株（$10,000 / $200）
@@ -526,13 +533,13 @@ const quantity = Math.floor(
 
 ```typescript
 export interface Position {
-  symbol: string;          // 銘柄
-  quantity: number;        // 数量
-  entryPrice: number;      // 購入価格
-  entryTime: Date;         // 購入時刻
-  currentPrice: number;    // 現在価格
-  profitRate: number;      // 損益率
-  profitAmount: number;    // 損益額
+  symbol: string; // 銘柄
+  quantity: number; // 数量
+  entryPrice: number; // 購入価格
+  entryTime: Date; // 購入時刻
+  currentPrice: number; // 現在価格
+  profitRate: number; // 損益率
+  profitAmount: number; // 損益額
 }
 ```
 
@@ -540,14 +547,14 @@ export interface Position {
 
 ```typescript
 export interface TradeHistory {
-  date: Date;              // 日時
-  symbol: string;          // 銘柄
-  action: 'BUY' | 'SELL';  // 売買
-  quantity: number;        // 数量
-  price: number;           // 価格
-  profitRate?: number;     // 損益率
-  profitAmount?: number;   // 損益額
-  reason: string;          // 理由
+  date: Date; // 日時
+  symbol: string; // 銘柄
+  action: 'BUY' | 'SELL'; // 売買
+  quantity: number; // 数量
+  price: number; // 価格
+  profitRate?: number; // 損益率
+  profitAmount?: number; // 損益額
+  reason: string; // 理由
 }
 ```
 
@@ -626,9 +633,9 @@ await scheduler.start();
 const productionConfig = {
   ...defaultDayTradingConfig,
   trading: {
-    enabled: true,              // 自動取引有効
-    paperTrading: false,        // 本番取引
-    confirmBeforeTrade: false,  // 確認なし
+    enabled: true, // 自動取引有効
+    paperTrading: false, // 本番取引
+    confirmBeforeTrade: false, // 確認なし
     maxRetries: 3,
   },
 };
@@ -688,6 +695,7 @@ riskManagement: {
 ## 📝 実装チェックリスト
 
 ### Phase3 実装
+
 - [x] DayTradingScheduler作成
 - [x] DayTradingConfig作成
 - [x] 購入フェーズ実装
@@ -702,6 +710,7 @@ riskManagement: {
 - [x] テストモード実装
 
 ### テスト
+
 - [x] セットアップテスト
 - [x] 購入フェーズテスト
 - [x] 売却フェーズテスト
@@ -709,6 +718,7 @@ riskManagement: {
 - [x] レポート生成テスト
 
 ### ドキュメント
+
 - [x] Phase3実装ドキュメント
 - [x] スケジュール説明
 - [x] フロー図
@@ -722,12 +732,14 @@ riskManagement: {
 **Phase 4**: リアルタイム監視とリスク管理強化
 
 **実装内容**:
+
 - より詳細なリスク分析
 - ポートフォリオ管理
 - 複数戦略の並行実行
 - パフォーマンス分析
 
 **実装予定ファイル**:
+
 - `src/trading/day-trading-risk-manager.ts`
 - `src/analytics/performance-analyzer.ts`
 
@@ -743,4 +755,3 @@ riskManagement: {
 - ✅ 柔軟な設定変更
 
 **1日1取引の完全自動デイトレードシステムが完成しました！** 🎉
-
