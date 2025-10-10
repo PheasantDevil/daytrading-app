@@ -1,19 +1,17 @@
-import { Logger } from '../src/utils/logger';
-import { SignalAggregatorService } from '../src/services/signal-aggregator-service';
-import { YahooFinanceSignalService } from '../src/services/external-signals/yahoo-finance-signal';
-import { TradingViewSignalService } from '../src/services/external-signals/tradingview-signal';
-import { InvestingSignalService } from '../src/services/external-signals/investing-signal';
 import { FinvizSignalService } from '../src/services/external-signals/finviz-signal';
+import { InvestingSignalService } from '../src/services/external-signals/investing-signal';
 import { MarketWatchSignalService } from '../src/services/external-signals/marketwatch-signal';
 import { ScrapingHelper } from '../src/services/external-signals/scraping-helper';
+import { TradingViewSignalService } from '../src/services/external-signals/tradingview-signal';
+import { YahooFinanceSignalService } from '../src/services/external-signals/yahoo-finance-signal';
+import { SignalAggregatorService } from '../src/services/signal-aggregator-service';
+import { Logger } from '../src/utils/logger';
 
 const logger = new Logger('SignalAggregatorTest');
 
 async function testSignalAggregator(): Promise<void> {
   logger.info('🚀 シグナル統合サービスのテストを開始します...');
-  logger.info(
-    '📊 複数サイトからのシグナルを集約し、過半数判定を実行します'
-  );
+  logger.info('📊 複数サイトからのシグナルを集約し、過半数判定を実行します');
 
   try {
     // シグナルサービスの初期化
@@ -53,7 +51,9 @@ async function testSignalAggregator(): Promise<void> {
     logger.info('\n📈 集約結果:');
     logger.info(`銘柄: ${appleSignal.symbol}`);
     logger.info(`総ソース数: ${appleSignal.totalSources}`);
-    logger.info(`BUY: ${appleSignal.buySignals}票 (${appleSignal.buyPercentage.toFixed(1)}%)`);
+    logger.info(
+      `BUY: ${appleSignal.buySignals}票 (${appleSignal.buyPercentage.toFixed(1)}%)`
+    );
     logger.info(
       `HOLD: ${appleSignal.holdSignals}票 (${((appleSignal.holdSignals / appleSignal.totalSources) * 100).toFixed(1)}%)`
     );
@@ -77,9 +77,8 @@ async function testSignalAggregator(): Promise<void> {
     const testSymbols = ['AAPL', 'GOOGL', 'MSFT'];
     logger.info(`${testSymbols.length}銘柄のシグナルを集約...`);
 
-    const multipleSignals = await aggregator.aggregateMultipleSignals(
-      testSymbols
-    );
+    const multipleSignals =
+      await aggregator.aggregateMultipleSignals(testSymbols);
 
     logger.info('\n📈 複数銘柄集約結果:');
     multipleSignals.forEach((signal) => {
@@ -110,7 +109,9 @@ async function testSignalAggregator(): Promise<void> {
       logger.info('🎯 最適購入候補:');
       logger.info(`  銘柄: ${bestCandidate.symbol}`);
       logger.info(`  買い推奨率: ${bestCandidate.buyPercentage.toFixed(1)}%`);
-      logger.info(`  買い票数: ${bestCandidate.buySignals}/${bestCandidate.totalSources}`);
+      logger.info(
+        `  買い票数: ${bestCandidate.buySignals}/${bestCandidate.totalSources}`
+      );
       logger.info(`  判定: ✅ 購入推奨`);
 
       logger.info('\n  推奨理由:');
@@ -186,4 +187,3 @@ async function testSignalAggregator(): Promise<void> {
 testSignalAggregator().catch(console.error);
 
 export { testSignalAggregator };
-

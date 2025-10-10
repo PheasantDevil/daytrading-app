@@ -13,6 +13,7 @@
 **ファイル**: `src/services/signal-aggregator-service.ts`
 
 **主要機能**:
+
 - ✅ 複数サービスからのシグナル並列取得
 - ✅ 過半数判定による購入/売却判定
 - ✅ 最適候補の自動選択
@@ -21,33 +22,35 @@
 - ✅ 柔軟な設定変更
 
 **インターフェース**:
+
 ```typescript
 export interface AggregatedSignal {
   symbol: string;
-  buySignals: number;       // 買いシグナル数
-  holdSignals: number;      // 保留シグナル数
-  sellSignals: number;      // 売りシグナル数
-  totalSources: number;     // 総ソース数
-  buyPercentage: number;    // 買い推奨率
-  shouldBuy: boolean;       // 購入すべきか（過半数判定）
-  shouldSell: boolean;      // 売却すべきか（過半数判定）
+  buySignals: number; // 買いシグナル数
+  holdSignals: number; // 保留シグナル数
+  sellSignals: number; // 売りシグナル数
+  totalSources: number; // 総ソース数
+  buyPercentage: number; // 買い推奨率
+  shouldBuy: boolean; // 購入すべきか（過半数判定）
+  shouldSell: boolean; // 売却すべきか（過半数判定）
   signals: TradingSignal[]; // 個別シグナル詳細
   timestamp: Date;
 }
 ```
 
 **設定**:
+
 ```typescript
 export interface SignalAggregatorConfig {
   // 過半数判定の閾値（サイト数ごと）
   requiredVoteRatio: {
-    3: 0.67,  // 3サイト → 67%以上 = 2サイト以上
-    4: 0.75,  // 4サイト → 75%以上 = 3サイト以上
-    5: 0.80,  // 5サイト → 80%以上 = 4サイト以上
-    6: 0.67,  // 6サイト → 67%以上 = 4サイト以上
+    3: 0.67; // 3サイト → 67%以上 = 2サイト以上
+    4: 0.75; // 4サイト → 75%以上 = 3サイト以上
+    5: 0.8; // 5サイト → 80%以上 = 4サイト以上
+    6: 0.67; // 6サイト → 67%以上 = 4サイト以上
   };
-  timeout: number;        // タイムアウト（ms）
-  minSources: number;     // 最小必要ソース数
+  timeout: number; // タイムアウト（ms）
+  minSources: number; // 最小必要ソース数
 }
 ```
 
@@ -59,12 +62,12 @@ export interface SignalAggregatorConfig {
 
 要求仕様に基づいた過半数判定：
 
-| 総サイト数 | 必要票数 | 閾値 | 計算式 |
-|-----------|---------|------|--------|
-| 3サイト | 2票以上 | 67% | ceil(3 × 0.67) = 2 |
-| 4サイト | 3票以上 | 75% | ceil(4 × 0.75) = 3 |
-| 5サイト | 4票以上 | 80% | ceil(5 × 0.80) = 4 |
-| 6サイト | 4票以上 | 67% | ceil(6 × 0.67) = 4 |
+| 総サイト数 | 必要票数 | 閾値 | 計算式             |
+| ---------- | -------- | ---- | ------------------ |
+| 3サイト    | 2票以上  | 67%  | ceil(3 × 0.67) = 2 |
+| 4サイト    | 3票以上  | 75%  | ceil(4 × 0.75) = 3 |
+| 5サイト    | 4票以上  | 80%  | ceil(5 × 0.80) = 4 |
+| 6サイト    | 4票以上  | 67%  | ceil(6 × 0.67) = 4 |
 
 ### 実装コード
 
@@ -79,6 +82,7 @@ private calculateRequiredVotes(total: number): number {
 ### 判定例
 
 **例1: 5サービス中3つがBUY**
+
 ```
 総サイト数: 5
 BUY: 3票 (60%)
@@ -87,6 +91,7 @@ BUY: 3票 (60%)
 ```
 
 **例2: 5サービス中4つがBUY**
+
 ```
 総サイト数: 5
 BUY: 4票 (80%)
@@ -95,6 +100,7 @@ BUY: 4票 (80%)
 ```
 
 **例3: 3サービス中2つがBUY**
+
 ```
 総サイト数: 3
 BUY: 2票 (67%)
@@ -111,6 +117,7 @@ BUY: 2票 (67%)
 **機能**: 単一銘柄のシグナル集約
 
 **処理フロー**:
+
 ```
 1. 全サービスから並列にシグナル取得
    ├─ サービス可用性チェック
@@ -132,13 +139,14 @@ BUY: 2票 (67%)
 ```
 
 **使用例**:
+
 ```typescript
 const signal = await aggregator.aggregateSignals('AAPL');
 
-console.log(signal.buySignals);      // 4
-console.log(signal.totalSources);    // 5
-console.log(signal.buyPercentage);   // 80.0
-console.log(signal.shouldBuy);       // true
+console.log(signal.buySignals); // 4
+console.log(signal.totalSources); // 5
+console.log(signal.buyPercentage); // 80.0
+console.log(signal.shouldBuy); // true
 ```
 
 ---
@@ -148,13 +156,16 @@ console.log(signal.shouldBuy);       // true
 **機能**: 複数銘柄のシグナル集約
 
 **使用例**:
+
 ```typescript
 const signals = await aggregator.aggregateMultipleSignals([
-  'AAPL', 'GOOGL', 'MSFT'
+  'AAPL',
+  'GOOGL',
+  'MSFT',
 ]);
 
 // 各銘柄のシグナルを確認
-signals.forEach(signal => {
+signals.forEach((signal) => {
   console.log(`${signal.symbol}: ${signal.shouldBuy ? '購入' : '見送り'}`);
 });
 ```
@@ -166,10 +177,12 @@ signals.forEach(signal => {
 **機能**: 購入推奨銘柄のフィルタリング
 
 **処理**:
+
 - shouldBuy = true の銘柄を抽出
 - 買い推奨率（buyPercentage）で降順ソート
 
 **使用例**:
+
 ```typescript
 const buyRecommendations = aggregator.filterBuyRecommendations(signals);
 
@@ -183,10 +196,12 @@ console.log(`購入推奨: ${buyRecommendations.length}銘柄`);
 **機能**: 最適な購入候補を1つ選択
 
 **選択基準**:
+
 - shouldBuy = true の銘柄の中から
 - 買い推奨率（buyPercentage）が最も高い銘柄
 
 **使用例**:
+
 ```typescript
 const best = aggregator.selectBestBuyCandidate(signals);
 
@@ -203,6 +218,7 @@ if (best) {
 **ファイル**: `scripts/test-signal-aggregator.ts`
 
 **実行方法**:
+
 ```bash
 npm run practice:aggregator
 ```
@@ -231,6 +247,7 @@ npm run practice:aggregator
    - 3-6サイトの各パターン
 
 **出力例**:
+
 ```
 📊 === テスト1: 単一銘柄のシグナル集約 ===
 
@@ -354,7 +371,7 @@ const best = aggregator.selectBestBuyCandidate(signals);
 if (best) {
   console.log(`今日の購入候補: ${best.symbol}`);
   console.log(`買い推奨率: ${best.buyPercentage}%`);
-  
+
   // 購入実行
   await executeTrade(best.symbol);
 }
@@ -366,22 +383,22 @@ if (best) {
 // より厳しい判定基準
 const strictAggregator = new SignalAggregatorService(services, {
   requiredVoteRatio: {
-    3: 1.0,   // 3サイト → 100% = 全員一致
-    4: 1.0,   // 4サイト → 100% = 全員一致
-    5: 1.0,   // 5サイト → 100% = 全員一致
+    3: 1.0, // 3サイト → 100% = 全員一致
+    4: 1.0, // 4サイト → 100% = 全員一致
+    5: 1.0, // 5サイト → 100% = 全員一致
   },
-  timeout: 20000,  // 20秒
-  minSources: 3,   // 最低3サイト必要
+  timeout: 20000, // 20秒
+  minSources: 3, // 最低3サイト必要
 });
 
 // より緩い判定基準
 const relaxedAggregator = new SignalAggregatorService(services, {
   requiredVoteRatio: {
-    3: 0.5,   // 3サイト → 50%以上 = 2サイト以上
-    4: 0.5,   // 4サイト → 50%以上 = 2サイト以上
-    5: 0.6,   // 5サイト → 60%以上 = 3サイト以上
+    3: 0.5, // 3サイト → 50%以上 = 2サイト以上
+    4: 0.5, // 4サイト → 50%以上 = 2サイト以上
+    5: 0.6, // 5サイト → 60%以上 = 3サイト以上
   },
-  minSources: 2,   // 最低2サイトでOK
+  minSources: 2, // 最低2サイトでOK
 });
 ```
 
@@ -394,6 +411,7 @@ const relaxedAggregator = new SignalAggregatorService(services, {
 **戻り値**: `Promise<AggregatedSignal>`
 
 **処理**:
+
 1. 全サービスから並列にシグナル取得
 2. タイムアウト・エラーハンドリング
 3. シグナル集計
@@ -401,6 +419,7 @@ const relaxedAggregator = new SignalAggregatorService(services, {
 5. 結果返却
 
 **エラーハンドリング**:
+
 - 個別サービスのエラーは無視（null返却）
 - 有効ソースが最小数未満ならエラー
 - タイムアウト時はnull返却
@@ -412,6 +431,7 @@ const relaxedAggregator = new SignalAggregatorService(services, {
 **戻り値**: `Promise<AggregatedSignal[]>`
 
 **処理**:
+
 - 各銘柄に対してaggregateSignalsを実行
 - エラー時はスキップして継続
 
@@ -422,6 +442,7 @@ const relaxedAggregator = new SignalAggregatorService(services, {
 **戻り値**: `AggregatedSignal[]`（買い推奨率降順）
 
 **処理**:
+
 - shouldBuy = true をフィルタ
 - buyPercentageで降順ソート
 
@@ -432,6 +453,7 @@ const relaxedAggregator = new SignalAggregatorService(services, {
 **戻り値**: `AggregatedSignal | null`
 
 **処理**:
+
 - filterBuyRecommendations を実行
 - 最も買い推奨率が高い銘柄を返却
 - 推奨銘柄がない場合はnull
@@ -502,10 +524,7 @@ if (validSignals.length >= minSources) {
 
 ```typescript
 // 30秒でタイムアウト
-const signal = await Promise.race([
-  service.getSignal(symbol),
-  timeout(30000)
-]);
+const signal = await Promise.race([service.getSignal(symbol), timeout(30000)]);
 ```
 
 ### 最小ソース数未満
@@ -554,18 +573,18 @@ async function executeBuyPhase() {
     minPrice: 50,
     maxPrice: 500,
   });
-  
+
   // 2. 全候補のシグナル集約
   const signals = await aggregator.aggregateMultipleSignals(candidates);
-  
+
   // 3. 最適候補を選択
   const best = aggregator.selectBestBuyCandidate(signals);
-  
+
   if (best) {
     logger.info(`🎯 本日の購入銘柄: ${best.symbol}`);
     logger.info(`買い推奨率: ${best.buyPercentage}%`);
     logger.info(`賛成: ${best.buySignals}/${best.totalSources}`);
-    
+
     // 4. 購入実行
     await placeBuyOrder(best.symbol);
   } else {
@@ -576,15 +595,15 @@ async function executeBuyPhase() {
 // 13:00-15:00 - 売却フェーズ
 async function executeSellPhase() {
   const positions = await getPositions();
-  
+
   for (const position of positions) {
     const profitRate = calculateProfitRate(position);
-    
+
     // +5%以上達成時
     if (profitRate >= 0.05) {
       // シグナル確認
       const signal = await aggregator.aggregateSignals(position.symbol);
-      
+
       if (signal.shouldSell || profitRate >= 0.07) {
         logger.info(`💰 売却実行: ${position.symbol} (+${profitRate * 100}%)`);
         await placeSellOrder(position.symbol);
@@ -599,6 +618,7 @@ async function executeSellPhase() {
 ## 📝 実装チェックリスト
 
 ### Phase2 実装
+
 - [x] SignalAggregatorService作成
 - [x] 過半数判定ロジック実装
 - [x] 複数銘柄対応
@@ -610,6 +630,7 @@ async function executeSellPhase() {
 - [x] 統計情報取得
 
 ### テスト
+
 - [x] 単一銘柄テスト
 - [x] 複数銘柄テスト
 - [x] フィルタリングテスト
@@ -617,6 +638,7 @@ async function executeSellPhase() {
 - [x] 過半数判定テスト
 
 ### ドキュメント
+
 - [x] Phase2実装ドキュメント
 - [x] 使用例
 - [x] データフロー図
@@ -628,12 +650,14 @@ async function executeSellPhase() {
 **Phase 3**: デイトレードスケジューラー
 
 **実装内容**:
+
 - 時間ベース自動実行（11:00購入、13:00-15:00売却）
 - SignalAggregatorServiceとの統合
 - 1日1取引の制限
 - ポジション管理
 
 **実装予定ファイル**:
+
 - `src/trading/day-trading-scheduler.ts`
 - `scripts/test-day-trading-scheduler.ts`
 
@@ -649,4 +673,3 @@ async function executeSellPhase() {
 - ✅ 次Phaseへの橋渡し完了
 
 **過半数判定による賢い意思決定システムが完成しました！** 🎉
-
