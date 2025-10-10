@@ -15,6 +15,7 @@
     "type-check": "tsc --noEmit",
     "practice:start": "tsx scripts/test-paper-trading-system.ts",
     "practice:hybrid": "tsx scripts/test-hybrid-market-data.ts",
+    "practice:signals": "tsx scripts/test-signal-services.ts",
     "production:setup": "tsx scripts/setup-interactive-brokers.ts",
     "production:test": "tsx scripts/test-interactive-brokers.ts",
     "production:deploy": "tsx scripts/workflow-routine.ts",
