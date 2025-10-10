@@ -155,4 +155,3 @@ export class InvestingSignalService extends BaseSignalService {
     };
   }
 }
-

@@ -27,22 +27,22 @@ export class TradingViewSignalService extends BaseSignalService {
           });
 
           const signalText = await page
-            .$eval('.speedometerSignal-pyzN--tL', (el) => el.textContent?.trim())
+            .$eval('.speedometerSignal-pyzN--tL', (el) =>
+              el.textContent?.trim()
+            )
             .catch(() => null);
 
           // 移動平均線の評価を取得
           const maSignal = await page
-            .$eval(
-              '[data-name="moving-averages-gauge"]',
-              (el) => el.textContent?.trim()
+            .$eval('[data-name="moving-averages-gauge"]', (el) =>
+              el.textContent?.trim()
             )
             .catch(() => null);
 
           // オシレーターの評価を取得
           const oscillatorSignal = await page
-            .$eval(
-              '[data-name="oscillators-gauge"]',
-              (el) => el.textContent?.trim()
+            .$eval('[data-name="oscillators-gauge"]', (el) =>
+              el.textContent?.trim()
             )
             .catch(() => null);
 
@@ -158,4 +158,3 @@ export class TradingViewSignalService extends BaseSignalService {
     };
   }
 }
-

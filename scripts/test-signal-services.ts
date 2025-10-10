@@ -1,10 +1,10 @@
-import { Logger } from '../src/utils/logger';
-import { YahooFinanceSignalService } from '../src/services/external-signals/yahoo-finance-signal';
-import { TradingViewSignalService } from '../src/services/external-signals/tradingview-signal';
-import { InvestingSignalService } from '../src/services/external-signals/investing-signal';
 import { FinvizSignalService } from '../src/services/external-signals/finviz-signal';
+import { InvestingSignalService } from '../src/services/external-signals/investing-signal';
 import { MarketWatchSignalService } from '../src/services/external-signals/marketwatch-signal';
 import { ScrapingHelper } from '../src/services/external-signals/scraping-helper';
+import { TradingViewSignalService } from '../src/services/external-signals/tradingview-signal';
+import { YahooFinanceSignalService } from '../src/services/external-signals/yahoo-finance-signal';
+import { Logger } from '../src/utils/logger';
 
 const logger = new Logger('SignalServicesTest');
 
@@ -54,7 +54,10 @@ async function testSignalServices(): Promise<void> {
         ソース: signal.source,
       });
     } catch (error) {
-      logger.warn('TradingView シグナル取得に失敗（スクレイピングエラーの可能性）:', error);
+      logger.warn(
+        'TradingView シグナル取得に失敗（スクレイピングエラーの可能性）:',
+        error
+      );
       logger.info('💡 実際の運用では他のサービスでカバーします');
     }
 
@@ -132,7 +135,9 @@ async function testSignalServices(): Promise<void> {
     // サービスをリセット
     testService.reset();
     const isAvailableAfterReset = await testService.isAvailable();
-    logger.info(`リセット後の可用性: ${isAvailableAfterReset ? '有効' : '無効'}`);
+    logger.info(
+      `リセット後の可用性: ${isAvailableAfterReset ? '有効' : '無効'}`
+    );
 
     // === 統計情報 ===
     logger.info('\n📊 === テスト統計 ===');
@@ -144,8 +149,12 @@ async function testSignalServices(): Promise<void> {
     logger.info('  5. MarketWatch ✅（スクレイピング）');
 
     logger.info('\n💡 使用方法:');
-    logger.info('各サービスは独立して使用可能で、エラー時は自動的に無効化されます。');
-    logger.info('過半数判定により、一部のサービスが失敗しても取引判定が可能です。');
+    logger.info(
+      '各サービスは独立して使用可能で、エラー時は自動的に無効化されます。'
+    );
+    logger.info(
+      '過半数判定により、一部のサービスが失敗しても取引判定が可能です。'
+    );
 
     logger.info('\n🎉 外部シグナルサービスのテストが完了しました');
     logger.info('✅ 5つのシグナルサービスが正常に実装されています');
@@ -163,4 +172,3 @@ async function testSignalServices(): Promise<void> {
 testSignalServices().catch(console.error);
 
 export { testSignalServices };
-

@@ -182,4 +182,3 @@ export class FinvizSignalService extends BaseSignalService {
     };
   }
 }
-
