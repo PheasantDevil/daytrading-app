@@ -17,6 +17,7 @@
     "practice:hybrid": "tsx scripts/test-hybrid-market-data.ts",
     "practice:signals": "tsx scripts/test-signal-services.ts",
     "practice:aggregator": "tsx scripts/test-signal-aggregator.ts",
+    "practice:day-trading": "tsx scripts/test-day-trading-scheduler.ts",
     "production:setup": "tsx scripts/setup-interactive-brokers.ts",
     "production:test": "tsx scripts/test-interactive-brokers.ts",
     "production:deploy": "tsx scripts/workflow-routine.ts",
