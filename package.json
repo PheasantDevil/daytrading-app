@@ -17,7 +17,7 @@
     "practice:hybrid": "tsx scripts/test-hybrid-market-data.ts",
     "practice:signals": "tsx scripts/test-signal-services.ts",
     "practice:aggregator": "tsx scripts/test-signal-aggregator.ts",
-    "practice:day-trading": "tsx scripts/test-day-trading-scheduler.ts",
+    "practice:day-trading": "tsx scripts/test-day-trading-simple.ts",
     "production:setup": "tsx scripts/setup-interactive-brokers.ts",
     "production:test": "tsx scripts/test-interactive-brokers.ts",
     "production:deploy": "tsx scripts/workflow-routine.ts",
@@ -83,7 +83,7 @@
     "typescript": "^5.9.2",
     "yahoo-finance2": "^2.13.3",
     "puppeteer": "^21.11.0",
-    "cheerio": "^1.0.0-rc.12",
+    "cheerio": "^1.0.0-rc.10",
     "bottleneck": "^2.19.5",
     "node-cache": "^5.1.2",
     "lodash": "^4.17.21"
