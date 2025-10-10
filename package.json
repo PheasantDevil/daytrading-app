@@ -78,9 +78,15 @@
     "scikit-learn": "^0.1.0",
     "tailwindcss": "^4.1.13",
     "typescript": "^5.9.2",
-    "yahoo-finance2": "^2.13.3"
+    "yahoo-finance2": "^2.13.3",
+    "puppeteer": "^21.11.0",
+    "cheerio": "^1.0.0-rc.12",
+    "bottleneck": "^2.19.5",
+    "node-cache": "^5.1.2",
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
+    "@types/lodash": "^4.17.13",
     "tsx": "^4.20.5"
   }
 }
