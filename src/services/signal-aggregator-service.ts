@@ -1,6 +1,9 @@
 import { EventEmitter } from 'events';
 import { Logger } from '../utils/logger';
-import { ISignalService, TradingSignal } from './external-signals/base-signal-service';
+import {
+  ISignalService,
+  TradingSignal,
+} from './external-signals/base-signal-service';
 
 /**
  * 集約されたシグナル
@@ -115,8 +118,12 @@ export class SignalAggregatorService extends EventEmitter {
 
       // シグナルを集計
       const buySignals = validSignals.filter((s) => s.signal === 'BUY').length;
-      const holdSignals = validSignals.filter((s) => s.signal === 'HOLD').length;
-      const sellSignals = validSignals.filter((s) => s.signal === 'SELL').length;
+      const holdSignals = validSignals.filter(
+        (s) => s.signal === 'HOLD'
+      ).length;
+      const sellSignals = validSignals.filter(
+        (s) => s.signal === 'SELL'
+      ).length;
       const totalSources = validSignals.length;
       const buyPercentage = (buySignals / totalSources) * 100;
       const sellPercentage = (sellSignals / totalSources) * 100;
@@ -270,4 +277,3 @@ export class SignalAggregatorService extends EventEmitter {
     this.logger.info('設定を更新しました:', config);
   }
 }
-
