@@ -26,6 +26,7 @@
     "ib:test": "tsx scripts/test-interactive-brokers.ts",
     "ib:paper-trading": "tsx scripts/test-paper-trading-system.ts",
     "trading:auto": "tsx scripts/test-auto-trading-features.ts",
+    "market:hybrid": "tsx scripts/test-hybrid-market-data.ts",
     "workflow:deploy": "tsx scripts/workflow-routine.ts",
     "docker:dev": "docker-compose -f docker-compose.dev.yml up",
     "docker:build": "docker-compose build",
