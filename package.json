@@ -18,6 +18,8 @@
     "practice:signals": "tsx scripts/test-signal-services.ts",
     "practice:aggregator": "tsx scripts/test-signal-aggregator.ts",
     "practice:day-trading": "tsx scripts/test-day-trading-simple.ts",
+    "trade:daily": "tsx scripts/daily-trading-runner.ts",
+    "monitor:trading": "tsx scripts/monitor-trading.ts",
     "production:setup": "tsx scripts/setup-interactive-brokers.ts",
     "production:test": "tsx scripts/test-interactive-brokers.ts",
     "production:deploy": "tsx scripts/workflow-routine.ts",
