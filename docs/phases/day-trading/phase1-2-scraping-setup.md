@@ -13,11 +13,11 @@
 ```json
 {
   "dependencies": {
-    "puppeteer": "^21.11.0",      // ブラウザ自動化
-    "cheerio": "^1.0.0-rc.12",    // HTML解析
-    "bottleneck": "^2.19.5",      // レート制限
-    "node-cache": "^5.1.2",       // キャッシュ
-    "lodash": "^4.17.21"          // ユーティリティ
+    "puppeteer": "^21.11.0", // ブラウザ自動化
+    "cheerio": "^1.0.0-rc.12", // HTML解析
+    "bottleneck": "^2.19.5", // レート制限
+    "node-cache": "^5.1.2", // キャッシュ
+    "lodash": "^4.17.21" // ユーティリティ
   },
   "devDependencies": {
     "@types/lodash": "^4.17.13"
@@ -30,6 +30,7 @@
 **ファイル**: `src/services/external-signals/base-signal-service.ts`
 
 **機能**:
+
 - ✅ シグナル取得の共通インターフェース
 - ✅ キャッシュ機能（デフォルト5分）
 - ✅ レート制限（デフォルト1秒/1リクエスト）
@@ -38,14 +39,15 @@
 - ✅ 24時間後の自動再開
 
 **インターフェース**:
+
 ```typescript
 export interface TradingSignal {
-  source: string;           // データソース名
-  symbol: string;           // 銘柄コード
+  source: string; // データソース名
+  symbol: string; // 銘柄コード
   signal: 'BUY' | 'HOLD' | 'SELL';
-  confidence: number;       // 0-100 (確信度)
-  reason: string;           // 判定理由
-  timestamp: Date;          // 取得日時
+  confidence: number; // 0-100 (確信度)
+  reason: string; // 判定理由
+  timestamp: Date; // 取得日時
 }
 
 export interface ISignalService {
@@ -56,6 +58,7 @@ export interface ISignalService {
 ```
 
 **主要メソッド**:
+
 - `getSignal(symbol)`: シグナル取得（キャッシュ・レート制限付き）
 - `fetchSignal(symbol)`: 実際の取得処理（サブクラスで実装）
 - `isAvailable()`: サービス可用性確認
@@ -68,6 +71,7 @@ export interface ISignalService {
 **ファイル**: `src/services/external-signals/scraping-helper.ts`
 
 **機能**:
+
 - ✅ Puppeteerブラウザのシングルトン管理
 - ✅ User-Agent自動設定
 - ✅ ビューポート設定
@@ -76,6 +80,7 @@ export interface ISignalService {
 - ✅ プロセス終了時の自動クリーンアップ
 
 **主要メソッド**:
+
 ```typescript
 // ブラウザインスタンス取得
 static async getBrowser(): Promise<Browser>
@@ -103,8 +108,9 @@ static async close(): Promise<void>
 ```
 
 **User-Agent**:
+
 ```
-Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 
+Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36
 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 DayTradingApp/1.0
 ```
 
@@ -169,7 +175,10 @@ export class ExampleSignalService extends BaseSignalService {
     // 方法2: カスタム評価
     const data = await ScrapingHelper.evaluate(url, async (page) => {
       const signal = await page.$eval('.signal', (el) => el.textContent);
-      const confidence = await page.$eval('.confidence', (el) => el.textContent);
+      const confidence = await page.$eval(
+        '.confidence',
+        (el) => el.textContent
+      );
       return { signal, confidence };
     });
 
@@ -356,6 +365,7 @@ describe('ExampleSignalService', () => {
 ## 📝 実装チェックリスト
 
 ### 基盤構築
+
 - [x] Puppeteerインストール
 - [x] BaseSignalService作成
 - [x] ScrapingHelper作成
@@ -364,11 +374,13 @@ describe('ExampleSignalService', () => {
 - [x] レート制限実装
 
 ### ドキュメント
+
 - [x] 使用例の作成
 - [x] テストケースの作成
 - [x] アーキテクチャ図の作成
 
 ### 次のステップ
+
 - [ ] 各サイトの具体的な実装（Phase1-3）
 - [ ] シグナル統合サービス（Phase2）
 - [ ] エンドツーエンドテスト
@@ -378,6 +390,7 @@ describe('ExampleSignalService', () => {
 ## 🚀 次のPhase
 
 **Phase 1-3**: シグナルインターフェース定義
+
 - 各サイトの具体的な実装
 - Yahoo Finance改善
 - TradingView実装
@@ -389,13 +402,15 @@ describe('ExampleSignalService', () => {
 ## 💡 ベストプラクティス
 
 ### 1. レート制限を遵守
+
 ```typescript
 // 各サイトごとに適切なレート制限を設定
-const yahoo = new YahooSignalService(300, 1000);      // 1秒
+const yahoo = new YahooSignalService(300, 1000); // 1秒
 const tradingView = new TradingViewSignalService(300, 2000); // 2秒
 ```
 
 ### 2. エラー時の代替手段
+
 ```typescript
 // 複数サービスから取得
 const services = [yahoo, tradingView, investing];
@@ -410,6 +425,7 @@ for (const service of services) {
 ```
 
 ### 3. ログ監視
+
 ```typescript
 // イベントリスナーでログ監視
 service.on('signalFetched', (signal) => {
@@ -432,4 +448,3 @@ service.on('serviceDisabled', (name) => {
 - ✅ レート制限による安全性
 - ✅ 自動復旧機能
 - ✅ メモリ効率の良い実装
-
