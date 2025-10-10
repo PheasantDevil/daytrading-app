@@ -83,7 +83,7 @@ export class MockIBApi extends EventEmitter {
    * 初期市場価格の設定
    */
   private initializeMarketPrices(): void {
-    // 米国株
+    // 米国株（Yahoo Financeからのリアルタイム価格で初期化される）
     this.marketPrices.set('AAPL', 175.50);
     this.marketPrices.set('GOOGL', 140.25);
     this.marketPrices.set('MSFT', 380.75);
@@ -96,6 +96,20 @@ export class MockIBApi extends EventEmitter {
     this.marketPrices.set('7203', 2850); // トヨタ自動車
     this.marketPrices.set('6758', 13500); // ソニー
     this.marketPrices.set('9984', 9800); // ソフトバンクグループ
+  }
+
+  /**
+   * Yahoo Financeからのリアルタイム価格で初期化
+   */
+  async initializeWithYahooFinance(yahooQuotes: Map<string, number>): Promise<void> {
+    this.logger.info('Yahoo Financeのリアルタイム価格で初期化中...');
+    
+    for (const [symbol, price] of yahooQuotes.entries()) {
+      this.marketPrices.set(symbol, price);
+      this.logger.debug(`${symbol}: $${price}`);
+    }
+    
+    this.logger.info(`✅ ${yahooQuotes.size}銘柄の価格を設定しました`);
   }
 
   /**
