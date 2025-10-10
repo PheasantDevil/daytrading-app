@@ -2,49 +2,232 @@
 
 **世界中どこからでも、世界中の市場で取引可能な自動売買システム**
 
-個人利用を目的としたグローバル対応のデイトレードアプリケーションです。
+> ⚠️ **重要**: このシステムは仮想取引（練習用）と本番取引の2つのモードがあります。
+> 
+> - 🟢 **初めての方**: `practice:*` コマンドから開始してください（リスクなし）
+> - 🔴 **本番取引**: `production:*` コマンドは実際の資金を使用します（要注意）
 
-## 🌟 主要機能
+---
 
-### 取引機能
-- ✅ **ペーパートレーディング**: 仮想資金$100,000での取引シミュレーション
-- ✅ **自動売買**: 複数戦略による24時間自動取引
-- ✅ **リアルタイム市場データ**: 米国株・日本株のリアルタイム価格
-- ✅ **リスク管理**: ストップロス、テイクプロフィット、日次損失制限
+## 🎯 クイックスタート（初心者向け）
 
-### AI/ML機能
-- ✅ **LSTM予測**: ディープラーニングによる価格予測
-- ✅ **マルチタイムフレーム分析**: 複数時間軸での予測
-- ✅ **テクニカル分析**: SMA、EMA、RSI、MACD、ボリンジャーバンド
-- ✅ **オンライン学習**: リアルタイムモデル更新
+### まず試してみる（5分で開始）
 
-### グローバル対応
-- ✅ **Interactive Brokers統合**: 世界17カ国、50以上の取引所
-- ✅ **マルチマーケット**: 米国、日本、欧州、アジア市場
-- ✅ **国際化**: 多言語、多通貨、タイムゾーン対応
-- ✅ **PWA**: モバイル対応、オフライン機能
+```bash
+# 1. リポジトリのクローン
+git clone https://github.com/PheasantDevil/daytrading-app.git
+cd daytrading-app
 
-### インフラ
-- ✅ **クラウド統合**: AWS（S3、RDS、Lambda、CloudWatch）
-- ✅ **スケーラビリティ**: ロードバランサー、自動スケーリング
-- ✅ **監視**: アプリケーション監視、アラート、レポート
-- ✅ **セキュリティ**: JWT認証、MFA、暗号化
+# 2. 依存関係のインストール
+npm install
 
-### 次世代技術
-- ✅ **エッジコンピューティング**: 低レイテンシ処理
-- ✅ **量子最適化**: ポートフォリオ最適化
-- ✅ **ブロックチェーン**: 分散取引、スマートコントラクト
-- ✅ **IoT**: リアルタイムセンサーデータ統合
+# 3. 仮想取引を試す（安全・無料）
+npm run practice:start
+```
 
-## 🚀 クイックスタート
+**これだけで仮想資金$100,000での取引シミュレーションが開始されます！**
 
-### 前提条件
-- Node.js 18以上
-- Docker & Docker Compose
-- PostgreSQL
-- Redis
+---
 
-### インストール
+## 📚 利用可能なコマンド一覧
+
+### 🟢 仮想取引（練習用）- 初心者向け・安全
+
+| コマンド | 説明 | リスク | おすすめ度 |
+|---------|------|-------|----------|
+| `npm run practice:start` | 仮想取引を開始（初期資金$100,000） | なし | ⭐⭐⭐⭐⭐ |
+| `npm run practice:hybrid` | Yahoo + IB ハイブリッドシステムテスト | なし | ⭐⭐⭐⭐ |
+
+**特徴:**
+- ✅ 実際の資金は一切使用しない
+- ✅ リアルタイム価格変動シミュレーション
+- ✅ 損益計算、取引統計を確認可能
+- ✅ 何度でもやり直し可能
+
+**実行結果例:**
+```
+初期資金: $100,000
+取引例: AAPL 100株購入 → 50株売却
+最終結果: 損益、勝率、ドローダウンなどを表示
+```
+
+---
+
+### 🔴 本番取引用 - 上級者向け（注意）
+
+| コマンド | 説明 | リスク | 注意事項 |
+|---------|------|-------|----------|
+| `npm run production:setup` | Interactive Brokers接続設定 | 低 | 初回のみ実行 |
+| `npm run production:test` | 接続テスト | 低 | 設定確認用 |
+| `npm run production:deploy` | 本番環境へデプロイ | **高** | ⚠️ 慎重に実行 |
+
+**⚠️ 警告:**
+- 実際の資金を使用します
+- Interactive Brokers口座開設が必要
+- 十分に練習してから使用してください
+- 損失のリスクがあります
+
+---
+
+### 🧪 開発・テスト用
+
+| コマンド | 説明 | 用途 |
+|---------|------|------|
+| `npm run dev` | 開発サーバー起動 | フロントエンド開発 |
+| `npm run build` | 本番ビルド | デプロイ前 |
+| `npm run lint` | コードチェック | コード品質確認 |
+| `npm run format` | コード整形 | コード整形 |
+| `npm run test:trading` | 自動売買機能テスト | 機能確認 |
+| `npm run test:phases` | 全フェーズテスト | 全機能確認 |
+
+---
+
+### 🐳 Docker関連
+
+| コマンド | 説明 | 用途 |
+|---------|------|------|
+| `npm run docker:dev` | 開発環境起動 | ローカル開発 |
+| `npm run docker:build` | イメージビルド | コンテナ作成 |
+| `npm run docker:up` | コンテナ起動 | 環境起動 |
+| `npm run docker:down` | コンテナ停止 | 環境停止 |
+
+---
+
+## 🎓 使い方ガイド
+
+### レベル1: 初心者（まずはここから！）
+
+**目的:** システムの動作を理解する
+
+```bash
+# Step 1: 仮想取引を試す
+npm run practice:start
+
+# 結果:
+# - 仮想資金$100,000でスタート
+# - AAPL, GOOGL, MSFTを自動売買
+# - リアルタイム損益を確認
+# - 取引統計を表示
+```
+
+**何が起こる？**
+- ✅ 架空の資金で取引シミュレーション
+- ✅ リアルタイムで価格が変動
+- ✅ 自動で注文が執行される
+- ✅ 損益がリアルタイムで計算される
+- ❌ 実際のお金は一切使わない
+
+### レベル2: 中級者（慣れてきたら）
+
+**目的:** ハイブリッドシステムを理解する
+
+```bash
+# Step 2: ハイブリッドシステムを試す
+npm run practice:hybrid
+
+# 結果:
+# - Yahoo Financeで銘柄探索（無料）
+# - 企業情報・履歴データ取得（無料）
+# - Interactive Brokersで取引シミュレーション
+# - コスト最小・精度最大を体験
+```
+
+**何が起こる？**
+- ✅ Yahoo Financeで銘柄をスクリーニング
+- ✅ 履歴データで分析
+- ✅ 企業情報を取得
+- ✅ IBで模擬取引を実行
+- ❌ 実際のお金は一切使わない
+
+### レベル3: 上級者（十分な練習後）
+
+**目的:** 本番環境への移行準備
+
+```bash
+# Step 3-1: Interactive Brokers口座開設
+# 公式サイト: https://www.interactivebrokers.co.jp/
+# 審査期間: 1-3営業日
+
+# Step 3-2: ペーパートレーディングアカウント申請
+# （仮想資金$1,000,000で本番環境をテスト）
+
+# Step 3-3: TWS/IB Gatewayをインストール
+# （取引プラットフォーム）
+
+# Step 3-4: 接続設定
+npm run production:setup
+
+# Step 3-5: 接続テスト
+npm run production:test
+
+# Step 3-6: 本番運用開始（⚠️ 慎重に）
+npm run production:deploy
+```
+
+---
+
+## 🆚 仮想取引 vs 本番取引
+
+### 🟢 仮想取引（練習用）
+
+| 項目 | 詳細 |
+|------|------|
+| **資金** | 架空の$100,000 |
+| **リスク** | なし（ゼロ） |
+| **コスト** | 無料 |
+| **データ** | シミュレーション |
+| **約定** | 即座に執行 |
+| **用途** | 学習、戦略テスト、システム確認 |
+| **おすすめ度** | ⭐⭐⭐⭐⭐ |
+
+**コマンド:**
+```bash
+npm run practice:start    # 基本的な仮想取引
+npm run practice:hybrid   # ハイブリッドシステム
+```
+
+### 🔴 本番取引（実資金）
+
+| 項目 | 詳細 |
+|------|------|
+| **資金** | 実際のお金 |
+| **リスク** | **高い（損失の可能性）** |
+| **コスト** | 取引手数料、市場データ料金 |
+| **データ** | リアルタイム市場データ |
+| **約定** | 実際の市場で執行 |
+| **用途** | 実際の投資・運用 |
+| **おすすめ度** | ⚠️ 十分な練習後のみ |
+
+**コマンド:**
+```bash
+npm run production:setup    # 初回設定のみ
+npm run production:test     # 接続確認
+npm run production:deploy   # ⚠️ 本番デプロイ（慎重に）
+```
+
+---
+
+## ⚠️ 重要な注意事項
+
+### 絶対に守ること
+
+1. **🟢 まず練習**: 必ず `practice:*` コマンドから開始
+2. **📚 十分な学習**: システムを理解してから本番へ
+3. **💰 少額から開始**: 本番は少額からスタート
+4. **🛡️ リスク管理**: ストップロス・テイクプロフィットを設定
+5. **📊 継続的監視**: 自動売買でも定期的に確認
+
+### やってはいけないこと
+
+1. **❌ いきなり本番**: 練習なしで本番取引
+2. **❌ 大金を投入**: 最初から大きな金額
+3. **❌ 放置**: 自動売買を無監視で放置
+4. **❌ 理解せず実行**: システムを理解せずに使用
+5. **❌ production:deploy を安易に実行**: 本番デプロイは慎重に
+
+---
+
+## 🛠️ セットアップ（初回のみ）
 
 ```bash
 # リポジトリのクローン
@@ -56,357 +239,213 @@ npm install
 
 # 環境変数の設定
 cp env.example .env.local
-# .env.localを編集して必要な情報を設定
+# .env.localを編集（必要に応じて）
 
-# データベースとRedisの起動
+# データベースとRedisの起動（オプション）
 docker-compose up -d
-
-# 開発サーバーの起動
-npm run dev
 ```
 
-### ペーパートレーディングを試す
+---
 
-```bash
-# Interactive Brokersペーパートレーディング（推奨）
-npm run ib:paper-trading
+## 📖 詳細ドキュメント
 
-# 結果: 仮想資金$100,000で実際の取引をシミュレート
-# - リアルタイム価格変動
-# - 自動約定処理
-# - 損益計算
-# - 取引統計
-```
+### 初心者向け
+- [ハイブリッドシステムガイド](./docs/setup-guides/hybrid-system-guide.md) - Yahoo + IB の使い分け
+- [Interactive Brokers設定ガイド](./docs/setup-guides/interactive-brokers-setup-guide.md) - 本番環境設定
 
-## 📚 ドキュメント
-
-### セットアップガイド
-- [Interactive Brokers設定ガイド](./docs/setup-guides/interactive-brokers-setup-guide.md)
-
-### 開発ドキュメント
+### 開発者向け
 - [要件定義書](./docs/daytrading-app-requirements.md)
 - [開発ロードマップ](./docs/daytrading-app-roadmap.md)
 - [ドキュメント一覧](./docs/README.md)
 
-### フェーズ別実装記録
+### Phase別実装記録
 - [Phase1-7 実装計画書](./docs/phases/implementation-plans/)
 - [Phase1-7 完了レポート](./docs/phases/completion-reports/)
-- [プロジェクトサマリー](./docs/phases/phase-summary.md)
 
-### 技術調査
-- [API調査レポート](./docs/research/)
+---
 
-## 🛠️ 利用可能なコマンド
+## 🌟 主要機能
 
-### 開発
-```bash
-npm run dev          # 開発サーバー起動
-npm run build        # 本番ビルド
-npm run start        # 本番サーバー起動
-npm run lint         # リント実行
-npm run format       # コード整形
-npm run type-check   # 型チェック
-```
+### 仮想取引機能
+- ✅ **ペーパートレーディング**: 仮想資金$100,000
+- ✅ **リアルタイム価格変動**: 1秒ごとに更新
+- ✅ **自動約定処理**: 成行・指値注文対応
+- ✅ **損益計算**: 未実現・実現損益の自動計算
+- ✅ **取引統計**: 勝率、ドローダウン、シャープレシオ
 
-### Interactive Brokers
-```bash
-npm run ib:setup          # IB接続設定
-npm run ib:test           # IB接続テスト
-npm run ib:paper-trading  # ペーパートレーディング実行
-```
+### ハイブリッドシステム
+- ✅ **Yahoo Finance**: 無料で銘柄探索・分析
+- ✅ **Interactive Brokers**: 正確な取引執行
+- ✅ **自動切り替え**: 用途別に最適なAPIを使用
+- ✅ **コスト最小**: 開発中は完全無料
 
-### 自動売買
-```bash
-npm run trading:auto      # 自動売買機能テスト
-```
+### AI/ML機能
+- ✅ **LSTM予測**: ディープラーニングによる価格予測
+- ✅ **テクニカル分析**: 複数指標の自動計算
+- ✅ **リスク管理**: 自動ストップロス・テイクプロフィット
+- ✅ **オンライン学習**: リアルタイムモデル更新
 
-### テスト
-```bash
-npm run test:all-phases   # 全フェーズテスト実行
-npm run test:phase1       # Phase1テスト
-npm run test:phase2       # Phase2テスト
-npm run test:phase3       # Phase3テスト
-npm run test:phase4       # Phase4テスト
-npm run test:phase5       # Phase5テスト
-npm run test:phase6       # Phase6テスト
-npm run test:phase7       # Phase7テスト
-```
+### グローバル対応
+- ✅ **世界17カ国**: 50以上の取引所
+- ✅ **米国・日本・欧州・アジア**: マルチマーケット
+- ✅ **24時間取引**: 市場時間に応じて自動取引
+- ✅ **多通貨対応**: USD, JPY, EUR, GBP等
 
-### デプロイ
-```bash
-npm run workflow:deploy   # 自動デプロイワークフロー
-```
-
-### Docker
-```bash
-npm run docker:dev        # 開発環境起動
-npm run docker:build      # イメージビルド
-npm run docker:up         # コンテナ起動
-npm run docker:down       # コンテナ停止
-```
+---
 
 ## 🏗️ プロジェクト構造
 
 ```
 daytrading-app/
 ├── src/
-│   ├── app/                    # Next.js App Router
-│   ├── agents/                 # 自動売買エージェント
-│   ├── ai/                     # AI/ML統合
-│   ├── backtesting/            # バックテストエンジン
-│   ├── blockchain/             # ブロックチェーン統合
-│   ├── brokers/                # 証券会社統合
-│   │   ├── broker-integration-service.ts
-│   │   ├── interactive-brokers-integration.ts
-│   │   └── mock-ib-api.ts     # モックAPI
-│   ├── cloud/                  # AWS統合
-│   ├── config/                 # 設定ファイル
-│   │   └── interactive-brokers-config.ts
-│   ├── deployment/             # デプロイメント
-│   ├── edge/                   # エッジコンピューティング
-│   ├── i18n/                   # 国際化
-│   ├── integration/            # サービス統合
-│   ├── iot/                    # IoT統合
-│   ├── mobile/                 # PWA管理
-│   ├── ml/                     # 機械学習
-│   ├── monitoring/             # アプリケーション監視
-│   ├── optimization/           # パフォーマンス最適化
-│   ├── quantum/                # 量子コンピューティング
-│   ├── realtime/               # WebSocket管理
-│   ├── scalability/            # ロードバランサー
-│   ├── security/               # 認証・認可
-│   ├── services/               # コアサービス
-│   ├── strategies/             # 取引戦略
-│   ├── trading/                # 取引システム
-│   │   ├── auto-trading-service.ts
-│   │   ├── trading-scheduler.ts
-│   │   └── paper-trading-system.ts
-│   └── utils/                  # ユーティリティ
-├── scripts/                    # テスト・セットアップスクリプト
-│   ├── setup-interactive-brokers.ts
-│   ├── test-interactive-brokers.ts
-│   ├── test-paper-trading-system.ts
-│   ├── test-auto-trading-features.ts
-│   ├── test-phase1-features.ts
-│   ├── test-phase2-features.ts
-│   ├── test-phase3-features.ts
-│   ├── test-phase4-features.ts
-│   ├── test-phase5-features.ts
-│   ├── test-phase6-features.ts
-│   ├── test-phase7-features.ts
-│   └── workflow-routine.ts
-├── docs/                       # ドキュメント
-│   ├── phases/                 # フェーズ別記録
-│   ├── setup-guides/           # セットアップガイド
-│   └── research/               # 技術調査
-├── prisma/                     # データベーススキーマ
-└── reports/                    # 生成レポート
+│   ├── brokers/              # 証券会社統合
+│   │   ├── mock-ib-api.ts          # モックAPI（練習用）
+│   │   └── interactive-brokers-integration.ts
+│   ├── services/             # サービス層
+│   │   ├── yahoo-finance-service.ts     # Yahoo Finance統合
+│   │   └── hybrid-market-data-service.ts # ハイブリッド
+│   ├── trading/              # 取引システム
+│   │   ├── paper-trading-system.ts      # 仮想取引
+│   │   ├── auto-trading-service.ts      # 自動売買
+│   │   └── trading-scheduler.ts         # スケジューラー
+│   └── ...
+├── scripts/                  # 実行スクリプト
+│   ├── test-paper-trading-system.ts     # 仮想取引テスト
+│   ├── test-hybrid-market-data.ts       # ハイブリッドテスト
+│   ├── setup-interactive-brokers.ts     # IB設定
+│   └── ...
+└── docs/                     # ドキュメント
+    ├── setup-guides/         # セットアップガイド
+    └── phases/               # 開発記録
 ```
 
-## 📊 開発進捗
+---
 
-### 完了済みフェーズ
+## 💡 よくある質問（FAQ）
 
-- ✅ **Phase1**: コア機能実装（手数料計算、リスク管理、バックテスト、LSTM）
-- ✅ **Phase2**: データ統合とデモ取引
-- ✅ **Phase3**: リアル取引と戦略実装
-- ✅ **Phase4**: クラウド統合とスケーラビリティ
-- ✅ **Phase5**: AI/ML統合とリアルタイム処理
-- ✅ **Phase6**: エッジコンピューティングと次世代技術
-- ✅ **Phase7**: 統合と本格運用
+### Q1: 初めて使うのですが、何から始めればいいですか？
 
-### 現在の状態
+**A:** まず `npm run practice:start` を実行してください。これは完全に安全で、実際のお金は一切使いません。
 
-- ✅ **証券会社**: Interactive Brokers統合完了
-- ✅ **ペーパートレーディング**: 完全動作可能
-- ✅ **自動売買**: バックグラウンド実行対応
-- ✅ **グローバル市場**: 世界17カ国、50以上の取引所対応
+### Q2: practice と production の違いは？
 
-## 🌍 Interactive Brokers統合
+**A:**
+- **practice**: 架空の資金で練習（リスクなし）
+- **production**: 実際の資金で取引（リスクあり）
 
-### 特徴
-- **グローバルアクセス**: 世界中どこからでも取引可能
-- **マルチマーケット**: 米国、日本、欧州、アジア市場
-- **マルチアセット**: 株式、オプション、先物、FX、債券、CFD
-- **低コスト**: 1株$0.005から
+### Q3: いつ本番取引に移行すべきですか？
+
+**A:** 以下の条件を満たしてから：
+- ✅ practice で10回以上取引して仕組みを理解
+- ✅ 取引統計で勝率50%以上を達成
+- ✅ リスク管理を理解している
+- ✅ Interactive Brokers口座を開設済み
+
+### Q4: コストはかかりますか？
+
+**A:**
+- **practice コマンド**: 完全無料
+- **production コマンド**: 取引手数料、市場データ料金（月$0-30）
+
+### Q5: どのコマンドを実行してはいけませんか？
+
+**A:**
+- ⚠️ `production:deploy` - 本番デプロイ（十分な準備後のみ）
+- ⚠️ `workflow:deploy` - 自動デプロイ（管理者のみ）
+- ℹ️ その他のコマンドは安全です
+
+---
+
+## 🎯 推奨学習パス
+
+### Week 1-2: 基礎学習
+```bash
+# 1. 仮想取引を試す
+npm run practice:start
+
+# 2. ハイブリッドシステムを理解
+npm run practice:hybrid
+
+# 3. ドキュメントを読む
+./docs/setup-guides/hybrid-system-guide.md
+```
+
+### Week 3-4: 機能理解
+```bash
+# 4. 各フェーズの機能をテスト
+npm run test:phase1  # Phase1機能
+npm run test:phase2  # Phase2機能
+# ... 続けて全フェーズをテスト
+
+# 5. 自動売買機能を確認
+npm run test:trading
+```
+
+### Week 5-8: 戦略開発
+- 自分の取引戦略を開発
+- バックテストで検証
+- リスク管理を設定
+
+### Week 9+: 本番準備（オプション）
+```bash
+# Interactive Brokers口座開設
+# ペーパートレーディングで検証
+
+npm run production:setup  # 接続設定
+npm run production:test   # 接続確認
+
+# 十分なテスト後...
+npm run production:deploy # 本番運用
+```
+
+---
+
+## 📊 システムの特徴
+
+### コスト最適化
+- **開発時**: $0/月（Yahoo Finance使用）
+- **本番時**: $0-10/月（月間取引$30以上で無料）
+
+### データソース
+- **Yahoo Finance**: 銘柄探索、履歴分析（無料）
+- **Interactive Brokers**: リアルタイム取引（有料）
 
 ### 取引可能市場
-- 🇺🇸 **米国**: NYSE, NASDAQ, AMEX
-- 🇯🇵 **日本**: 東京証券取引所（TSE）
-- 🇬🇧 **欧州**: LSE（ロンドン）、XETRA（ドイツ）
-- 🇭🇰 **アジア**: HKEX（香港）、SGX（シンガポール）
+- 🇺🇸 米国（NYSE, NASDAQ）
+- 🇯🇵 日本（TSE）
+- 🇪🇺 欧州（LSE, XETRA）
+- 🌏 アジア（HKEX, SGX）
 
-### モック実装（すぐに使える）
+---
 
-現在、**実際のTWS/IB Gatewayなしで完全に動作**します：
-- ✅ モックIB API実装済み
-- ✅ リアルタイム価格変動シミュレーション
-- ✅ 仮想口座管理
-- ✅ 自動約定処理
-- ✅ 損益計算
-
-```bash
-# すぐに試せる
-npm run ib:paper-trading
-```
-
-## 🔧 環境変数設定
-
-```bash
-# .env.local
-
-# Interactive Brokers設定
-IB_HOST=127.0.0.1
-IB_PORT=7497  # 7497=ペーパー, 7496=本番
-IB_CLIENT_ID=1
-IB_ACCOUNT_ID=PAPER123456
-IB_PAPER_TRADING=true
-
-# データベース
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/daytrading_app
-
-# Redis
-REDIS_URL=redis://localhost:6379
-
-# JWT
-JWT_SECRET=your_jwt_secret_key_here
-JWT_EXPIRES_IN=7d
-```
-
-## 📈 技術スタック
-
-### フロントエンド
-- **Next.js 15**: App Router
-- **React 19**: UI構築
-- **TypeScript**: 型安全性
-- **TailwindCSS**: スタイリング
-
-### バックエンド
-- **Node.js**: サーバーサイド
-- **TypeScript**: 全コード
-- **WebSocket**: リアルタイム通信
-- **Express**: API
-
-### データベース
-- **PostgreSQL**: メインDB
-- **Redis**: キャッシュ・セッション
-- **Prisma**: ORM
-
-### 機械学習
-- **TensorFlow.js**: LSTM、ニューラルネットワーク
-- **カスタムML**: 予測モデル、最適化
-
-### 証券会社統合
-- **Interactive Brokers**: グローバル市場
-- **モックAPI**: 開発・テスト用
-
-### インフラ
-- **AWS**: S3、RDS、Lambda、CloudWatch
-- **Docker**: コンテナ化
-- **CI/CD**: 自動デプロイ
-
-## 🎯 使用方法
-
-### 1. ペーパートレーディング（推奨）
-
-```bash
-# 仮想取引システムを起動
-npm run ib:paper-trading
-
-# 結果:
-# - 初期資金: $100,000
-# - リアルタイム価格変動
-# - 自動約定処理
-# - 損益計算
-# - 取引統計
-```
-
-### 2. Interactive Brokers接続テスト
-
-```bash
-# IB接続確認
-npm run ib:test
-
-# IB初期設定
-npm run ib:setup
-```
-
-### 3. 自動売買システム
-
-```bash
-# 自動売買機能テスト
-npm run trading:auto
-```
-
-### 4. 全機能テスト
-
-```bash
-# 全フェーズの機能をテスト
-npm run test:all-phases
-```
-
-## 📊 プロジェクト統計
-
-- **総コード行数**: 20,000+ 行
-- **実装サービス**: 35+ サービス
-- **対応銘柄**: 米国株・日本株・グローバル株
-- **取引可能市場**: 17カ国、50以上の取引所
-- **完了フェーズ**: 7フェーズ完了
-
-## 🔒 セキュリティ
-
-- **JWT認証**: セキュアな認証システム
-- **パスワードハッシュ化**: bcrypt使用
-- **MFA**: 多要素認証対応
-- **ロールベースアクセス制御**: RBAC実装
-- **暗号化**: データ・通信の暗号化
-
-## 🌐 グローバル対応
-
-### 取引可能時間（市場時間）
-- **米国市場**: 9:30-16:00 EST（22:30-5:00 JST夏時間）
-- **日本市場**: 9:00-15:00 JST
-- **欧州市場**: 各取引所により異なる
-- **アジア市場**: 各取引所により異なる
-
-### 対応通貨
-- USD（米ドル）
-- JPY（日本円）
-- EUR（ユーロ）
-- GBP（英ポンド）
-- その他主要通貨
-
-## ⚠️ 重要な注意事項
+## 🔒 セキュリティと法的事項
 
 ### 投資リスク
-- 投資にはリスクが伴います
-- 過去の実績は将来の運用成果を保証しません
-- 自己責任での取引をお願いします
+- ⚠️ 投資には損失のリスクが伴います
+- ⚠️ 過去の実績は将来の運用成果を保証しません
+- ⚠️ 自己責任での取引をお願いします
 
 ### 法的事項
-- 金融商品取引法の遵守が必要です
-- 海外証券会社での取引は確定申告が必要です
-- APIキーは厳重に管理してください
+- 📜 金融商品取引法の遵守が必要
+- 📜 海外証券会社での取引は確定申告が必要
+- 📜 このシステムは個人利用を目的としています
 
-### 技術的制約
-- Interactive Brokers口座開設が必要（本番取引時）
-- 市場データは別途契約が必要な場合があります
-- API制限を遵守してください
+---
+
+## 🤝 サポート
+
+### 困ったときは
+
+1. **ドキュメントを確認**: `./docs/` フォルダ
+2. **Issues を確認**: [GitHub Issues](https://github.com/PheasantDevil/daytrading-app/issues)
+3. **公式サポート**: [Interactive Brokers日本](https://www.interactivebrokers.co.jp/)
+
+---
 
 ## 📝 ライセンス
 
 このプロジェクトは個人利用を目的としています。
 
-## 🤝 サポート
-
-### 公式リソース
-- [Interactive Brokers日本](https://www.interactivebrokers.co.jp/)
-- [TWS APIガイド](https://www.interactivebrokers.com/en/software/api/apiguide/tables/api_guide.htm)
-
-### プロジェクトリポジトリ
-- [GitHub](https://github.com/PheasantDevil/daytrading-app)
-- [Issues](https://github.com/PheasantDevil/daytrading-app/issues)
-
 ---
 
-**世界中どこにいても、世界中の市場で取引可能な次世代デイトレーディングシステム** 🌍📈🤖
+**まずは `npm run practice:start` で仮想取引を試してみましょう！** 🚀

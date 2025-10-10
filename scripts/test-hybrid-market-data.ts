@@ -1,14 +1,15 @@
-import { Logger } from '../src/utils/logger';
-import { YahooFinanceService } from '../src/services/yahoo-finance-service';
-import { HybridMarketDataService } from '../src/services/hybrid-market-data-service';
 import { InteractiveBrokersIntegration } from '../src/brokers/interactive-brokers-integration';
 import { ibConfig } from '../src/config/interactive-brokers-config';
+import { HybridMarketDataService } from '../src/services/hybrid-market-data-service';
+import { Logger } from '../src/utils/logger';
 
 const logger = new Logger('HybridMarketDataTest');
 
 async function testHybridMarketDataSystem(): Promise<void> {
   logger.info('🚀 ハイブリッド市場データシステムのテストを開始します...');
-  logger.info('📊 Yahoo Finance（無料） + Interactive Brokers（取引用）のハイブリッドシステム');
+  logger.info(
+    '📊 Yahoo Finance（無料） + Interactive Brokers（取引用）のハイブリッドシステム'
+  );
 
   try {
     // Interactive Brokers統合の初期化
@@ -73,7 +74,10 @@ async function testHybridMarketDataSystem(): Promise<void> {
     logger.info('\n3. 履歴データの取得（Yahoo Finance）');
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - 30); // 過去30日
-    const historicalData = await hybridService.getHistoricalData('AAPL', startDate);
+    const historicalData = await hybridService.getHistoricalData(
+      'AAPL',
+      startDate
+    );
     logger.info(`AAPL の過去30日分のデータ: ${historicalData.length}件`);
     logger.info(`最新データ:`, {
       日付: historicalData[historicalData.length - 1].date.toLocaleDateString(),
@@ -157,7 +161,9 @@ async function testHybridMarketDataSystem(): Promise<void> {
     logger.info('\nStep 2: 候補銘柄の詳細分析（Yahoo Finance）');
     for (const symbol of candidates.slice(0, 3)) {
       const quote = await hybridService.getMarketData(symbol);
-      logger.info(`${symbol}: $${quote.price.toFixed(2)} (${quote.changePercent > 0 ? '+' : ''}${quote.changePercent.toFixed(2)}%)`);
+      logger.info(
+        `${symbol}: $${quote.price.toFixed(2)} (${quote.changePercent > 0 ? '+' : ''}${quote.changePercent.toFixed(2)}%)`
+      );
     }
 
     // Step 3: IBで取引実行（シミュレーション）
@@ -207,7 +213,10 @@ async function testHybridMarketDataSystem(): Promise<void> {
     logger.info('  - Interactive Brokers: 正確な取引執行');
     logger.info('  - コスト最小、精度最大の最適な組み合わせ');
   } catch (error) {
-    logger.error('❌ ハイブリッド市場データシステムのテストに失敗しました:', error);
+    logger.error(
+      '❌ ハイブリッド市場データシステムのテストに失敗しました:',
+      error
+    );
     process.exit(1);
   }
 }
@@ -216,4 +225,3 @@ async function testHybridMarketDataSystem(): Promise<void> {
 testHybridMarketDataSystem().catch(console.error);
 
 export { testHybridMarketDataSystem };
-

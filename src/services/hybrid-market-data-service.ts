@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
-import { Logger } from '../utils/logger';
-import { YahooFinanceService, YahooQuote } from './yahoo-finance-service';
 import { InteractiveBrokersIntegration } from '../brokers/interactive-brokers-integration';
+import { Logger } from '../utils/logger';
+import { YahooFinanceService } from './yahoo-finance-service';
 
 export interface HybridMarketDataConfig {
   mode: 'development' | 'production';
@@ -253,14 +253,22 @@ export class HybridMarketDataService extends EventEmitter {
     try {
       this.logger.info('銘柄スクリーニング実行');
 
-      const symbols =
-        criteria.symbols || ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'META', 'NVDA'];
+      const symbols = criteria.symbols || [
+        'AAPL',
+        'GOOGL',
+        'MSFT',
+        'TSLA',
+        'AMZN',
+        'META',
+        'NVDA',
+      ];
       const quotes = await this.yahooFinanceService.getQuotes(symbols);
 
       const filtered = quotes.filter((quote) => {
         if (criteria.minPrice && quote.price < criteria.minPrice) return false;
         if (criteria.maxPrice && quote.price > criteria.maxPrice) return false;
-        if (criteria.minVolume && quote.volume < criteria.minVolume) return false;
+        if (criteria.minVolume && quote.volume < criteria.minVolume)
+          return false;
         return true;
       });
 
@@ -274,7 +282,10 @@ export class HybridMarketDataService extends EventEmitter {
   /**
    * データソースの切り替え
    */
-  switchDataSource(source: 'yahoo' | 'ib', type: 'realtime' | 'historical' | 'screening'): void {
+  switchDataSource(
+    source: 'yahoo' | 'ib',
+    type: 'realtime' | 'historical' | 'screening'
+  ): void {
     if (type === 'realtime') {
       this.config.dataSource.realtime = source;
     } else if (type === 'historical') {
@@ -304,4 +315,3 @@ export class HybridMarketDataService extends EventEmitter {
     };
   }
 }
-
