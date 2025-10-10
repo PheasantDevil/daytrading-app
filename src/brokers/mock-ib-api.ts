@@ -49,24 +49,39 @@ export class MockIBApi extends EventEmitter {
   private isConnected: boolean = false;
   private accountId: string;
   private nextOrderId: number = 1;
-  
+
   // 仮想口座データ
   private virtualAccount: {
     balance: number;
     positions: Map<string, MockIBPosition>;
-    orders: Map<number, MockIBOrder & { contract: MockIBContract; status: string }>;
-    trades: Array<{ timestamp: Date; symbol: string; action: string; quantity: number; price: number; pnl: number }>;
+    orders: Map<
+      number,
+      MockIBOrder & { contract: MockIBContract; status: string }
+    >;
+    trades: Array<{
+      timestamp: Date;
+      symbol: string;
+      action: string;
+      quantity: number;
+      price: number;
+      pnl: number;
+    }>;
   };
-  
+
   // 市場データシミュレーター
   private marketPrices: Map<string, number> = new Map();
   private marketDataInterval?: NodeJS.Timeout;
 
-  constructor(config: { host: string; port: number; clientId: number; accountId: string }) {
+  constructor(config: {
+    host: string;
+    port: number;
+    clientId: number;
+    accountId: string;
+  }) {
     super();
     this.logger = new Logger('MockIBApi');
     this.accountId = config.accountId || 'DU1234567';
-    
+
     // 初期仮想口座設定
     this.virtualAccount = {
       balance: 100000, // 初期資金 $100,000
@@ -74,7 +89,7 @@ export class MockIBApi extends EventEmitter {
       orders: new Map(),
       trades: [],
     };
-    
+
     // 初期市場価格の設定
     this.initializeMarketPrices();
   }
@@ -84,14 +99,14 @@ export class MockIBApi extends EventEmitter {
    */
   private initializeMarketPrices(): void {
     // 米国株（Yahoo Financeからのリアルタイム価格で初期化される）
-    this.marketPrices.set('AAPL', 175.50);
+    this.marketPrices.set('AAPL', 175.5);
     this.marketPrices.set('GOOGL', 140.25);
     this.marketPrices.set('MSFT', 380.75);
-    this.marketPrices.set('TSLA', 245.30);
-    this.marketPrices.set('AMZN', 155.80);
-    this.marketPrices.set('META', 485.20);
-    this.marketPrices.set('NVDA', 875.60);
-    
+    this.marketPrices.set('TSLA', 245.3);
+    this.marketPrices.set('AMZN', 155.8);
+    this.marketPrices.set('META', 485.2);
+    this.marketPrices.set('NVDA', 875.6);
+
     // 日本株（円建て）
     this.marketPrices.set('7203', 2850); // トヨタ自動車
     this.marketPrices.set('6758', 13500); // ソニー
@@ -101,14 +116,16 @@ export class MockIBApi extends EventEmitter {
   /**
    * Yahoo Financeからのリアルタイム価格で初期化
    */
-  async initializeWithYahooFinance(yahooQuotes: Map<string, number>): Promise<void> {
+  async initializeWithYahooFinance(
+    yahooQuotes: Map<string, number>
+  ): Promise<void> {
     this.logger.info('Yahoo Financeのリアルタイム価格で初期化中...');
-    
+
     for (const [symbol, price] of yahooQuotes.entries()) {
       this.marketPrices.set(symbol, price);
       this.logger.debug(`${symbol}: $${price}`);
     }
-    
+
     this.logger.info(`✅ ${yahooQuotes.size}銘柄の価格を設定しました`);
   }
 
@@ -118,15 +135,17 @@ export class MockIBApi extends EventEmitter {
   async connect(): Promise<void> {
     return new Promise((resolve) => {
       this.logger.info('モックIBApiに接続中...');
-      
+
       setTimeout(() => {
         this.isConnected = true;
-        this.logger.info('モックIBApiに接続しました（ペーパートレーディングモード）');
+        this.logger.info(
+          'モックIBApiに接続しました（ペーパートレーディングモード）'
+        );
         this.emit('connected');
-        
+
         // 市場価格のシミュレーション開始
         this.startMarketSimulation();
-        
+
         resolve();
       }, 500);
     });
@@ -142,7 +161,7 @@ export class MockIBApi extends EventEmitter {
         const change = (Math.random() - 0.5) * price * 0.01; // ±0.5%
         const newPrice = Math.max(price + change, 0.01);
         this.marketPrices.set(symbol, newPrice);
-        
+
         // ポジションの時価評価を更新
         this.updatePositionValue(symbol, newPrice);
       }
@@ -157,7 +176,8 @@ export class MockIBApi extends EventEmitter {
     if (position) {
       position.marketPrice = newPrice;
       position.marketValue = position.position * newPrice;
-      position.unrealizedPnL = (newPrice - position.averageCost) * position.position;
+      position.unrealizedPnL =
+        (newPrice - position.averageCost) * position.position;
     }
   }
 
@@ -168,7 +188,7 @@ export class MockIBApi extends EventEmitter {
     if (this.marketDataInterval) {
       clearInterval(this.marketDataInterval);
     }
-    
+
     this.isConnected = false;
     this.logger.info('モックIBApiから切断しました');
     this.emit('disconnected');
@@ -192,7 +212,8 @@ export class MockIBApi extends EventEmitter {
 
     // 市場価格を取得
     const marketPrice = this.marketPrices.get(contract.symbol) || 100;
-    const executionPrice = order.orderType === 'LMT' ? (order.lmtPrice || marketPrice) : marketPrice;
+    const executionPrice =
+      order.orderType === 'LMT' ? order.lmtPrice || marketPrice : marketPrice;
 
     // 注文を保存
     this.virtualAccount.orders.set(orderId, {
@@ -235,7 +256,8 @@ export class MockIBApi extends EventEmitter {
     executionPrice: number
   ): Promise<void> {
     const symbol = contract.symbol;
-    const quantity = order.action === 'BUY' ? order.totalQuantity : -order.totalQuantity;
+    const quantity =
+      order.action === 'BUY' ? order.totalQuantity : -order.totalQuantity;
     const cost = executionPrice * order.totalQuantity;
 
     // 既存ポジションを取得
@@ -256,36 +278,49 @@ export class MockIBApi extends EventEmitter {
     } else {
       // ポジション更新
       const newQuantity = position.position + quantity;
-      
+
       if (newQuantity === 0) {
         // ポジションクローズ - 実現損益を計算
-        const realizedPnL = (executionPrice - position.averageCost) * Math.abs(quantity);
+        const realizedPnL =
+          (executionPrice - position.averageCost) * Math.abs(quantity);
         position.realizedPnL += realizedPnL;
         this.virtualAccount.balance += realizedPnL;
-        
+
         // ポジション削除
         this.virtualAccount.positions.delete(symbol);
-      } else if ((position.position > 0 && quantity > 0) || (position.position < 0 && quantity < 0)) {
+      } else if (
+        (position.position > 0 && quantity > 0) ||
+        (position.position < 0 && quantity < 0)
+      ) {
         // ポジション追加
-        const totalCost = position.averageCost * Math.abs(position.position) + cost;
+        const totalCost =
+          position.averageCost * Math.abs(position.position) + cost;
         const totalQuantity = Math.abs(position.position) + Math.abs(quantity);
         position.averageCost = totalCost / totalQuantity;
         position.position = newQuantity;
         position.marketValue = position.position * position.marketPrice;
-        position.unrealizedPnL = (position.marketPrice - position.averageCost) * position.position;
+        position.unrealizedPnL =
+          (position.marketPrice - position.averageCost) * position.position;
       } else {
         // 部分決済
-        const closedQuantity = Math.min(Math.abs(position.position), Math.abs(quantity));
-        const realizedPnL = (executionPrice - position.averageCost) * closedQuantity * (position.position > 0 ? 1 : -1);
+        const closedQuantity = Math.min(
+          Math.abs(position.position),
+          Math.abs(quantity)
+        );
+        const realizedPnL =
+          (executionPrice - position.averageCost) *
+          closedQuantity *
+          (position.position > 0 ? 1 : -1);
         position.realizedPnL += realizedPnL;
         this.virtualAccount.balance += realizedPnL;
         position.position = newQuantity;
-        
+
         if (newQuantity === 0) {
           this.virtualAccount.positions.delete(symbol);
         } else {
           position.marketValue = position.position * position.marketPrice;
-          position.unrealizedPnL = (position.marketPrice - position.averageCost) * position.position;
+          position.unrealizedPnL =
+            (position.marketPrice - position.averageCost) * position.position;
         }
       }
     }
@@ -301,7 +336,10 @@ export class MockIBApi extends EventEmitter {
     });
 
     // 残高更新（手数料控除）
-    const commission = this.calculateCommission(order.totalQuantity, executionPrice);
+    const commission = this.calculateCommission(
+      order.totalQuantity,
+      executionPrice
+    );
     this.virtualAccount.balance -= cost + commission;
   }
 
@@ -345,7 +383,7 @@ export class MockIBApi extends EventEmitter {
         avgCost: position.averageCost,
       });
     }
-    
+
     this.emit('positionEnd');
   }
 
@@ -358,9 +396,16 @@ export class MockIBApi extends EventEmitter {
     }
 
     const positions = Array.from(this.virtualAccount.positions.values());
-    const grossPositionValue = positions.reduce((sum, pos) => sum + Math.abs(pos.marketValue), 0);
-    const unrealizedPnL = positions.reduce((sum, pos) => sum + pos.unrealizedPnL, 0);
-    const netLiquidation = this.virtualAccount.balance + grossPositionValue + unrealizedPnL;
+    const grossPositionValue = positions.reduce(
+      (sum, pos) => sum + Math.abs(pos.marketValue),
+      0
+    );
+    const unrealizedPnL = positions.reduce(
+      (sum, pos) => sum + pos.unrealizedPnL,
+      0
+    );
+    const netLiquidation =
+      this.virtualAccount.balance + grossPositionValue + unrealizedPnL;
 
     const summary: MockIBAccountSummary = {
       netLiquidation,
@@ -524,8 +569,18 @@ export class MockIBApi extends EventEmitter {
   getVirtualAccount(): {
     balance: number;
     positions: Map<string, MockIBPosition>;
-    orders: Map<number, MockIBOrder & { contract: MockIBContract; status: string }>;
-    trades: Array<{ timestamp: Date; symbol: string; action: string; quantity: number; price: number; pnl: number }>;
+    orders: Map<
+      number,
+      MockIBOrder & { contract: MockIBContract; status: string }
+    >;
+    trades: Array<{
+      timestamp: Date;
+      symbol: string;
+      action: string;
+      quantity: number;
+      price: number;
+      pnl: number;
+    }>;
   } {
     return this.virtualAccount;
   }

@@ -1,6 +1,5 @@
 import { EventEmitter } from 'events';
 import { Logger } from '../utils/logger';
-import axios from 'axios';
 
 export interface YahooQuote {
   symbol: string;
@@ -127,21 +126,23 @@ export class YahooFinanceService extends EventEmitter {
       // 簡易実装: 過去30日分のダミーデータを生成
       const start = typeof period1 === 'string' ? new Date(period1) : period1;
       const end = typeof period2 === 'string' ? new Date(period2) : period2;
-      const days = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-      
+      const days = Math.floor(
+        (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+      );
+
       const result: YahooHistoricalData[] = [];
       const basePrice = 150 + Math.random() * 50;
-      
+
       for (let i = 0; i < Math.min(days, 30); i++) {
         const date = new Date(start);
         date.setDate(date.getDate() + i);
-        
+
         const variation = (Math.random() - 0.5) * basePrice * 0.05;
         const open = basePrice + variation;
         const close = basePrice + (Math.random() - 0.5) * basePrice * 0.05;
         const high = Math.max(open, close) + Math.random() * basePrice * 0.02;
         const low = Math.min(open, close) - Math.random() * basePrice * 0.02;
-        
+
         result.push({
           date,
           open,
@@ -177,13 +178,48 @@ export class YahooFinanceService extends EventEmitter {
 
       // 簡易実装: 主要銘柄のリストから検索
       const knownSymbols = [
-        { symbol: 'AAPL', name: 'Apple Inc.', exchange: 'NASDAQ', type: 'EQUITY' },
-        { symbol: 'GOOGL', name: 'Alphabet Inc.', exchange: 'NASDAQ', type: 'EQUITY' },
-        { symbol: 'MSFT', name: 'Microsoft Corporation', exchange: 'NASDAQ', type: 'EQUITY' },
-        { symbol: 'TSLA', name: 'Tesla, Inc.', exchange: 'NASDAQ', type: 'EQUITY' },
-        { symbol: 'AMZN', name: 'Amazon.com, Inc.', exchange: 'NASDAQ', type: 'EQUITY' },
-        { symbol: 'META', name: 'Meta Platforms, Inc.', exchange: 'NASDAQ', type: 'EQUITY' },
-        { symbol: 'NVDA', name: 'NVIDIA Corporation', exchange: 'NASDAQ', type: 'EQUITY' },
+        {
+          symbol: 'AAPL',
+          name: 'Apple Inc.',
+          exchange: 'NASDAQ',
+          type: 'EQUITY',
+        },
+        {
+          symbol: 'GOOGL',
+          name: 'Alphabet Inc.',
+          exchange: 'NASDAQ',
+          type: 'EQUITY',
+        },
+        {
+          symbol: 'MSFT',
+          name: 'Microsoft Corporation',
+          exchange: 'NASDAQ',
+          type: 'EQUITY',
+        },
+        {
+          symbol: 'TSLA',
+          name: 'Tesla, Inc.',
+          exchange: 'NASDAQ',
+          type: 'EQUITY',
+        },
+        {
+          symbol: 'AMZN',
+          name: 'Amazon.com, Inc.',
+          exchange: 'NASDAQ',
+          type: 'EQUITY',
+        },
+        {
+          symbol: 'META',
+          name: 'Meta Platforms, Inc.',
+          exchange: 'NASDAQ',
+          type: 'EQUITY',
+        },
+        {
+          symbol: 'NVDA',
+          name: 'NVIDIA Corporation',
+          exchange: 'NASDAQ',
+          type: 'EQUITY',
+        },
       ];
 
       const results = knownSymbols.filter(
@@ -208,7 +244,15 @@ export class YahooFinanceService extends EventEmitter {
       this.logger.info('トレンド銘柄取得');
 
       // 簡易実装: 主要銘柄をトレンドとして返す
-      const trending = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'META', 'NVDA'];
+      const trending = [
+        'AAPL',
+        'GOOGL',
+        'MSFT',
+        'TSLA',
+        'AMZN',
+        'META',
+        'NVDA',
+      ];
 
       this.logger.info(`✅ ${trending.length}件のトレンド銘柄`);
       return trending;
@@ -239,7 +283,8 @@ export class YahooFinanceService extends EventEmitter {
           name: 'Apple Inc.',
           sector: 'Technology',
           industry: 'Consumer Electronics',
-          description: 'Apple Inc. designs, manufactures, and markets smartphones, personal computers, tablets, wearables, and accessories worldwide.',
+          description:
+            'Apple Inc. designs, manufactures, and markets smartphones, personal computers, tablets, wearables, and accessories worldwide.',
           website: 'https://www.apple.com',
           employees: 161000,
         },
@@ -247,7 +292,8 @@ export class YahooFinanceService extends EventEmitter {
           name: 'Alphabet Inc.',
           sector: 'Communication Services',
           industry: 'Internet Content & Information',
-          description: 'Alphabet Inc. offers various products and platforms in the United States, Europe, the Middle East, Africa, the Asia-Pacific, Canada, and Latin America.',
+          description:
+            'Alphabet Inc. offers various products and platforms in the United States, Europe, the Middle East, Africa, the Asia-Pacific, Canada, and Latin America.',
           website: 'https://www.abc.xyz',
           employees: 190234,
         },
@@ -255,7 +301,8 @@ export class YahooFinanceService extends EventEmitter {
           name: 'Microsoft Corporation',
           sector: 'Technology',
           industry: 'Software - Infrastructure',
-          description: 'Microsoft Corporation develops, licenses, and supports software, services, devices, and solutions worldwide.',
+          description:
+            'Microsoft Corporation develops, licenses, and supports software, services, devices, and solutions worldwide.',
           website: 'https://www.microsoft.com',
           employees: 221000,
         },
@@ -326,4 +373,3 @@ export class YahooFinanceService extends EventEmitter {
     this.logger.info(`キャッシュTTLを${ttl}msに設定しました`);
   }
 }
-
