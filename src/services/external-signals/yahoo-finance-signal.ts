@@ -1,5 +1,5 @@
-import { BaseSignalService, TradingSignal } from './base-signal-service';
 import { YahooFinanceService } from '../yahoo-finance-service';
+import { BaseSignalService, TradingSignal } from './base-signal-service';
 
 /**
  * Yahoo Financeシグナルサービス
@@ -31,7 +31,10 @@ export class YahooFinanceSignalService extends BaseSignalService {
         timestamp: new Date(),
       };
     } catch (error) {
-      this.logger.error(`Failed to fetch Yahoo Finance signal for ${symbol}:`, error);
+      this.logger.error(
+        `Failed to fetch Yahoo Finance signal for ${symbol}:`,
+        error
+      );
       throw error;
     }
   }
@@ -88,7 +91,8 @@ export class YahooFinanceSignalService extends BaseSignalService {
     }
 
     // 4. 前日終値との比較
-    const gapPercent = ((quote.price - quote.previousClose) / quote.previousClose) * 100;
+    const gapPercent =
+      ((quote.price - quote.previousClose) / quote.previousClose) * 100;
     if (gapPercent > 1) {
       buyScore += 1;
       reasons.push(`ギャップアップ(+${gapPercent.toFixed(2)}%)`);
@@ -119,4 +123,3 @@ export class YahooFinanceSignalService extends BaseSignalService {
     };
   }
 }
-
