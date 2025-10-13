@@ -48,6 +48,7 @@ npm run test:line
 ```
 
 ✅ LINEアプリに以下のような通知が届けば成功です：
+
 - 🔔 テスト通知
 - 🚀 デイトレード開始
 - 📈 購入実行
@@ -66,6 +67,7 @@ npm run verify:trade
 ```
 
 **実行スケジュール**：
+
 - 10/14（火）: 保守的設定
 - 10/15（水）: 標準設定
 - 10/16（木）: 積極的設定
@@ -137,6 +139,7 @@ LINE_GROUP_ID=your_group_id_here
 **原因**: トークン設定エラー
 
 **解決方法**:
+
 ```bash
 # 1. トークンの確認
 cat .env.local | grep LINE
@@ -152,6 +155,7 @@ npm run test:line
 **原因**: 設定が無効化されている
 
 **解決方法**:
+
 ```bash
 # verification-trading-config.ts を確認
 # trading.enabled が true であることを確認
@@ -162,6 +166,7 @@ npm run test:line
 **原因**: 依存関係の問題
 
 **解決方法**:
+
 ```bash
 # 依存関係を再インストール
 rm -rf node_modules package-lock.json
@@ -173,6 +178,7 @@ npm install
 **原因**: 検証期間外の日付
 
 **解決方法**:
+
 - 10/14〜10/17の期間のみ実行可能
 - または `src/config/verification-trading-config.ts` で日付を追加
 
@@ -217,4 +223,3 @@ npm install
 
 **最終更新**: 2025年10月13日  
 **担当者**: [あなたの名前]
-

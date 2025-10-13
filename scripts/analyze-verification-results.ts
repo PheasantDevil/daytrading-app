@@ -1,5 +1,5 @@
-import { readFile, writeFile } from 'fs/promises';
 import { existsSync } from 'fs';
+import { readFile, writeFile } from 'fs/promises';
 import { Logger } from '../src/utils/logger';
 
 const logger = new Logger('VerificationAnalyzer');
@@ -95,10 +95,13 @@ function analyzeDayData(date: string, data: any): VerificationResult {
     trades: sellTrades.length,
     wins: wins.length,
     losses: losses.length,
-    winRate: sellTrades.length > 0 ? (wins.length / sellTrades.length) * 100 : 0,
+    winRate:
+      sellTrades.length > 0 ? (wins.length / sellTrades.length) * 100 : 0,
     totalProfit,
     averageProfit:
-      profits.length > 0 ? profits.reduce((a, b) => a + b, 0) / profits.length : 0,
+      profits.length > 0
+        ? profits.reduce((a, b) => a + b, 0) / profits.length
+        : 0,
     averageLoss:
       lossAmounts.length > 0
         ? lossAmounts.reduce((a, b) => a + b, 0) / lossAmounts.length
@@ -239,4 +242,3 @@ function generateComprehensiveReport(results: VerificationResult[]): string {
 
 // 実行
 analyzeResults().catch(console.error);
-

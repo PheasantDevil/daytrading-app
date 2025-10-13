@@ -1,5 +1,9 @@
+import { config } from 'dotenv';
 import { Logger } from '../src/utils/logger';
 import { DayTradingScheduler } from '../src/trading/day-trading-scheduler';
+
+// 環境変数の読み込み
+config({ path: '.env.local' });
 import { SignalAggregatorService } from '../src/services/signal-aggregator-service';
 import { HybridMarketDataService } from '../src/services/hybrid-market-data-service';
 import { InteractiveBrokersIntegration } from '../src/brokers/interactive-brokers-integration';

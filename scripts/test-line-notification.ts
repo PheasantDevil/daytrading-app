@@ -1,5 +1,9 @@
+import { config } from 'dotenv';
 import { LineNotificationService } from '../src/services/line-notification-service';
 import { Logger } from '../src/utils/logger';
+
+// 環境変数の読み込み
+config({ path: '.env.local' });
 
 const logger = new Logger('LineNotificationTest');
 
@@ -117,4 +121,3 @@ async function testLineNotification(): Promise<void> {
 }
 
 testLineNotification();
-
