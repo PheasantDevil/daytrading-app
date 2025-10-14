@@ -125,9 +125,10 @@ function analyzeDayData(date: string, data: any): VerificationResult {
 function getConfigName(date: string): string {
   const configs: { [key: string]: string } = {
     '2025-10-14': '保守的',
-    '2025-10-15': '標準',
-    '2025-10-16': '積極的',
-    '2025-10-17': '標準（再検証）',
+    '2025-10-15': '保守的',
+    '2025-10-16': '標準',
+    '2025-10-17': '積極的',
+    '2025-10-18': '標準（再検証）',
   };
   return configs[date] || '不明';
 }

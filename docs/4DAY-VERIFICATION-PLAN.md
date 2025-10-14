@@ -392,6 +392,7 @@ daytrading-app/
 │   ├── verification-2025-10-15/              # 10/15の結果
 │   ├── verification-2025-10-16/              # 10/16の結果
 │   ├── verification-2025-10-17/              # 10/17の結果
+│   ├── verification-2025-10-18/              # 10/17の結果
 │   └── verification-comprehensive-report.md  # 統合レポート
 └── .env.local                                # 環境変数（LINE設定含む）
 ```
