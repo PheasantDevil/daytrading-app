@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
@@ -27,7 +27,8 @@ export async function POST(
       );
     }
 
-    const accountId = parseInt(params.id);
+    const { id } = await params;
+    const accountId = parseInt(id);
     if (isNaN(accountId)) {
       return NextResponse.json(
         { success: false, message: '無効な口座IDです' },
@@ -52,8 +53,8 @@ export async function POST(
 
     // 認証情報を復号化
     const credentials = decryptSecuritiesCredentials({
-      apiPassword: account.apiPassword,
-      password: account.passwordHash,
+      apiPassword: account.apiPassword || '',
+      password: account.passwordHash || '',
     });
 
     // kabuステーションAPI接続テスト

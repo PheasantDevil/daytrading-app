@@ -3,16 +3,14 @@
  * リアル取引API統合、高度なアルゴリズム取引、機械学習統合、バックテスト機能をテスト
  */
 
+import { BacktestEngine } from '../src/backtesting/backtest-engine';
+import { TradingMLService } from '../src/ml/trading-ml-service';
 import { RealTradingService } from '../src/services/real-trading-service';
 import { MomentumStrategy } from '../src/strategies/momentum-strategy';
-import { TradingMLService } from '../src/ml/trading-ml-service';
-import { BacktestEngine } from '../src/backtesting/backtest-engine';
-import { DataIntegrationService } from '../src/services/data-integration-service';
-import { TradingIntegrationService } from '../src/services/trading-integration-service';
 
 async function testRealTradingService(): Promise<void> {
   console.log('\n🧪 リアル取引サービステスト開始...');
-  
+
   try {
     const realTradingService = new RealTradingService({
       tradingIntegration: {
@@ -56,17 +54,23 @@ async function testRealTradingService(): Promise<void> {
 
     // 初期化テスト
     const initialized = await realTradingService.initialize();
-    console.log(`✅ リアル取引サービス初期化: ${initialized ? '成功' : '失敗'}`);
+    console.log(
+      `✅ リアル取引サービス初期化: ${initialized ? '成功' : '失敗'}`
+    );
 
     if (initialized) {
       // 接続状態チェック
       const connectionStatus = await realTradingService.checkConnectionStatus();
-      console.log(`✅ 接続状態: 全体=${connectionStatus.overall}, ブローカー=${JSON.stringify(connectionStatus.brokers)}`);
+      console.log(
+        `✅ 接続状態: 全体=${connectionStatus.overall}, ブローカー=${JSON.stringify(connectionStatus.brokers)}`
+      );
 
       // 口座情報取得テスト
       const account = await realTradingService.getAccount();
       if (account) {
-        console.log(`✅ 口座情報取得: 総資産 ${account.totalValue.toLocaleString()}円`);
+        console.log(
+          `✅ 口座情報取得: 総資産 ${account.totalValue.toLocaleString()}円`
+        );
       } else {
         console.log('⚠️ 口座情報取得失敗');
       }
@@ -96,20 +100,27 @@ async function testRealTradingService(): Promise<void> {
 
 async function testMomentumStrategy(): Promise<void> {
   console.log('\n🧪 モメンタム戦略テスト開始...');
-  
+
   try {
     // モックサービスを作成
     const mockTradingService = {
       initialize: async () => true,
       getCurrentPrice: async (symbol: string, market: string) => 100,
-      placeOrder: async (order: any) => ({ success: true, orderId: 'test-order' }),
+      placeOrder: async (order: any) => ({
+        success: true,
+        orderId: 'test-order',
+      }),
       getPositions: async () => [],
       getOrders: async () => [],
     } as any;
 
     const mockDataService = {
       initialize: async () => true,
-      getHistoricalData: async (symbol: string, market: string, days: number) => ({
+      getHistoricalData: async (
+        symbol: string,
+        market: string,
+        days: number
+      ) => ({
         data: Array.from({ length: days }, (_, i) => ({
           close: 100 + Math.sin(i * 0.1) * 10,
           volume: 1000 + Math.random() * 500,
@@ -168,7 +179,9 @@ async function testMomentumStrategy(): Promise<void> {
 
         if (signals.length > 0) {
           const signal = signals[0];
-          console.log(`  - シグナル: ${signal.symbol} ${signal.side} 強度=${signal.strength.toFixed(2)} 信頼度=${signal.confidence.toFixed(2)}`);
+          console.log(
+            `  - シグナル: ${signal.symbol} ${signal.side} 強度=${signal.strength.toFixed(2)} 信頼度=${signal.confidence.toFixed(2)}`
+          );
           console.log(`  - 理由: ${signal.reason}`);
         }
 
@@ -176,16 +189,20 @@ async function testMomentumStrategy(): Promise<void> {
         const orderResults = await momentumStrategy.executeOrders(signals);
         console.log(`✅ 注文執行: ${orderResults.length}件`);
 
-        const successfulOrders = orderResults.filter(r => r.success).length;
+        const successfulOrders = orderResults.filter((r) => r.success).length;
         console.log(`  - 成功: ${successfulOrders}/${orderResults.length}`);
 
         // リバランステスト
         const rebalanceResult = await momentumStrategy.rebalance();
-        console.log(`✅ リバランス: ${rebalanceResult.successfulOrders}/${rebalanceResult.totalOrders} 成功`);
+        console.log(
+          `✅ リバランス: ${rebalanceResult.successfulOrders}/${rebalanceResult.totalOrders} 成功`
+        );
 
         // パフォーマンス計算テスト
         const performance = await momentumStrategy.calculatePerformance();
-        console.log(`✅ パフォーマンス計算: 総リターン=${performance.totalReturnPercent.toFixed(2)}%, 勝率=${performance.winRate.toFixed(1)}%`);
+        console.log(
+          `✅ パフォーマンス計算: 総リターン=${performance.totalReturnPercent.toFixed(2)}%, 勝率=${performance.winRate.toFixed(1)}%`
+        );
 
         // 戦略停止
         momentumStrategy.stop();
@@ -201,12 +218,16 @@ async function testMomentumStrategy(): Promise<void> {
 
 async function testTradingMLService(): Promise<void> {
   console.log('\n🧪 取引機械学習サービステスト開始...');
-  
+
   try {
     // モックサービスを作成
     const mockDataService = {
       initialize: async () => true,
-      getHistoricalData: async (symbol: string, market: string, days: number) => ({
+      getHistoricalData: async (
+        symbol: string,
+        market: string,
+        days: number
+      ) => ({
         data: Array.from({ length: days }, (_, i) => ({
           close: 100 + Math.sin(i * 0.1) * 10,
           volume: 1000 + Math.random() * 500,
@@ -262,13 +283,17 @@ async function testTradingMLService(): Promise<void> {
 
     // サービス初期化テスト
     const initialized = await tradingMLService.initialize();
-    console.log(`✅ 取引機械学習サービス初期化: ${initialized ? '成功' : '失敗'}`);
+    console.log(
+      `✅ 取引機械学習サービス初期化: ${initialized ? '成功' : '失敗'}`
+    );
 
     if (initialized) {
       // 予測テスト
       const prediction = await tradingMLService.predict('AAPL', 'US');
       if (prediction) {
-        console.log(`✅ 予測実行: ${prediction.symbol} 方向=${prediction.prediction.direction} 信頼度=${prediction.prediction.confidence.toFixed(2)}`);
+        console.log(
+          `✅ 予測実行: ${prediction.symbol} 方向=${prediction.prediction.direction} 信頼度=${prediction.prediction.confidence.toFixed(2)}`
+        );
         console.log(`  - 予測価格: ${prediction.prediction.price.toFixed(2)}`);
         console.log(`  - モデル: ${prediction.model}`);
       } else {
@@ -278,7 +303,9 @@ async function testTradingMLService(): Promise<void> {
       // 取引シグナル生成テスト
       const signal = await tradingMLService.generateTradingSignal('AAPL', 'US');
       if (signal) {
-        console.log(`✅ 取引シグナル生成: ${signal.symbol} ${signal.side} 強度=${signal.strength.toFixed(2)} 信頼度=${signal.confidence.toFixed(2)}`);
+        console.log(
+          `✅ 取引シグナル生成: ${signal.symbol} ${signal.side} 強度=${signal.strength.toFixed(2)} 信頼度=${signal.confidence.toFixed(2)}`
+        );
         console.log(`  - 理由: ${signal.reason}`);
         console.log(`  - リスクスコア: ${signal.riskScore.toFixed(2)}`);
       } else {
@@ -286,9 +313,14 @@ async function testTradingMLService(): Promise<void> {
       }
 
       // アンサンブル予測テスト
-      const ensemblePrediction = await tradingMLService.getEnsemblePrediction('AAPL', 'US');
+      const ensemblePrediction = await tradingMLService.getEnsemblePrediction(
+        'AAPL',
+        'US'
+      );
       if (ensemblePrediction) {
-        console.log(`✅ アンサンブル予測: ${ensemblePrediction.symbol} 方向=${ensemblePrediction.prediction.direction} 信頼度=${ensemblePrediction.prediction.confidence.toFixed(2)}`);
+        console.log(
+          `✅ アンサンブル予測: ${ensemblePrediction.symbol} 方向=${ensemblePrediction.prediction.direction} 信頼度=${ensemblePrediction.prediction.confidence.toFixed(2)}`
+        );
       } else {
         console.log('⚠️ アンサンブル予測失敗');
       }
@@ -310,7 +342,7 @@ async function testTradingMLService(): Promise<void> {
 
 async function testBacktestEngine(): Promise<void> {
   console.log('\n🧪 バックテストエンジンテスト開始...');
-  
+
   try {
     // モック戦略を作成
     const mockStrategy = {
@@ -331,8 +363,14 @@ async function testBacktestEngine(): Promise<void> {
           strategy: 'TestStrategy',
         },
       ],
-      executeOrders: async (signals: any[]) => signals.map(s => ({ success: true, signal: s })),
-      rebalance: async () => ({ success: true, orders: [], totalOrders: 0, successfulOrders: 0 }),
+      executeOrders: async (signals: any[]) =>
+        signals.map((s) => ({ success: true, signal: s })),
+      rebalance: async () => ({
+        success: true,
+        orders: [],
+        totalOrders: 0,
+        successfulOrders: 0,
+      }),
       getConfig: () => ({ name: 'TestStrategy' }),
     } as any;
 
@@ -357,29 +395,48 @@ async function testBacktestEngine(): Promise<void> {
 
     // バックテスト実行テスト
     const result = await backtestEngine.runBacktest();
-    console.log(`✅ バックテスト実行: 総リターン=${result.performance.totalReturnPercent.toFixed(2)}%`);
-    console.log(`  - シャープレシオ: ${result.performance.sharpeRatio.toFixed(2)}`);
-    console.log(`  - 最大ドローダウン: ${result.performance.maxDrawdownPercent.toFixed(2)}%`);
+    console.log(
+      `✅ バックテスト実行: 総リターン=${result.performance.totalReturnPercent.toFixed(2)}%`
+    );
+    console.log(
+      `  - シャープレシオ: ${result.performance.sharpeRatio.toFixed(2)}`
+    );
+    console.log(
+      `  - 最大ドローダウン: ${result.performance.maxDrawdownPercent.toFixed(2)}%`
+    );
     console.log(`  - 勝率: ${result.performance.winRate.toFixed(1)}%`);
     console.log(`  - 総取引数: ${result.performance.totalTrades}`);
-    console.log(`  - プロフィットファクター: ${result.performance.profitFactor.toFixed(2)}`);
+    console.log(
+      `  - プロフィットファクター: ${result.performance.profitFactor.toFixed(2)}`
+    );
 
     // パフォーマンス分析テスト
     const analysis = await backtestEngine.analyzePerformance(result);
-    console.log(`✅ パフォーマンス分析: 推奨事項=${analysis.recommendations.length}個`);
-    analysis.recommendations.forEach((rec, index) => {
+    console.log(
+      `✅ パフォーマンス分析: 推奨事項=${analysis.recommendations.length}個`
+    );
+    analysis.recommendations.forEach((rec: string, index: number) => {
       console.log(`  ${index + 1}. ${rec}`);
     });
 
     // パラメータ最適化テスト
-    const optimizationResult = await backtestEngine.optimizeParameters(mockStrategy);
-    console.log(`✅ パラメータ最適化: 最良イテレーション=${optimizationResult.bestIteration}/${optimizationResult.totalIterations}`);
-    console.log(`  - 最良パラメータ: ${JSON.stringify(optimizationResult.bestParameters)}`);
-    console.log(`  - 最良パフォーマンス: ${optimizationResult.bestPerformance.performance.totalReturnPercent.toFixed(2)}%`);
+    const optimizationResult =
+      await backtestEngine.optimizeParameters(mockStrategy);
+    console.log(
+      `✅ パラメータ最適化: 最良イテレーション=${optimizationResult.bestIteration}/${optimizationResult.totalIterations}`
+    );
+    console.log(
+      `  - 最良パラメータ: ${JSON.stringify(optimizationResult.bestParameters)}`
+    );
+    console.log(
+      `  - 最良パフォーマンス: ${optimizationResult.bestPerformance.performance.totalReturnPercent.toFixed(2)}%`
+    );
 
     // バックテスト状態取得テスト
     const status = backtestEngine.getStatus();
-    console.log(`✅ バックテスト状態: 実行中=${status.running}, 進捗=${status.progress}`);
+    console.log(
+      `✅ バックテスト状態: 実行中=${status.running}, 進捗=${status.progress}`
+    );
 
     console.log('✅ バックテストエンジンテスト完了');
   } catch (error) {
@@ -389,20 +446,27 @@ async function testBacktestEngine(): Promise<void> {
 
 async function testIntegrationWorkflow(): Promise<void> {
   console.log('\n🧪 統合ワークフローテスト開始...');
-  
+
   try {
     // モックサービスを作成
     const mockTradingService = {
       initialize: async () => true,
       getCurrentPrice: async (symbol: string, market: string) => 100,
-      placeOrder: async (order: any) => ({ success: true, orderId: 'test-order' }),
+      placeOrder: async (order: any) => ({
+        success: true,
+        orderId: 'test-order',
+      }),
       getPositions: async () => [],
       getOrders: async () => [],
     } as any;
 
     const mockDataService = {
       initialize: async () => true,
-      getHistoricalData: async (symbol: string, market: string, days: number) => ({
+      getHistoricalData: async (
+        symbol: string,
+        market: string,
+        days: number
+      ) => ({
         data: Array.from({ length: days }, (_, i) => ({
           close: 100 + Math.sin(i * 0.1) * 10,
           volume: 1000 + Math.random() * 500,
@@ -450,12 +514,37 @@ async function testIntegrationWorkflow(): Promise<void> {
     const tradingMLService = new TradingMLService(
       {
         models: {
-          lstm: { enabled: true, sequenceLength: 10, hiddenUnits: 50, epochs: 10, batchSize: 32, learningRate: 0.001 },
-          multiTimeframe: { enabled: true, timeframes: ['1h', '4h', '1d'], weights: [0.4, 0.3, 0.3] },
-          onlineLearning: { enabled: true, updateInterval: 3600000, minDataPoints: 100, retrainThreshold: 0.1 },
+          lstm: {
+            enabled: true,
+            sequenceLength: 10,
+            hiddenUnits: 50,
+            epochs: 10,
+            batchSize: 32,
+            learningRate: 0.001,
+          },
+          multiTimeframe: {
+            enabled: true,
+            timeframes: ['1h', '4h', '1d'],
+            weights: [0.4, 0.3, 0.3],
+          },
+          onlineLearning: {
+            enabled: true,
+            updateInterval: 3600000,
+            minDataPoints: 100,
+            retrainThreshold: 0.1,
+          },
         },
-        prediction: { confidenceThreshold: 0.6, maxPredictions: 10, predictionHorizon: 24 },
-        trading: { minConfidence: 0.7, maxPositionSize: 100000, stopLossPercent: 5, takeProfitPercent: 10 },
+        prediction: {
+          confidenceThreshold: 0.6,
+          maxPredictions: 10,
+          predictionHorizon: 24,
+        },
+        trading: {
+          minConfidence: 0.7,
+          maxPositionSize: 100000,
+          stopLossPercent: 5,
+          takeProfitPercent: 10,
+        },
       },
       mockDataService,
       mockTradingService
@@ -490,7 +579,9 @@ async function testIntegrationWorkflow(): Promise<void> {
 
     // 2. 機械学習サービス初期化
     const mlInitialized = await tradingMLService.initialize();
-    console.log(`✅ 機械学習サービス初期化: ${mlInitialized ? '成功' : '失敗'}`);
+    console.log(
+      `✅ 機械学習サービス初期化: ${mlInitialized ? '成功' : '失敗'}`
+    );
 
     // 3. 戦略実行
     if (strategyInitialized) {
@@ -504,8 +595,10 @@ async function testIntegrationWorkflow(): Promise<void> {
 
         // 注文執行
         const orderResults = await momentumStrategy.executeOrders(signals);
-        const successfulOrders = orderResults.filter(r => r.success).length;
-        console.log(`✅ 注文執行: ${successfulOrders}/${orderResults.length} 成功`);
+        const successfulOrders = orderResults.filter((r) => r.success).length;
+        console.log(
+          `✅ 注文執行: ${successfulOrders}/${orderResults.length} 成功`
+        );
 
         // 戦略停止
         momentumStrategy.stop();
@@ -517,31 +610,45 @@ async function testIntegrationWorkflow(): Promise<void> {
     if (mlInitialized) {
       const prediction = await tradingMLService.predict('AAPL', 'US');
       if (prediction) {
-        console.log(`✅ 機械学習予測: ${prediction.symbol} 方向=${prediction.prediction.direction} 信頼度=${prediction.prediction.confidence.toFixed(2)}`);
+        console.log(
+          `✅ 機械学習予測: ${prediction.symbol} 方向=${prediction.prediction.direction} 信頼度=${prediction.prediction.confidence.toFixed(2)}`
+        );
       }
 
       const signal = await tradingMLService.generateTradingSignal('AAPL', 'US');
       if (signal) {
-        console.log(`✅ 機械学習シグナル: ${signal.symbol} ${signal.side} 強度=${signal.strength.toFixed(2)} 信頼度=${signal.confidence.toFixed(2)}`);
+        console.log(
+          `✅ 機械学習シグナル: ${signal.symbol} ${signal.side} 強度=${signal.strength.toFixed(2)} 信頼度=${signal.confidence.toFixed(2)}`
+        );
       }
     }
 
     // 5. バックテスト実行
     const backtestResult = await backtestEngine.runBacktest();
-    console.log(`✅ バックテスト実行: 総リターン=${backtestResult.performance.totalReturnPercent.toFixed(2)}%`);
+    console.log(
+      `✅ バックテスト実行: 総リターン=${backtestResult.performance.totalReturnPercent.toFixed(2)}%`
+    );
 
     // 6. パフォーマンス分析
     const analysis = await backtestEngine.analyzePerformance(backtestResult);
-    console.log(`✅ パフォーマンス分析: 推奨事項=${analysis.recommendations.length}個`);
+    console.log(
+      `✅ パフォーマンス分析: 推奨事項=${analysis.recommendations.length}個`
+    );
 
     // 7. 結果サマリー
     console.log(`✅ 統合ワークフロー結果:`);
     console.log(`  - 戦略実行: ${strategyInitialized ? '成功' : '失敗'}`);
     console.log(`  - 機械学習: ${mlInitialized ? '成功' : '失敗'}`);
     console.log(`  - バックテスト: 成功`);
-    console.log(`  - 総リターン: ${backtestResult.performance.totalReturnPercent.toFixed(2)}%`);
-    console.log(`  - シャープレシオ: ${backtestResult.performance.sharpeRatio.toFixed(2)}`);
-    console.log(`  - 最大ドローダウン: ${backtestResult.performance.maxDrawdownPercent.toFixed(2)}%`);
+    console.log(
+      `  - 総リターン: ${backtestResult.performance.totalReturnPercent.toFixed(2)}%`
+    );
+    console.log(
+      `  - シャープレシオ: ${backtestResult.performance.sharpeRatio.toFixed(2)}`
+    );
+    console.log(
+      `  - 最大ドローダウン: ${backtestResult.performance.maxDrawdownPercent.toFixed(2)}%`
+    );
 
     console.log('✅ 統合ワークフローテスト完了');
   } catch (error) {
@@ -551,14 +658,14 @@ async function testIntegrationWorkflow(): Promise<void> {
 
 async function runAllTests(): Promise<void> {
   console.log('🚀 Phase3機能テスト開始...');
-  
+
   try {
     await testRealTradingService();
     await testMomentumStrategy();
     await testTradingMLService();
     await testBacktestEngine();
     await testIntegrationWorkflow();
-    
+
     console.log('\n✅ Phase3機能テスト完了');
   } catch (error) {
     console.error('❌ Phase3機能テストエラー:', error);

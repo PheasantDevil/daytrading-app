@@ -378,17 +378,17 @@ async function testAuthManager(): Promise<void> {
         if (verifyResult.valid && verifyResult.user) {
           // 認可テスト
           const canTrade = await authManager.authorize(
-            verifyResult.user,
+            verifyResult.user as any,
             'trading',
             'write'
           );
           const canViewReports = await authManager.authorize(
-            verifyResult.user,
+            verifyResult.user as any,
             'reports',
             'read'
           );
           const canAdmin = await authManager.authorize(
-            verifyResult.user,
+            verifyResult.user as any,
             'admin',
             'write'
           );

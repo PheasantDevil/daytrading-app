@@ -144,7 +144,6 @@ export interface NFT {
   price?: number;
   listed: boolean;
   createdAt: Date;
-  metadata: Record<string, any>;
 }
 
 export interface NFTMarketplace {
@@ -444,7 +443,6 @@ export class DistributedTrading {
         metadata,
         listed: false,
         createdAt: new Date(),
-        metadata: {},
       };
 
       console.log(`✅ NFTミント完了: ${nft.id} -> ${recipient}`);
@@ -619,12 +617,14 @@ export class DistributedTrading {
         actualPrice: trade.price * (1 + Math.random() * 0.01 - 0.005), // ±0.5%のスリッページ
         actualAmount: trade.amount,
         slippage: Math.random() * 0.01,
+        timestamp: new Date(),
       };
     } else {
       return {
         tradeId: trade.id,
         success: false,
         error: 'Transaction failed',
+        timestamp: new Date(),
       };
     }
   }
@@ -638,6 +638,7 @@ export class DistributedTrading {
   ): Promise<ContractAddress> {
     // 簡略化されたコントラクトデプロイ
     return {
+      contractId: `contract_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       address: `0x${Math.random().toString(16).substr(2, 40)}`,
       transactionHash: `0x${Math.random().toString(16).substr(2, 64)}`,
       blockNumber: Math.floor(Math.random() * 1000000) + 1000000,
@@ -663,6 +664,7 @@ export class DistributedTrading {
       gasUsed: Math.floor(Math.random() * 100000) + 50000,
       actualPrice: price,
       actualAmount: 1,
+      timestamp: new Date(),
     };
   }
 
@@ -683,6 +685,7 @@ export class DistributedTrading {
       gasUsed: Math.floor(Math.random() * 200000) + 100000,
       actualPrice: amount,
       actualAmount: amount,
+      timestamp: new Date(),
     };
   }
 

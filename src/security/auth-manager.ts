@@ -30,7 +30,7 @@ export interface Credentials {
 
 export interface AuthResult {
   success: boolean;
-  user?: User;
+  user?: Omit<User, 'passwordHash' | 'mfaSecret'>;
   token?: string;
   refreshToken?: string;
   expiresIn?: number;
@@ -260,7 +260,11 @@ export class AuthManager {
    */
   async verifyToken(
     token: string
-  ): Promise<{ valid: boolean; user?: User; error?: string }> {
+  ): Promise<{
+    valid: boolean;
+    user?: Omit<User, 'passwordHash' | 'mfaSecret'>;
+    error?: string;
+  }> {
     try {
       const decoded = jwt.verify(token, this.config.jwt.secret) as any;
       const user = this.users.get(decoded.userId);
@@ -373,7 +377,7 @@ export class AuthManager {
       | 'mfaSecret'
     >,
     password: string
-  ): Promise<User> {
+  ): Promise<Omit<User, 'passwordHash' | 'mfaSecret'>> {
     try {
       const userId = crypto.randomUUID();
       const passwordHash = await bcrypt.hash(password, 12);
@@ -495,7 +499,7 @@ export class AuthManager {
       expiresIn: this.config.jwt.expiresIn,
       issuer: this.config.jwt.issuer,
       audience: this.config.jwt.audience,
-    });
+    } as jwt.SignOptions) as string;
   }
 
   /**
@@ -511,14 +515,15 @@ export class AuthManager {
       expiresIn: this.config.jwt.refreshExpiresIn,
       issuer: this.config.jwt.issuer,
       audience: this.config.jwt.audience,
-    });
+    } as jwt.SignOptions) as string;
   }
 
   /**
    * MFAシークレットを生成
    */
   private generateMFASecret(): string {
-    return crypto.randomBytes(20).toString('base32');
+    // Node.jsはbase32をサポートしていないため、base64を使用
+    return crypto.randomBytes(20).toString('base64');
   }
 
   /**
@@ -556,7 +561,7 @@ export class AuthManager {
     // 簡略化されたMFAコード生成
     const time = Math.floor(Date.now() / 1000 / this.config.mfa.period);
     const hash = crypto
-      .createHmac('sha1', Buffer.from(secret, 'base32'))
+      .createHmac('sha1', Buffer.from(secret, 'base64'))
       .update(Buffer.from(time.toString(16).padStart(16, '0'), 'hex'))
       .digest();
 
@@ -590,7 +595,7 @@ export class AuthManager {
   /**
    * ユーザー情報をサニタイズ
    */
-  private sanitizeUser(user: User): User {
+  private sanitizeUser(user: User): Omit<User, 'passwordHash' | 'mfaSecret'> {
     const { passwordHash, mfaSecret, ...sanitized } = user;
     return sanitized;
   }
@@ -741,7 +746,9 @@ export class AuthManager {
   /**
    * ユーザーを取得
    */
-  getUser(userId: string): User | undefined {
+  getUser(
+    userId: string
+  ): Omit<User, 'passwordHash' | 'mfaSecret'> | undefined {
     const user = this.users.get(userId);
     return user ? this.sanitizeUser(user) : undefined;
   }
@@ -749,7 +756,7 @@ export class AuthManager {
   /**
    * 全ユーザーを取得
    */
-  getAllUsers(): User[] {
+  getAllUsers(): Omit<User, 'passwordHash' | 'mfaSecret'>[] {
     return Array.from(this.users.values()).map((user) =>
       this.sanitizeUser(user)
     );

@@ -358,13 +358,18 @@ async function testBacktestEngine(): Promise<void> {
 
     // 簡単な戦略を定義
     const strategy = async (data: any) => {
-      const signals = [];
+      const signals: Array<{
+        symbol: string;
+        action: 'BUY' | 'SELL' | 'HOLD';
+        quantity?: number;
+        price?: number;
+      }> = [];
 
       // ランダムな買いシグナル
       if (Math.random() > 0.7) {
         signals.push({
           symbol: 'TEST',
-          action: 'BUY',
+          action: 'BUY' as const,
           quantity: 10,
           price: data.close,
         });

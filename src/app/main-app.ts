@@ -1,16 +1,17 @@
 import { EventEmitter } from 'events';
+import {
+  IntegrationConfig,
+  IntegrationService,
+} from '../integration/integration-service';
+import {
+  PerformanceConfig,
+  PerformanceOptimizer,
+} from '../optimization/performance-optimizer';
 import { Logger } from '../utils/logger';
-import { IntegrationService, IntegrationConfig } from '../integration/integration-service';
-import { PerformanceOptimizer } from '../optimization/performance-optimizer';
 
 export interface MainAppConfig {
   integration: IntegrationConfig;
-  performance: {
-    enabled: boolean;
-    monitoringInterval: number;
-    optimizationThreshold: number;
-    cacheConfig: any;
-  };
+  performance: PerformanceConfig;
   app: {
     name: string;
     version: string;
@@ -56,7 +57,9 @@ export class MainApp extends EventEmitter {
 
       // パフォーマンス最適化サービスの初期化
       if (this.config.performance.enabled) {
-        this.performanceOptimizer = new PerformanceOptimizer(this.config.performance);
+        this.performanceOptimizer = new PerformanceOptimizer(
+          this.config.performance
+        );
         await this.performanceOptimizer.initialize();
       }
 
@@ -80,11 +83,11 @@ export class MainApp extends EventEmitter {
    */
   private setupLogging(): void {
     this.logger.setLevel(this.config.logging.level);
-    
+
     if (this.config.logging.file) {
       this.logger.setFileOutput(this.config.logging.file);
     }
-    
+
     if (!this.config.logging.console) {
       this.logger.disableConsoleOutput();
     }
@@ -133,10 +136,12 @@ export class MainApp extends EventEmitter {
    */
   private setupGracefulShutdown(): void {
     const signals = ['SIGTERM', 'SIGINT', 'SIGUSR2'];
-    
-    signals.forEach(signal => {
+
+    signals.forEach((signal) => {
       process.on(signal, async () => {
-        this.logger.info(`${signal}シグナルを受信しました。グレースフルシャットダウンを開始...`);
+        this.logger.info(
+          `${signal}シグナルを受信しました。グレースフルシャットダウンを開始...`
+        );
         await this.shutdown();
       });
     });
@@ -175,12 +180,14 @@ export class MainApp extends EventEmitter {
 
       this.isRunning = true;
       this.startTime = new Date();
-      
-      this.logger.info(`メインアプリケーションが開始されました (${this.config.app.name} v${this.config.app.version})`);
+
+      this.logger.info(
+        `メインアプリケーションが開始されました (${this.config.app.name} v${this.config.app.version})`
+      );
       this.logger.info(`環境: ${this.config.app.environment}`);
       this.logger.info(`ポート: ${this.config.app.port}`);
       this.logger.info(`ホスト: ${this.config.app.host}`);
-      
+
       this.emit('started');
     } catch (error) {
       this.logger.error('メインアプリケーションの開始に失敗しました:', error);
@@ -218,17 +225,17 @@ export class MainApp extends EventEmitter {
   async shutdown(): Promise<void> {
     try {
       this.logger.info('グレースフルシャットダウンを開始...');
-      
+
       // 新規リクエストの受付停止
       this.logger.info('新規リクエストの受付を停止しました');
-      
+
       // 実行中の処理の完了待ち
       this.logger.info('実行中の処理の完了を待機中...');
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+
       // アプリケーションの停止
       await this.stop();
-      
+
       this.logger.info('グレースフルシャットダウンが完了しました');
       this.emit('shutdown');
     } catch (error) {
@@ -252,7 +259,7 @@ export class MainApp extends EventEmitter {
     performance: any;
   } {
     const uptime = this.isRunning ? Date.now() - this.startTime.getTime() : 0;
-    
+
     return {
       name: this.config.app.name,
       version: this.config.app.version,
@@ -262,7 +269,7 @@ export class MainApp extends EventEmitter {
       uptime,
       startTime: this.startTime.toISOString(),
       integration: this.integrationService.getStatus(),
-      performance: this.performanceOptimizer?.getStatus() || null
+      performance: this.performanceOptimizer?.getStatus() || null,
     };
   }
 
@@ -278,9 +285,9 @@ export class MainApp extends EventEmitter {
   }> {
     try {
       const integrationHealth = await this.integrationService.healthCheck();
-      const performanceHealth = this.performanceOptimizer ? 
-        await this.performanceOptimizer.healthCheck() : 
-        { healthy: true, status: 'disabled' };
+      const performanceHealth = this.performanceOptimizer
+        ? await this.performanceOptimizer.healthCheck()
+        : { healthy: true, status: 'disabled' };
 
       const healthy = integrationHealth.healthy && performanceHealth.healthy;
       const status = healthy ? 'healthy' : 'unhealthy';
@@ -290,16 +297,18 @@ export class MainApp extends EventEmitter {
         status,
         timestamp: new Date().toISOString(),
         services: integrationHealth,
-        performance: performanceHealth
+        performance: performanceHealth,
       };
     } catch (error) {
       this.logger.error('ヘルスチェックに失敗しました:', error);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       return {
         healthy: false,
         status: 'error',
         timestamp: new Date().toISOString(),
-        services: { healthy: false, error: error.message },
-        performance: { healthy: false, error: error.message }
+        services: { healthy: false, error: errorMessage },
+        performance: { healthy: false, error: errorMessage },
       };
     }
   }
@@ -339,14 +348,14 @@ export class MainApp extends EventEmitter {
     cpuUsage: NodeJS.CpuUsage;
   } {
     const uptime = this.isRunning ? Date.now() - this.startTime.getTime() : 0;
-    
+
     return {
       name: this.config.app.name,
       version: this.config.app.version,
       environment: this.config.app.environment,
       uptime,
       memoryUsage: process.memoryUsage(),
-      cpuUsage: process.cpuUsage()
+      cpuUsage: process.cpuUsage(),
     };
   }
 
@@ -370,8 +379,8 @@ export class MainApp extends EventEmitter {
       system: {
         memory: process.memoryUsage(),
         cpu: process.cpuUsage(),
-        uptime: process.uptime()
-      }
+        uptime: process.uptime(),
+      },
     };
   }
 }

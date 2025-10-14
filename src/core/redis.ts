@@ -7,11 +7,10 @@ const globalForRedis = globalThis as unknown as {
 export const redis =
   globalForRedis.redis ??
   new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
-    retryDelayOnFailover: 100,
     maxRetriesPerRequest: 3,
     lazyConnect: true,
-    connectTimeout: 1000,
-    commandTimeout: 1000,
+    connectTimeout: 10000,
+    commandTimeout: 5000,
   });
 
 // Redis接続エラーを無視

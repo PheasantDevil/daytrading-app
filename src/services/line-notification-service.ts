@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { Logger } from '../utils/logger';
 import { EventEmitter } from 'events';
+import { Logger } from '../utils/logger';
 
 export interface LineNotificationConfig {
   channelAccessToken: string;
@@ -314,7 +314,8 @@ export class LineNotificationService extends EventEmitter {
    */
   private calculatePotentialProfit(position: any): any {
     const targetPrice = position.entryPrice * 1.05; // 5%想定
-    const targetProfit = (targetPrice - position.entryPrice) * position.quantity;
+    const targetProfit =
+      (targetPrice - position.entryPrice) * position.quantity;
 
     return {
       target: targetProfit,
@@ -322,4 +323,3 @@ export class LineNotificationService extends EventEmitter {
     };
   }
 }
-

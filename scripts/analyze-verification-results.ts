@@ -100,11 +100,12 @@ function analyzeDayData(date: string, data: any): VerificationResult {
     totalProfit,
     averageProfit:
       profits.length > 0
-        ? profits.reduce((a, b) => a + b, 0) / profits.length
+        ? profits.reduce((a: number, b: number) => a + b, 0) / profits.length
         : 0,
     averageLoss:
       lossAmounts.length > 0
-        ? lossAmounts.reduce((a, b) => a + b, 0) / lossAmounts.length
+        ? lossAmounts.reduce((a: number, b: number) => a + b, 0) /
+          lossAmounts.length
         : 0,
     maxProfit: profits.length > 0 ? Math.max(...profits) : 0,
     maxLoss: lossAmounts.length > 0 ? Math.min(...lossAmounts) : 0,

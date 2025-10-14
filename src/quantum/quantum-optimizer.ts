@@ -322,7 +322,7 @@ export class QuantumOptimizer {
   /**
    * 量子機械学習を実行
    */
-  async quantumML(trainingData: DataPoint[]): Promise<QuantumModel> {
+  async trainQuantumML(trainingData: DataPoint[]): Promise<QuantumModel> {
     try {
       if (!this.isInitialized) {
         throw new Error('量子最適化サービスが初期化されていません');

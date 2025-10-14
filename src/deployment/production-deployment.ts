@@ -1,9 +1,9 @@
-import { EventEmitter } from 'events';
-import { Logger } from '../utils/logger';
 import { exec } from 'child_process';
-import { promisify } from 'util';
+import { EventEmitter } from 'events';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { promisify } from 'util';
+import { Logger } from '../utils/logger';
 
 const execAsync = promisify(exec);
 
@@ -199,7 +199,9 @@ export class ProductionDeployment extends EventEmitter {
    */
   private async validateEnvironmentConfigs(): Promise<void> {
     try {
-      for (const [envName, envConfig] of Object.entries(this.config.environments)) {
+      for (const [envName, envConfig] of Object.entries(
+        this.config.environments
+      )) {
         if (!envConfig.name) {
           throw new Error(`環境 ${envName} の名前が設定されていません`);
         }
@@ -251,16 +253,16 @@ export class ProductionDeployment extends EventEmitter {
 
       const imageName = `${this.config.docker.imageName}:${this.config.docker.tag}`;
       const buildCommand = `docker build -t ${imageName} .`;
-      
+
       const { stdout, stderr } = await execAsync(buildCommand);
-      
+
       if (stderr) {
         this.logger.warn('Dockerビルドの警告:', stderr);
       }
 
       this.logger.info('Dockerイメージのビルドが完了しました');
       this.logger.info('ビルド出力:', stdout);
-      
+
       this.emit('dockerBuilt', { imageName, stdout });
     } catch (error) {
       this.logger.error('Dockerイメージのビルドに失敗しました:', error);
@@ -281,7 +283,7 @@ export class ProductionDeployment extends EventEmitter {
 
       const imageName = `${this.config.docker.imageName}:${this.config.docker.tag}`;
       const containerName = `${this.config.docker.imageName}-${this.config.docker.tag}`;
-      
+
       // 既存のコンテナを停止・削除
       try {
         await execAsync(`docker stop ${containerName}`);
@@ -296,21 +298,21 @@ export class ProductionDeployment extends EventEmitter {
         `--name ${containerName}`,
         `-p ${this.config.docker.port}:3000`,
         `--restart ${this.config.docker.restartPolicy}`,
-        ...this.config.docker.environment.map(env => `-e ${env}`),
-        ...this.config.docker.volumes.map(volume => `-v ${volume}`),
-        ...this.config.docker.networks.map(network => `--network ${network}`),
-        imageName
+        ...this.config.docker.environment.map((env) => `-e ${env}`),
+        ...this.config.docker.volumes.map((volume) => `-v ${volume}`),
+        ...this.config.docker.networks.map((network) => `--network ${network}`),
+        imageName,
       ].join(' ');
 
       const { stdout, stderr } = await execAsync(runCommand);
-      
+
       if (stderr) {
         this.logger.warn('Docker起動の警告:', stderr);
       }
 
       this.logger.info('Dockerコンテナの起動が完了しました');
       this.logger.info('コンテナID:', stdout.trim());
-      
+
       this.emit('dockerStarted', { containerName, containerId: stdout.trim() });
     } catch (error) {
       this.logger.error('Dockerコンテナの起動に失敗しました:', error);
@@ -350,20 +352,25 @@ export class ProductionDeployment extends EventEmitter {
       this.deploymentStatus[environment] = {
         status: 'success',
         timestamp: new Date().toISOString(),
-        version: this.config.docker.tag
+        version: this.config.docker.tag,
       };
 
       this.logger.info(`環境 ${environment} へのデプロイが完了しました`);
       this.emit('deployed', { environment, status: 'success' });
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       this.deploymentStatus[environment] = {
         status: 'failed',
         timestamp: new Date().toISOString(),
-        error: error.message
+        error: errorMessage,
       };
 
-      this.logger.error(`環境 ${environment} へのデプロイに失敗しました:`, error);
-      this.emit('deployFailed', { environment, error: error.message });
+      this.logger.error(
+        `環境 ${environment} へのデプロイに失敗しました:`,
+        error
+      );
+      this.emit('deployFailed', { environment, error: errorMessage });
       throw error;
     }
   }
@@ -377,7 +384,9 @@ export class ProductionDeployment extends EventEmitter {
     // リソースの確認
     const envConfig = this.config.environments[environment];
     if (envConfig.resources) {
-      this.logger.info(`リソース要件: CPU=${envConfig.resources.cpu}, Memory=${envConfig.resources.memory}`);
+      this.logger.info(
+        `リソース要件: CPU=${envConfig.resources.cpu}, Memory=${envConfig.resources.memory}`
+      );
     }
 
     // 依存関係の確認
@@ -389,7 +398,7 @@ export class ProductionDeployment extends EventEmitter {
    */
   private async setEnvironmentVariables(environment: string): Promise<void> {
     const envConfig = this.config.environments[environment];
-    
+
     for (const [key, value] of Object.entries(envConfig.variables)) {
       process.env[key] = value;
       this.logger.debug(`環境変数を設定: ${key}=${value}`);
@@ -419,7 +428,7 @@ export class ProductionDeployment extends EventEmitter {
     this.logger.info(`環境 ${environment} のデプロイ後検証を実行...`);
 
     // ヘルスチェック
-    await this.healthCheck(environment);
+    await this.checkEnvironmentHealth(environment);
 
     // パフォーマンステスト
     await this.performanceTest(environment);
@@ -428,14 +437,14 @@ export class ProductionDeployment extends EventEmitter {
   }
 
   /**
-   * ヘルスチェック
+   * 環境のヘルスチェック
    */
-  private async healthCheck(environment: string): Promise<void> {
+  private async checkEnvironmentHealth(environment: string): Promise<void> {
     this.logger.info(`環境 ${environment} のヘルスチェックを実行...`);
 
     // 簡易的なヘルスチェック
     const healthEndpoint = `http://localhost:${this.config.docker.port}/health`;
-    
+
     try {
       // 実際の実装では、HTTPリクエストを送信してヘルスチェックを実行
       this.logger.info(`ヘルスチェックエンドポイント: ${healthEndpoint}`);
@@ -454,14 +463,16 @@ export class ProductionDeployment extends EventEmitter {
 
     // 簡易的なパフォーマンステスト
     const startTime = Date.now();
-    
+
     // 実際の実装では、負荷テストを実行
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     const endTime = Date.now();
     const responseTime = endTime - startTime;
-    
-    this.logger.info(`パフォーマンステストが完了しました (応答時間: ${responseTime}ms)`);
+
+    this.logger.info(
+      `パフォーマンステストが完了しました (応答時間: ${responseTime}ms)`
+    );
   }
 
   /**
@@ -483,7 +494,10 @@ export class ProductionDeployment extends EventEmitter {
       this.logger.info(`環境 ${environment} のロールバックが完了しました`);
       this.emit('rolledBack', { environment, version: previousVersion });
     } catch (error) {
-      this.logger.error(`環境 ${environment} のロールバックに失敗しました:`, error);
+      this.logger.error(
+        `環境 ${environment} のロールバックに失敗しました:`,
+        error
+      );
       throw error;
     }
   }
@@ -499,7 +513,10 @@ export class ProductionDeployment extends EventEmitter {
   /**
    * ロールバックの実行
    */
-  private async executeRollback(environment: string, version: string): Promise<void> {
+  private async executeRollback(
+    environment: string,
+    version: string
+  ): Promise<void> {
     this.logger.info(`バージョン ${version} にロールバックを実行...`);
 
     // 実際のロールバック処理
@@ -540,29 +557,29 @@ export class ProductionDeployment extends EventEmitter {
   }> {
     try {
       const environments: { [key: string]: any } = {};
-      
+
       for (const envName of Object.keys(this.config.environments)) {
         environments[envName] = {
           healthy: this.deploymentStatus[envName]?.status === 'success',
           status: this.deploymentStatus[envName]?.status || 'unknown',
-          lastDeployment: this.deploymentStatus[envName]?.timestamp || null
+          lastDeployment: this.deploymentStatus[envName]?.timestamp || null,
         };
       }
 
-      const healthy = Object.values(environments).every(env => env.healthy);
-      
+      const healthy = Object.values(environments).every((env) => env.healthy);
+
       return {
         healthy,
         status: healthy ? 'healthy' : 'unhealthy',
         environments,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
       return {
         healthy: false,
         status: 'error',
         environments: {},
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
   }

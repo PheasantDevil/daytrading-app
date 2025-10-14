@@ -1,9 +1,9 @@
+import { prisma } from '@/core/database';
 import {
   AgentConfig,
   InvestmentPosition,
   InvestmentProduct,
 } from '@/types/investment';
-import { prisma } from '@/core/database';
 
 export interface TradingSignal {
   action: 'BUY' | 'SELL' | 'HOLD';
@@ -28,7 +28,7 @@ export interface MarketAnalysis {
 
 export class Mark1Agent {
   private agentId: string;
-  private config: AgentConfig;
+  private config!: AgentConfig;
   private dailyTradeCount: number = 0;
   private lastResetDate: string = new Date().toISOString().split('T')[0];
 
@@ -40,9 +40,15 @@ export class Mark1Agent {
    * エージェントを初期化
    */
   async initialize(): Promise<void> {
-    this.config = await prisma.agentConfig.findUniqueOrThrow({
+    const dbConfig = await prisma.agentConfig.findUniqueOrThrow({
       where: { id: this.agentId },
     });
+
+    // Prismaの型をAgentConfig型にマッピング
+    this.config = {
+      ...dbConfig,
+      riskTolerance: dbConfig.riskTolerance as 'LOW' | 'MEDIUM' | 'HIGH',
+    };
 
     // 日次取引回数をリセット
     await this.resetDailyCount();
@@ -52,15 +58,32 @@ export class Mark1Agent {
    * 投資商品を分析して取引シグナルを生成
    */
   async analyzeProduct(productId: string): Promise<TradingSignal> {
-    const product = await prisma.investmentProduct.findUniqueOrThrow({
+    const dbProduct = await prisma.investmentProduct.findUniqueOrThrow({
       where: { id: productId },
     });
 
+    // Prismaの型をInvestmentProduct型にマッピング
+    const product: InvestmentProduct = {
+      ...dbProduct,
+      type: dbProduct.type as InvestmentProduct['type'],
+    };
+
     // 現在のポジションを取得
-    const position = await prisma.investmentPosition.findFirst({
+    const dbPosition = await prisma.investmentPosition.findFirst({
       where: { productId },
       include: { product: true },
     });
+
+    // Positionの型変換
+    const position = dbPosition
+      ? ({
+          ...dbPosition,
+          product: {
+            ...dbPosition.product,
+            type: dbPosition.product.type as InvestmentProduct['type'],
+          },
+        } as InvestmentPosition)
+      : null;
 
     // 市場分析を実行
     const marketAnalysis = await this.analyzeMarket(product);
@@ -364,13 +387,31 @@ export class Mark1Agent {
       return false;
     }
 
-    const product = await prisma.investmentProduct.findUniqueOrThrow({
+    const dbProduct = await prisma.investmentProduct.findUniqueOrThrow({
       where: { id: productId },
     });
 
-    const position = await prisma.investmentPosition.findFirst({
+    // Prismaの型をInvestmentProduct型にマッピング
+    const product: InvestmentProduct = {
+      ...dbProduct,
+      type: dbProduct.type as InvestmentProduct['type'],
+    };
+
+    const dbPosition = await prisma.investmentPosition.findFirst({
       where: { productId },
+      include: { product: true },
     });
+
+    // Positionの型変換
+    const position = dbPosition
+      ? ({
+          ...dbPosition,
+          product: {
+            ...dbPosition.product,
+            type: dbPosition.product.type as InvestmentProduct['type'],
+          },
+        } as InvestmentPosition)
+      : null;
 
     if (signal.action === 'BUY') {
       return await this.executeBuy(product, signal);

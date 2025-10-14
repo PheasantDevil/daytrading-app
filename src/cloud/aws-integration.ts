@@ -80,7 +80,7 @@ export class AWSIntegration {
 
   constructor(config: AWSConfig) {
     this.config = config;
-    
+
     // AWS設定
     AWS.config.update({
       region: config.region,
@@ -93,7 +93,9 @@ export class AWSIntegration {
     this.rds = new AWS.RDSDataService({ region: config.region });
     this.lambda = new AWS.Lambda({ region: config.lambda.region });
     this.cloudWatch = new AWS.CloudWatch({ region: config.cloudWatch.region });
-    this.cloudWatchLogs = new AWS.CloudWatchLogs({ region: config.cloudWatch.region });
+    this.cloudWatchLogs = new AWS.CloudWatchLogs({
+      region: config.cloudWatch.region,
+    });
   }
 
   /**
@@ -105,10 +107,10 @@ export class AWSIntegration {
 
       // S3バケットの存在確認
       await this.checkS3Bucket();
-      
+
       // RDS接続テスト
       await this.testRDSConnection();
-      
+
       // Lambda関数の存在確認
       await this.checkLambdaFunctions();
 
@@ -139,13 +141,15 @@ export class AWSIntegration {
    */
   private async testRDSConnection(): Promise<void> {
     try {
-      const result = await this.rds.executeStatement({
-        resourceArn: this.config.rds.endpoint,
-        secretArn: this.config.rds.password,
-        database: this.config.rds.database,
-        sql: 'SELECT 1 as test',
-      }).promise();
-      
+      const result = await this.rds
+        .executeStatement({
+          resourceArn: this.config.rds.endpoint,
+          secretArn: this.config.rds.password,
+          database: this.config.rds.database,
+          sql: 'SELECT 1 as test',
+        })
+        .promise();
+
       console.log('✅ RDS接続テスト成功');
     } catch (error) {
       console.error('❌ RDS接続テストエラー:', error);
@@ -158,7 +162,9 @@ export class AWSIntegration {
    */
   private async checkLambdaFunctions(): Promise<void> {
     try {
-      for (const [name, functionName] of Object.entries(this.config.lambda.functions)) {
+      for (const [name, functionName] of Object.entries(
+        this.config.lambda.functions
+      )) {
         await this.lambda.getFunction({ FunctionName: functionName }).promise();
         console.log(`✅ Lambda関数確認: ${name} -> ${functionName}`);
       }
@@ -274,8 +280,10 @@ export class AWSIntegration {
         throw new Error('AWS統合が初期化されていません');
       }
 
-      const functionName = this.config.lambda.functions[invocation.functionName] || invocation.functionName;
-      
+      const functionName =
+        this.config.lambda.functions[invocation.functionName] ||
+        invocation.functionName;
+
       const params: AWS.Lambda.InvocationRequest = {
         FunctionName: functionName,
         Payload: JSON.stringify(invocation.payload),
@@ -284,11 +292,11 @@ export class AWSIntegration {
 
       const result = await this.lambda.invoke(params).promise();
       console.log(`✅ Lambda実行成功: ${invocation.functionName}`);
-      
+
       if (result.Payload) {
         return JSON.parse(result.Payload.toString());
       }
-      
+
       return null;
     } catch (error) {
       console.error(`❌ Lambda実行エラー: ${invocation.functionName}`, error);
@@ -305,14 +313,16 @@ export class AWSIntegration {
         throw new Error('AWS統合が初期化されていません');
       }
 
-      const params: AWS.CloudWatch.PutMetricDataRequest = {
+      const params: any = {
         Namespace: metric.namespace || this.config.cloudWatch.namespace,
         MetricData: [
           {
             MetricName: metric.metricName,
             Value: metric.value,
             Unit: metric.unit,
-            Dimensions: Object.entries(metric.dimensions || {}).map(([Name, Value]) => ({ Name, Value })),
+            Dimensions: Object.entries(metric.dimensions || {}).map(
+              ([Name, Value]) => ({ Name, Value })
+            ),
             Timestamp: metric.timestamp || new Date(),
           },
         ],
@@ -321,7 +331,10 @@ export class AWSIntegration {
       await this.cloudWatch.putMetricData(params).promise();
       console.log(`✅ CloudWatchメトリクス送信成功: ${metric.metricName}`);
     } catch (error) {
-      console.error(`❌ CloudWatchメトリクス送信エラー: ${metric.metricName}`, error);
+      console.error(
+        `❌ CloudWatchメトリクス送信エラー: ${metric.metricName}`,
+        error
+      );
       throw error;
     }
   }
@@ -349,7 +362,10 @@ export class AWSIntegration {
       await this.cloudWatchLogs.putLogEvents(params).promise();
       console.log(`✅ CloudWatch Logs送信成功: ${log.logStreamName}`);
     } catch (error) {
-      console.error(`❌ CloudWatch Logs送信エラー: ${log.logStreamName}`, error);
+      console.error(
+        `❌ CloudWatch Logs送信エラー: ${log.logStreamName}`,
+        error
+      );
       throw error;
     }
   }
@@ -363,13 +379,15 @@ export class AWSIntegration {
         throw new Error('AWS統合が初期化されていません');
       }
 
-      const params: AWS.CloudWatch.PutMetricDataRequest = {
+      const params: any = {
         Namespace: this.config.cloudWatch.namespace,
-        MetricData: metrics.map(metric => ({
+        MetricData: metrics.map((metric) => ({
           MetricName: metric.metricName,
           Value: metric.value,
           Unit: metric.unit,
-          Dimensions: Object.entries(metric.dimensions || {}).map(([Name, Value]) => ({ Name, Value })),
+          Dimensions: Object.entries(metric.dimensions || {}).map(
+            ([Name, Value]) => ({ Name, Value })
+          ),
           Timestamp: metric.timestamp || new Date(),
         })),
       };
@@ -385,7 +403,10 @@ export class AWSIntegration {
   /**
    * S3オブジェクトの一覧を取得
    */
-  async listS3Objects(bucket: string, prefix?: string): Promise<AWS.S3.Object[]> {
+  async listS3Objects(
+    bucket: string,
+    prefix?: string
+  ): Promise<AWS.S3.Object[]> {
     try {
       if (!this.isInitialized) {
         throw new Error('AWS統合が初期化されていません');
@@ -397,7 +418,9 @@ export class AWSIntegration {
       };
 
       const result = await this.s3.listObjectsV2(params).promise();
-      console.log(`✅ S3オブジェクト一覧取得成功: ${result.Contents?.length || 0}個`);
+      console.log(
+        `✅ S3オブジェクト一覧取得成功: ${result.Contents?.length || 0}個`
+      );
       return result.Contents || [];
     } catch (error) {
       console.error('❌ S3オブジェクト一覧取得エラー:', error);
@@ -420,7 +443,7 @@ export class AWSIntegration {
         throw new Error('AWS統合が初期化されていません');
       }
 
-      const params: AWS.CloudWatch.GetMetricStatisticsRequest = {
+      const params: any = {
         Namespace: this.config.cloudWatch.namespace,
         MetricName: metricName,
         StartTime: startTime,
@@ -429,11 +452,16 @@ export class AWSIntegration {
         Statistics: statistics as AWS.CloudWatch.Statistic[],
       };
 
-      const result = await this.cloudWatch.getMetricStatistics(params).promise();
+      const result = await this.cloudWatch
+        .getMetricStatistics(params)
+        .promise();
       console.log(`✅ CloudWatchメトリクス統計取得成功: ${metricName}`);
       return result.Datapoints || [];
     } catch (error) {
-      console.error(`❌ CloudWatchメトリクス統計取得エラー: ${metricName}`, error);
+      console.error(
+        `❌ CloudWatchメトリクス統計取得エラー: ${metricName}`,
+        error
+      );
       throw error;
     }
   }

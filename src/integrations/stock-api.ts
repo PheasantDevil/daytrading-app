@@ -72,7 +72,8 @@ export class StockApiService {
         high: result.regularMarketDayHigh || 0,
         low: result.regularMarketDayLow || 0,
         open: result.regularMarketOpen || 0,
-        close: result.previousClose || 0,
+        close:
+          result.regularMarketPreviousClose || result.regularMarketPrice || 0,
         timestamp: new Date(),
       };
     } catch (error) {
@@ -93,10 +94,15 @@ export class StockApiService {
     try {
       await this.rateLimit();
 
+      // Yahoo Finance APIは '1d', '1wk', '1mo' のみをサポート
+      // より短いインターバルは '1d' にマッピング
+      const yahooInterval: '1d' | '1wk' | '1mo' =
+        interval === '1d' ? '1d' : '1d';
+
       const result = await yahooFinance.historical(symbol, {
         period1,
         period2,
-        interval,
+        interval: yahooInterval,
       });
 
       return result.map((item) => ({

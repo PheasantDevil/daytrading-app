@@ -37,8 +37,8 @@ npm run practice:start
 | ------------------------- | ------------------------------------- | ------ | ---------- |
 | `npm run practice:start`  | 仮想取引を開始（初期資金$100,000）    | なし   | ⭐⭐⭐⭐⭐ |
 | `npm run practice:hybrid` | Yahoo + IB ハイブリッドシステムテスト | なし   | ⭐⭐⭐⭐   |
-| `npm run verify:trade`    | 4日間検証システム（LINE通知付き）    | なし   | ⭐⭐⭐⭐⭐ |
-| `npm run verify:analyze`  | 4日間検証結果の統合分析              | なし   | ⭐⭐⭐⭐   |
+| `npm run verify:trade`    | 4日間検証システム（LINE通知付き）     | なし   | ⭐⭐⭐⭐⭐ |
+| `npm run verify:analyze`  | 4日間検証結果の統合分析               | なし   | ⭐⭐⭐⭐   |
 | `npm run test:line`       | LINE通知の接続テスト                  | なし   | ⭐⭐⭐     |
 
 **特徴:**

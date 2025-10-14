@@ -7,6 +7,9 @@ export interface InteractiveBrokersConfig {
   timeout: number;
   retryAttempts: number;
   paperTrading: boolean;
+  baseUrl: string;
+  apiKey: string;
+  sandbox: boolean;
 }
 
 export const ibConfig: InteractiveBrokersConfig = {
@@ -18,6 +21,9 @@ export const ibConfig: InteractiveBrokersConfig = {
   timeout: 30000,
   retryAttempts: 3,
   paperTrading: process.env.IB_PAPER_TRADING === 'true',
+  baseUrl: `http://${process.env.IB_HOST || '127.0.0.1'}:${process.env.IB_PORT || '7497'}`,
+  apiKey: '', // Not used for IB (uses TWS/Gateway connection)
+  sandbox: process.env.IB_PAPER_TRADING === 'true',
 };
 
 export const ibAutoTradingConfig = {

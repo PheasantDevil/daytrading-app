@@ -12,7 +12,7 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
@@ -31,7 +31,8 @@ export async function GET(
       );
     }
 
-    const accountId = parseInt(params.id);
+    const { id } = await params;
+    const accountId = parseInt(id);
     if (isNaN(accountId)) {
       return NextResponse.json(
         { success: false, message: '無効な口座IDです' },
@@ -83,7 +84,7 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
@@ -102,7 +103,8 @@ export async function PUT(
       );
     }
 
-    const accountId = parseInt(params.id);
+    const { id } = await params;
+    const accountId = parseInt(id);
     if (isNaN(accountId)) {
       return NextResponse.json(
         { success: false, message: '無効な口座IDです' },
@@ -131,38 +133,26 @@ export async function PUT(
     const updateData: any = {};
 
     // 認証情報が更新される場合は暗号化
-    if (
-      body.apiKey ||
-      body.apiSecret ||
-      body.password ||
-      body.tradingPassword
-    ) {
+    if (body.apiPassword || body.password) {
       const currentCredentials = {
-        apiKey: existingAccount.apiKey,
-        apiSecret: existingAccount.apiSecret,
-        password: existingAccount.passwordHash,
-        tradingPassword: existingAccount.tradingPasswordHash,
+        apiPassword: existingAccount.apiPassword || '',
+        password: existingAccount.passwordHash || '',
       };
 
       const decryptedCredentials =
         decryptSecuritiesCredentials(currentCredentials);
 
       const newCredentials = {
-        apiKey: body.apiKey || decryptedCredentials.apiKey,
-        apiSecret: body.apiSecret || decryptedCredentials.apiSecret,
+        apiPassword: body.apiPassword || decryptedCredentials.apiPassword,
         password: body.password || decryptedCredentials.password,
-        tradingPassword:
-          body.tradingPassword || decryptedCredentials.tradingPassword,
       };
 
       const encryptedCredentials = encryptSecuritiesCredentials(newCredentials);
 
-      if (body.apiKey) updateData.apiKey = encryptedCredentials.apiKey;
-      if (body.apiSecret) updateData.apiSecret = encryptedCredentials.apiSecret;
+      if (body.apiPassword)
+        updateData.apiPassword = encryptedCredentials.apiPassword;
       if (body.password)
         updateData.passwordHash = encryptedCredentials.password;
-      if (body.tradingPassword)
-        updateData.tradingPasswordHash = encryptedCredentials.tradingPassword;
     }
 
     // その他のフィールド
@@ -209,7 +199,7 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
@@ -228,7 +218,8 @@ export async function DELETE(
       );
     }
 
-    const accountId = parseInt(params.id);
+    const { id } = await params;
+    const accountId = parseInt(id);
     if (isNaN(accountId)) {
       return NextResponse.json(
         { success: false, message: '無効な口座IDです' },

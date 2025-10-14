@@ -1,18 +1,18 @@
 import { config } from 'dotenv';
-import { Logger } from '../src/utils/logger';
+import { writeFile } from 'fs/promises';
+import { TradeDataCollector } from '../src/analytics/trade-data-collector';
+import { InteractiveBrokersIntegration } from '../src/brokers/interactive-brokers-integration';
+import { ibConfig } from '../src/config/interactive-brokers-config';
+import { getTodayConfig } from '../src/config/verification-trading-config';
+import { YahooFinanceSignalService } from '../src/services/external-signals/yahoo-finance-signal';
+import { HybridMarketDataService } from '../src/services/hybrid-market-data-service';
+import { LineNotificationService } from '../src/services/line-notification-service';
+import { SignalAggregatorService } from '../src/services/signal-aggregator-service';
 import { DayTradingScheduler } from '../src/trading/day-trading-scheduler';
+import { Logger } from '../src/utils/logger';
 
 // 環境変数の読み込み
 config({ path: '.env.local' });
-import { SignalAggregatorService } from '../src/services/signal-aggregator-service';
-import { HybridMarketDataService } from '../src/services/hybrid-market-data-service';
-import { InteractiveBrokersIntegration } from '../src/brokers/interactive-brokers-integration';
-import { YahooFinanceSignalService } from '../src/services/external-signals/yahoo-finance-signal';
-import { TradeDataCollector } from '../src/analytics/trade-data-collector';
-import { LineNotificationService } from '../src/services/line-notification-service';
-import { getTodayConfig } from '../src/config/verification-trading-config';
-import { ibConfig } from '../src/config/interactive-brokers-config';
-import { writeFile } from 'fs/promises';
 
 const logger = new Logger('VerificationTradingRunner');
 
@@ -51,7 +51,9 @@ async function runVerificationTrading(): Promise<void> {
     logger.info('🔬 ========== 検証用デイトレード実行開始 ==========');
     logger.info(`日付: ${today}`);
     logger.info(`設定: ${configName}`);
-    logger.info(`ストップロス: ${(config.riskManagement.stopLoss * 100).toFixed(1)}%`);
+    logger.info(
+      `ストップロス: ${(config.riskManagement.stopLoss * 100).toFixed(1)}%`
+    );
     logger.info(
       `テイクプロフィット: ${(config.riskManagement.takeProfit * 100).toFixed(1)}%`
     );
@@ -287,4 +289,3 @@ runVerificationTrading().catch((error) => {
 });
 
 export { runVerificationTrading };
-

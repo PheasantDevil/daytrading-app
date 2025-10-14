@@ -94,11 +94,13 @@ export const aggressiveConfig: DayTradingConfig = {
 /**
  * 日付別設定マッピング
  */
-export const dailyConfigMap: { [key: string]: { config: DayTradingConfig; name: string } } = {
-  '2025-10-14': { config: conservativeConfig, name: '保守的' },
-  '2025-10-15': { config: standardConfig, name: '標準' },
-  '2025-10-16': { config: aggressiveConfig, name: '積極的' },
-  '2025-10-17': { config: standardConfig, name: '標準（再検証）' },
+export const dailyConfigMap: {
+  [key: string]: { config: DayTradingConfig; name: string };
+} = {
+  '2025-10-15': { config: conservativeConfig, name: '保守的' },
+  '2025-10-16': { config: standardConfig, name: '標準' },
+  '2025-10-17': { config: aggressiveConfig, name: '積極的' },
+  '2025-10-18': { config: standardConfig, name: '標準（再検証）' },
 };
 
 /**
@@ -116,4 +118,3 @@ export function getTodayConfig(): { config: DayTradingConfig; name: string } {
 
   return configData;
 }
-
