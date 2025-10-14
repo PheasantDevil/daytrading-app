@@ -1,13 +1,11 @@
-import { EventEmitter } from 'events';
-import { Logger } from '../utils/logger';
-import { MockIBApi, MockIBContract, MockIBOrder } from './mock-ib-api';
 import {
   BaseBrokerIntegration,
   BrokerAccount,
+  BrokerMarketData,
   BrokerOrder,
   BrokerPosition,
-  BrokerMarketData,
 } from './broker-integration-service';
+import { MockIBApi, MockIBContract, MockIBOrder } from './mock-ib-api';
 
 export interface IBContract {
   symbol: string;
@@ -36,6 +34,8 @@ export interface IBConfig {
   retryAttempts: number;
   paperTrading: boolean;
   baseUrl: string;
+  apiKey: string;
+  sandbox: boolean;
 }
 
 /**
@@ -43,7 +43,8 @@ export interface IBConfig {
  * TWS API (Trader Workstation API) を使用した取引統合
  */
 export class InteractiveBrokersIntegration extends BaseBrokerIntegration {
-  private connectionStatus: 'disconnected' | 'connecting' | 'connected' = 'disconnected';
+  private connectionStatus: 'disconnected' | 'connecting' | 'connected' =
+    'disconnected';
   private orderId: number = 1;
   private positions: Map<string, BrokerPosition> = new Map();
   private orders: Map<string, BrokerOrder> = new Map();
@@ -51,7 +52,7 @@ export class InteractiveBrokersIntegration extends BaseBrokerIntegration {
 
   constructor(config: IBConfig) {
     super(config);
-    
+
     // モックAPIの初期化
     this.mockApi = new MockIBApi({
       host: config.host,
@@ -76,7 +77,7 @@ export class InteractiveBrokersIntegration extends BaseBrokerIntegration {
       this.connectionStatus = 'connected';
       this.logger.info('Interactive Brokersに接続しました（モックAPI使用）');
       this.logger.info(
-        `モード: ${this.config.paperTrading ? 'ペーパートレーディング' : '本番取引'}`
+        `モード: ${(this.config as IBConfig).paperTrading ? 'ペーパートレーディング' : '本番取引'}`
       );
       this.emit('connected');
     } catch (error) {
@@ -118,7 +119,7 @@ export class InteractiveBrokersIntegration extends BaseBrokerIntegration {
       // モックAPIから仮想口座情報を取得
       const virtualAccount = this.mockApi.getVirtualAccount();
       const positions: BrokerPosition[] = [];
-      
+
       for (const [symbol, pos] of virtualAccount.positions.entries()) {
         positions.push({
           symbol,
@@ -221,8 +222,9 @@ export class InteractiveBrokersIntegration extends BaseBrokerIntegration {
 
       // モックAPIで注文を発注
       await this.mockApi.placeOrder(this.orderId, contract, order);
-      
-      const executionPrice = orderRequest.price || this.mockApi.getMarketPrice(orderRequest.symbol);
+
+      const executionPrice =
+        orderRequest.price || this.mockApi.getMarketPrice(orderRequest.symbol);
 
       const brokerOrder: BrokerOrder = {
         orderId: `ib_${this.orderId++}`,
@@ -286,7 +288,7 @@ export class InteractiveBrokersIntegration extends BaseBrokerIntegration {
       const high24h = price * 1.02;
       const low24h = price * 0.98;
       const change24h = price * 0.01;
-      
+
       const marketData: BrokerMarketData = {
         symbol,
         price,
@@ -465,7 +467,7 @@ export class InteractiveBrokersIntegration extends BaseBrokerIntegration {
       healthy: this.isConnected,
       connected: this.isConnected,
       accountId: this.config.accountId,
-      mode: this.config.paperTrading ? 'paper' : 'live',
+      mode: (this.config as IBConfig).paperTrading ? 'paper' : 'live',
       timestamp: new Date().toISOString(),
     };
   }

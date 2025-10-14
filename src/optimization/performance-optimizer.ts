@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
-import { Logger } from '../utils/logger';
 import * as os from 'os';
+import { Logger } from '../utils/logger';
 
 export interface PerformanceConfig {
   enabled: boolean;
@@ -79,9 +79,18 @@ export class PerformanceOptimizer extends EventEmitter {
   private isRunning: boolean = false;
   private monitoringInterval?: NodeJS.Timeout;
   private metrics: PerformanceMetrics[] = [];
-  private cache: Map<string, { value: any; timestamp: number; ttl: number }> = new Map();
-  private gcStats: { count: number; time: number; lastGcTime: number } = { count: 0, time: 0, lastGcTime: 0 };
-  private networkStats: { connections: number; bytesIn: number; bytesOut: number } = { connections: 0, bytesIn: 0, bytesOut: 0 };
+  private cache: Map<string, { value: any; timestamp: number; ttl: number }> =
+    new Map();
+  private gcStats: { count: number; time: number; lastGcTime: number } = {
+    count: 0,
+    time: 0,
+    lastGcTime: 0,
+  };
+  private networkStats: {
+    connections: number;
+    bytesIn: number;
+    bytesOut: number;
+  } = { connections: 0, bytesIn: 0, bytesOut: 0 };
 
   constructor(config: PerformanceConfig) {
     super();
@@ -118,7 +127,10 @@ export class PerformanceOptimizer extends EventEmitter {
       this.logger.info('パフォーマンス最適化サービスの初期化が完了しました');
       this.emit('initialized');
     } catch (error) {
-      this.logger.error('パフォーマンス最適化サービスの初期化に失敗しました:', error);
+      this.logger.error(
+        'パフォーマンス最適化サービスの初期化に失敗しました:',
+        error
+      );
       throw error;
     }
   }
@@ -129,15 +141,15 @@ export class PerformanceOptimizer extends EventEmitter {
   private setupGCMonitoring(): void {
     if (global.gc) {
       const originalGc = global.gc;
-      global.gc = () => {
+      global.gc = async () => {
         const startTime = Date.now();
-        originalGc();
+        await originalGc();
         const endTime = Date.now();
-        
+
         this.gcStats.count++;
         this.gcStats.time += endTime - startTime;
         this.gcStats.lastGcTime = endTime;
-        
+
         this.logger.debug(`GC実行: ${endTime - startTime}ms`);
       };
     }
@@ -152,16 +164,17 @@ export class PerformanceOptimizer extends EventEmitter {
       const networkInterfaces = os.networkInterfaces();
       let totalBytesIn = 0;
       let totalBytesOut = 0;
-      
-      Object.values(networkInterfaces).forEach(interfaces => {
-        interfaces?.forEach(iface => {
+
+      Object.values(networkInterfaces).forEach((interfaces) => {
+        // Note: NetworkInterfaceInfoにはbytesReadとbytesWrittenがないため、0を設定
+        interfaces?.forEach((iface) => {
           if (iface.internal === false) {
-            totalBytesIn += iface.bytesRead || 0;
-            totalBytesOut += iface.bytesWritten || 0;
+            // totalBytesIn += iface.bytesRead || 0;
+            // totalBytesOut += iface.bytesWritten || 0;
           }
         });
       });
-      
+
       this.networkStats.bytesIn = totalBytesIn;
       this.networkStats.bytesOut = totalBytesOut;
     }, 1000);
@@ -179,16 +192,18 @@ export class PerformanceOptimizer extends EventEmitter {
    */
   private setupMemoryLimits(): void {
     const maxHeapSize = this.config.memoryConfig.maxHeapSize * 1024 * 1024; // MB to bytes
-    
+
     setInterval(() => {
       const memUsage = process.memoryUsage();
       if (memUsage.heapUsed > maxHeapSize) {
-        this.logger.warn(`メモリ使用量が制限を超過しました: ${memUsage.heapUsed} > ${maxHeapSize}`);
+        this.logger.warn(
+          `メモリ使用量が制限を超過しました: ${memUsage.heapUsed} > ${maxHeapSize}`
+        );
         this.emit('alert', {
           type: 'memory',
           message: 'メモリ使用量が制限を超過しました',
           value: memUsage.heapUsed,
-          threshold: maxHeapSize
+          threshold: maxHeapSize,
         });
       }
     }, 5000);
@@ -212,7 +227,10 @@ export class PerformanceOptimizer extends EventEmitter {
       this.logger.info('パフォーマンス最適化サービスの開始が完了しました');
       this.emit('started');
     } catch (error) {
-      this.logger.error('パフォーマンス最適化サービスの開始に失敗しました:', error);
+      this.logger.error(
+        'パフォーマンス最適化サービスの開始に失敗しました:',
+        error
+      );
       throw error;
     }
   }
@@ -225,15 +243,15 @@ export class PerformanceOptimizer extends EventEmitter {
       try {
         const metrics = await this.collectMetrics();
         this.metrics.push(metrics);
-        
+
         // メトリクスの保持数を制限
         if (this.metrics.length > 1000) {
           this.metrics = this.metrics.slice(-500);
         }
-        
+
         // 最適化の実行
         await this.performOptimization(metrics);
-        
+
         this.emit('metrics', metrics);
       } catch (error) {
         this.logger.error('メトリクス収集に失敗しました:', error);
@@ -248,7 +266,7 @@ export class PerformanceOptimizer extends EventEmitter {
     const memUsage = process.memoryUsage();
     const cpuUsage = process.cpuUsage();
     const loadAvg = os.loadavg();
-    
+
     return {
       timestamp: new Date().toISOString(),
       memory: {
@@ -258,36 +276,38 @@ export class PerformanceOptimizer extends EventEmitter {
         heapUsed: memUsage.heapUsed,
         heapTotal: memUsage.heapTotal,
         external: memUsage.external,
-        rss: memUsage.rss
+        rss: memUsage.rss,
       },
       cpu: {
         usage: (cpuUsage.user + cpuUsage.system) / 1000000, // Convert to seconds
         loadAverage: loadAvg,
-        cores: os.cpus().length
+        cores: os.cpus().length,
       },
       network: {
         connections: this.networkStats.connections,
         bytesIn: this.networkStats.bytesIn,
-        bytesOut: this.networkStats.bytesOut
+        bytesOut: this.networkStats.bytesOut,
       },
       cache: {
         hits: this.getCacheHits(),
         misses: this.getCacheMisses(),
         size: this.cache.size,
-        maxSize: this.config.cacheConfig.maxSize
+        maxSize: this.config.cacheConfig.maxSize,
       },
       gc: {
         count: this.gcStats.count,
         time: this.gcStats.time,
-        lastGcTime: this.gcStats.lastGcTime
-      }
+        lastGcTime: this.gcStats.lastGcTime,
+      },
     };
   }
 
   /**
    * 最適化の実行
    */
-  private async performOptimization(metrics: PerformanceMetrics): Promise<void> {
+  private async performOptimization(
+    metrics: PerformanceMetrics
+  ): Promise<void> {
     const optimizations: OptimizationResult[] = [];
 
     // メモリ最適化
@@ -307,7 +327,9 @@ export class PerformanceOptimizer extends EventEmitter {
 
     // 最適化結果の処理
     for (const optimization of optimizations) {
-      this.logger.info(`最適化実行: ${optimization.type} - ${optimization.action}`);
+      this.logger.info(
+        `最適化実行: ${optimization.type} - ${optimization.action}`
+      );
       this.emit('optimization', optimization);
     }
   }
@@ -315,7 +337,9 @@ export class PerformanceOptimizer extends EventEmitter {
   /**
    * メモリ最適化
    */
-  private async optimizeMemory(metrics: PerformanceMetrics): Promise<OptimizationResult> {
+  private async optimizeMemory(
+    metrics: PerformanceMetrics
+  ): Promise<OptimizationResult> {
     // 強制GC実行
     if (global.gc) {
       global.gc();
@@ -330,18 +354,20 @@ export class PerformanceOptimizer extends EventEmitter {
       impact: 'medium',
       description: 'メモリ使用量の最適化を実行しました',
       metrics,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
   /**
    * CPU最適化
    */
-  private async optimizeCPU(metrics: PerformanceMetrics): Promise<OptimizationResult> {
+  private async optimizeCPU(
+    metrics: PerformanceMetrics
+  ): Promise<OptimizationResult> {
     // CPU使用率が高い場合の最適化
     if (this.config.cpuConfig.optimizationEnabled) {
       // 非同期処理の最適化
-      await new Promise(resolve => setImmediate(resolve));
+      await new Promise((resolve) => setImmediate(resolve));
     }
 
     return {
@@ -350,14 +376,16 @@ export class PerformanceOptimizer extends EventEmitter {
       impact: 'low',
       description: 'CPU使用率の最適化を実行しました',
       metrics,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
   /**
    * キャッシュ最適化
    */
-  private async optimizeCache(metrics: PerformanceMetrics): Promise<OptimizationResult> {
+  private async optimizeCache(
+    metrics: PerformanceMetrics
+  ): Promise<OptimizationResult> {
     // 期限切れキャッシュのクリア
     this.clearExpiredCache();
 
@@ -372,7 +400,7 @@ export class PerformanceOptimizer extends EventEmitter {
       impact: 'low',
       description: 'キャッシュの最適化を実行しました',
       metrics,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -394,7 +422,7 @@ export class PerformanceOptimizer extends EventEmitter {
   private clearLRUCache(): void {
     const entries = Array.from(this.cache.entries());
     entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
-    
+
     const toRemove = Math.floor(entries.length * 0.2); // 20%を削除
     for (let i = 0; i < toRemove; i++) {
       this.cache.delete(entries[i][0]);
@@ -406,12 +434,12 @@ export class PerformanceOptimizer extends EventEmitter {
    */
   setCache(key: string, value: any, ttl?: number): void {
     if (!this.config.cacheConfig.enabled) return;
-    
+
     const entryTtl = ttl || this.config.cacheConfig.ttl;
     this.cache.set(key, {
       value,
       timestamp: Date.now(),
-      ttl: entryTtl
+      ttl: entryTtl,
     });
   }
 
@@ -420,15 +448,15 @@ export class PerformanceOptimizer extends EventEmitter {
    */
   getCache(key: string): any | null {
     if (!this.config.cacheConfig.enabled) return null;
-    
+
     const entry = this.cache.get(key);
     if (!entry) return null;
-    
+
     if (Date.now() - entry.timestamp > entry.ttl) {
       this.cache.delete(key);
       return null;
     }
-    
+
     return entry.value;
   }
 
@@ -465,7 +493,10 @@ export class PerformanceOptimizer extends EventEmitter {
       this.logger.info('パフォーマンス最適化サービスの停止が完了しました');
       this.emit('stopped');
     } catch (error) {
-      this.logger.error('パフォーマンス最適化サービスの停止に失敗しました:', error);
+      this.logger.error(
+        'パフォーマンス最適化サービスの停止に失敗しました:',
+        error
+      );
       throw error;
     }
   }
@@ -481,7 +512,9 @@ export class PerformanceOptimizer extends EventEmitter {
    * 最新メトリクスの取得
    */
   getLatestMetrics(): PerformanceMetrics | null {
-    return this.metrics.length > 0 ? this.metrics[this.metrics.length - 1] : null;
+    return this.metrics.length > 0
+      ? this.metrics[this.metrics.length - 1]
+      : null;
   }
 
   /**
@@ -500,21 +533,27 @@ export class PerformanceOptimizer extends EventEmitter {
         averageMemoryUsage: 0,
         averageCPUUsage: 0,
         cacheHitRate: 0,
-        uptime: 0
+        uptime: 0,
       };
     }
 
     const totalMemory = this.metrics.reduce((sum, m) => sum + m.memory.used, 0);
     const totalCPU = this.metrics.reduce((sum, m) => sum + m.cpu.usage, 0);
     const totalHits = this.metrics.reduce((sum, m) => sum + m.cache.hits, 0);
-    const totalMisses = this.metrics.reduce((sum, m) => sum + m.cache.misses, 0);
+    const totalMisses = this.metrics.reduce(
+      (sum, m) => sum + m.cache.misses,
+      0
+    );
 
     return {
       totalOptimizations: this.metrics.length,
       averageMemoryUsage: totalMemory / this.metrics.length,
       averageCPUUsage: totalCPU / this.metrics.length,
       cacheHitRate: totalHits / (totalHits + totalMisses) || 0,
-      uptime: this.isRunning ? Date.now() - this.metrics[0].timestamp : 0
+      uptime:
+        this.isRunning && this.metrics.length > 0
+          ? Date.now() - new Date(this.metrics[0].timestamp).getTime()
+          : 0,
     };
   }
 
@@ -533,7 +572,7 @@ export class PerformanceOptimizer extends EventEmitter {
       running: this.isRunning,
       metricsCount: this.metrics.length,
       cacheSize: this.cache.size,
-      config: this.config
+      config: this.config,
     };
   }
 
@@ -549,19 +588,19 @@ export class PerformanceOptimizer extends EventEmitter {
     try {
       const metrics = await this.collectMetrics();
       const healthy = this.isRunning && this.isInitialized;
-      
+
       return {
         healthy,
         status: healthy ? 'healthy' : 'unhealthy',
         metrics,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
       return {
         healthy: false,
         status: 'error',
         metrics: null,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
   }

@@ -187,4 +187,5 @@ if (args.length === 0) {
   process.exit(1);
 }
 
-export { WorkflowOptions, workflowRoutine };
+export { workflowRoutine };
+export type { WorkflowOptions };

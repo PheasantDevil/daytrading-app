@@ -252,7 +252,10 @@ export class MultiTimeframePredictor {
 
     predictions.forEach((prediction: any) => {
       const weight = prediction.confidence / 100;
-      trendVotes[prediction.trend] += weight;
+      const trend = prediction.trend as 'UP' | 'DOWN' | 'SIDEWAYS';
+      if (trend in trendVotes) {
+        trendVotes[trend] += weight;
+      }
       totalConfidence += prediction.confidence;
       totalVolatility += prediction.volatility;
     });

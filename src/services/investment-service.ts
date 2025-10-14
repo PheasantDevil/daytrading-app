@@ -1,9 +1,9 @@
+import { prisma } from '@/core/database';
 import {
   InvestmentPosition,
   InvestmentProduct,
   InvestmentTransaction,
 } from '@/types/investment';
-import { prisma } from '@/core/database';
 
 export class InvestmentService {
   /**
@@ -19,7 +19,7 @@ export class InvestmentService {
     tradingFee?: number;
     tradingFeeRate?: number;
   }): Promise<InvestmentProduct> {
-    return await prisma.investmentProduct.create({
+    const product = await prisma.investmentProduct.create({
       data: {
         symbol: productData.symbol,
         name: productData.name,
@@ -31,25 +31,42 @@ export class InvestmentService {
         tradingFeeRate: productData.tradingFeeRate || 0.1,
       },
     });
+
+    return {
+      ...product,
+      type: product.type as InvestmentProduct['type'],
+    };
   }
 
   /**
    * 投資商品一覧を取得
    */
   async getProducts(): Promise<InvestmentProduct[]> {
-    return await prisma.investmentProduct.findMany({
+    const products = await prisma.investmentProduct.findMany({
       where: { isActive: true },
       orderBy: { name: 'asc' },
     });
+
+    return products.map((p) => ({
+      ...p,
+      type: p.type as InvestmentProduct['type'],
+    }));
   }
 
   /**
    * 投資商品の詳細を取得
    */
   async getProduct(productId: string): Promise<InvestmentProduct | null> {
-    return await prisma.investmentProduct.findUnique({
+    const product = await prisma.investmentProduct.findUnique({
       where: { id: productId },
     });
+
+    if (!product) return null;
+
+    return {
+      ...product,
+      type: product.type as InvestmentProduct['type'],
+    };
   }
 
   /**

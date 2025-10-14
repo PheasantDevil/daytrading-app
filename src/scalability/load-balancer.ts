@@ -16,7 +16,12 @@ export interface ServiceInstance {
 }
 
 export interface LoadBalancingStrategy {
-  name: 'ROUND_ROBIN' | 'WEIGHTED_ROUND_ROBIN' | 'LEAST_CONNECTIONS' | 'LEAST_RESPONSE_TIME' | 'RANDOM';
+  name:
+    | 'ROUND_ROBIN'
+    | 'WEIGHTED_ROUND_ROBIN'
+    | 'LEAST_CONNECTIONS'
+    | 'LEAST_RESPONSE_TIME'
+    | 'RANDOM';
   parameters?: Record<string, any>;
 }
 
@@ -130,13 +135,16 @@ export class LoadBalancer {
   async addInstance(instance: ServiceInstance): Promise<void> {
     try {
       this.instances.set(instance.id, instance);
-      
+
       // サーキットブレーカーを追加
       if (this.config.circuitBreaker.enabled) {
-        this.circuitBreakers.set(instance.id, new CircuitBreaker(
-          this.config.circuitBreaker.failureThreshold,
-          this.config.circuitBreaker.recoveryTimeout
-        ));
+        this.circuitBreakers.set(
+          instance.id,
+          new CircuitBreaker(
+            this.config.circuitBreaker.failureThreshold,
+            this.config.circuitBreaker.recoveryTimeout
+          )
+        );
       }
 
       console.log(`✅ インスタンス追加: ${instance.id} (${instance.url})`);
@@ -155,7 +163,7 @@ export class LoadBalancer {
       this.instances.delete(instanceId);
       this.circuitBreakers.delete(instanceId);
       this.stickySessions.delete(instanceId);
-      
+
       console.log(`✅ インスタンス削除: ${instanceId}`);
       this.updateStats();
     } catch (error) {
@@ -168,12 +176,12 @@ export class LoadBalancer {
    * リクエストを分散
    */
   async distributeRequest(request: Request): Promise<Response> {
+    // スティッキーセッションをチェック
+    let selectedInstance: ServiceInstance | null = null;
+
     try {
       this.stats.totalRequests++;
 
-      // スティッキーセッションをチェック
-      let selectedInstance: ServiceInstance | null = null;
-      
       if (this.config.stickySession.enabled && request.sessionId) {
         const stickyInstanceId = this.stickySessions.get(request.sessionId);
         if (stickyInstanceId) {
@@ -198,7 +206,9 @@ export class LoadBalancer {
       if (this.config.circuitBreaker.enabled) {
         const circuitBreaker = this.circuitBreakers.get(selectedInstance.id);
         if (circuitBreaker && !circuitBreaker.canExecute()) {
-          throw new Error(`サーキットブレーカーが開いています: ${selectedInstance.id}`);
+          throw new Error(
+            `サーキットブレーカーが開いています: ${selectedInstance.id}`
+          );
         }
       }
 
@@ -209,7 +219,10 @@ export class LoadBalancer {
 
       // レスポンス時間を更新
       selectedInstance.responseTime = responseTime;
-      selectedInstance.activeConnections = Math.max(0, selectedInstance.activeConnections - 1);
+      selectedInstance.activeConnections = Math.max(
+        0,
+        selectedInstance.activeConnections - 1
+      );
 
       // サーキットブレーカーを更新
       if (this.config.circuitBreaker.enabled) {
@@ -230,10 +243,12 @@ export class LoadBalancer {
     } catch (error) {
       this.stats.failedRequests++;
       this.updateStats();
-      
+
       // サーキットブレーカーを更新
       if (this.config.circuitBreaker.enabled) {
-        const circuitBreaker = this.circuitBreakers.get(selectedInstance?.id || '');
+        const circuitBreaker = this.circuitBreakers.get(
+          selectedInstance?.id || ''
+        );
         if (circuitBreaker) {
           circuitBreaker.recordFailure();
           if (circuitBreaker.isOpen()) {
@@ -251,8 +266,9 @@ export class LoadBalancer {
    * インスタンスを選択
    */
   private selectInstance(request: Request): ServiceInstance | null {
-    const healthyInstances = Array.from(this.instances.values())
-      .filter(instance => instance.health === 'HEALTHY');
+    const healthyInstances = Array.from(this.instances.values()).filter(
+      (instance) => instance.health === 'HEALTHY'
+    );
 
     if (healthyInstances.length === 0) {
       return null;
@@ -286,25 +302,32 @@ export class LoadBalancer {
   /**
    * 重み付きラウンドロビン選択
    */
-  private weightedRoundRobinSelection(instances: ServiceInstance[]): ServiceInstance {
-    const totalWeight = instances.reduce((sum, instance) => sum + instance.weight, 0);
+  private weightedRoundRobinSelection(
+    instances: ServiceInstance[]
+  ): ServiceInstance {
+    const totalWeight = instances.reduce(
+      (sum, instance) => sum + instance.weight,
+      0
+    );
     let random = Math.random() * totalWeight;
-    
+
     for (const instance of instances) {
       random -= instance.weight;
       if (random <= 0) {
         return instance;
       }
     }
-    
+
     return instances[0];
   }
 
   /**
    * 最少接続選択
    */
-  private leastConnectionsSelection(instances: ServiceInstance[]): ServiceInstance {
-    return instances.reduce((min, instance) => 
+  private leastConnectionsSelection(
+    instances: ServiceInstance[]
+  ): ServiceInstance {
+    return instances.reduce((min, instance) =>
       instance.activeConnections < min.activeConnections ? instance : min
     );
   }
@@ -312,8 +335,10 @@ export class LoadBalancer {
   /**
    * 最少レスポンス時間選択
    */
-  private leastResponseTimeSelection(instances: ServiceInstance[]): ServiceInstance {
-    return instances.reduce((min, instance) => 
+  private leastResponseTimeSelection(
+    instances: ServiceInstance[]
+  ): ServiceInstance {
+    return instances.reduce((min, instance) =>
       instance.responseTime < min.responseTime ? instance : min
     );
   }
@@ -329,7 +354,10 @@ export class LoadBalancer {
   /**
    * リクエストを実行
    */
-  private async executeRequest(instance: ServiceInstance, request: Request): Promise<Response> {
+  private async executeRequest(
+    instance: ServiceInstance,
+    request: Request
+  ): Promise<Response> {
     try {
       instance.activeConnections++;
 
@@ -367,14 +395,30 @@ export class LoadBalancer {
   private async performHealthCheck(): Promise<void> {
     for (const [instanceId, instance] of this.instances) {
       try {
-        const response = await fetch(`${instance.url}${this.config.healthCheck.path}`, {
-          method: 'GET',
-          timeout: this.config.healthCheck.timeout,
-        });
+        // AbortControllerでタイムアウトを実装
+        const controller = new AbortController();
+        const timeout = setTimeout(
+          () => controller.abort(),
+          this.config.healthCheck.timeout
+        );
 
-        if (response.status === this.config.healthCheck.expectedStatus) {
-          instance.health = 'HEALTHY';
-        } else {
+        try {
+          const response = await fetch(
+            `${instance.url}${this.config.healthCheck.path}`,
+            {
+              method: 'GET',
+              signal: controller.signal,
+            }
+          );
+          clearTimeout(timeout);
+
+          if (response.status === this.config.healthCheck.expectedStatus) {
+            instance.health = 'HEALTHY';
+          } else {
+            instance.health = 'UNHEALTHY';
+          }
+        } catch (fetchError) {
+          clearTimeout(timeout);
           instance.health = 'UNHEALTHY';
         }
       } catch (error) {
@@ -392,10 +436,13 @@ export class LoadBalancer {
    */
   private initializeCircuitBreakers(): void {
     for (const [instanceId, instance] of this.instances) {
-      this.circuitBreakers.set(instanceId, new CircuitBreaker(
-        this.config.circuitBreaker.failureThreshold,
-        this.config.circuitBreaker.recoveryTimeout
-      ));
+      this.circuitBreakers.set(
+        instanceId,
+        new CircuitBreaker(
+          this.config.circuitBreaker.failureThreshold,
+          this.config.circuitBreaker.recoveryTimeout
+        )
+      );
     }
   }
 
@@ -404,9 +451,14 @@ export class LoadBalancer {
    */
   private updateStats(): void {
     const instances = Array.from(this.instances.values());
-    this.stats.activeInstances = instances.filter(i => i.health === 'HEALTHY').length;
-    this.stats.unhealthyInstances = instances.filter(i => i.health === 'UNHEALTHY').length;
-    this.stats.averageResponseTime = instances.reduce((sum, i) => sum + i.responseTime, 0) / instances.length;
+    this.stats.activeInstances = instances.filter(
+      (i) => i.health === 'HEALTHY'
+    ).length;
+    this.stats.unhealthyInstances = instances.filter(
+      (i) => i.health === 'UNHEALTHY'
+    ).length;
+    this.stats.averageResponseTime =
+      instances.reduce((sum, i) => sum + i.responseTime, 0) / instances.length;
     this.stats.lastUpdated = new Date();
   }
 

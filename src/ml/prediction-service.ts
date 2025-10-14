@@ -66,7 +66,14 @@ export class PredictionService {
       throw new Error('Insufficient data for feature generation');
     }
 
-    return FeatureEngineering.generateMLFeatures(prices);
+    // Prismaの型をStockPrice型にマッピング
+    const mappedPrices = prices.map((p) => ({
+      ...p,
+      stock_id: p.stockId,
+      created_at: p.createdAt,
+    })) as any;
+
+    return FeatureEngineering.generateMLFeatures(mappedPrices);
   }
 
   /**

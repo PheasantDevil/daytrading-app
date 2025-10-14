@@ -4,7 +4,7 @@
  */
 
 import { EventEmitter } from 'events';
-import WebSocket from 'ws';
+import WebSocket, { WebSocketServer } from 'ws';
 
 export interface MarketEvent {
   id: string;
@@ -65,7 +65,7 @@ export interface StreamProcessor {
 
 export class WebSocketManager extends EventEmitter {
   private config: WebSocketConfig;
-  private server: WebSocket.Server | null = null;
+  private server: WebSocketServer | null = null;
   private connections: Map<string, WebSocketConnection> = new Map();
   private streamProcessor: StreamProcessor;
   private heartbeatInterval: NodeJS.Timeout | null = null;
@@ -86,7 +86,7 @@ export class WebSocketManager extends EventEmitter {
     try {
       console.log('🔄 WebSocketサーバー開始中...');
 
-      this.server = new WebSocket.Server({
+      this.server = new WebSocketServer({
         port: this.config.port,
         perMessageDeflate: this.config.compressionEnabled,
       });

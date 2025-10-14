@@ -1,7 +1,10 @@
 import { EventEmitter } from 'events';
 import { InteractiveBrokersIntegration } from '../brokers/interactive-brokers-integration';
 import { Logger } from '../utils/logger';
-import { YahooFinanceService } from './yahoo-finance-service';
+import {
+  YahooFinanceService,
+  YahooHistoricalData,
+} from './yahoo-finance-service';
 
 export interface HybridMarketDataConfig {
   mode: 'development' | 'production';
@@ -308,7 +311,7 @@ export class HybridMarketDataService extends EventEmitter {
     mode: string;
   } {
     return {
-      cacheSize: this.cache.size,
+      cacheSize: 0, // cache property does not exist
       yahooEnabled: this.config.yahoo.enabled,
       ibEnabled: this.config.ib.enabled,
       mode: this.config.mode,

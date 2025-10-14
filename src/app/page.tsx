@@ -148,7 +148,7 @@ export default function Home() {
           {/* デモトレード */}
           <div className="bg-white rounded-lg shadow-md p-6 lg:col-span-2">
             <DemoTradingPanel
-              selectedStock={selectedStock?.symbol}
+              selectedSymbol={selectedStock?.symbol}
               currentPrice={
                 selectedStock ? stockPrices[stockPrices.length - 1]?.price : 0
               }

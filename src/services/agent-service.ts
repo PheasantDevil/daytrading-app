@@ -1,6 +1,6 @@
+import { prisma } from '@/core/database';
 import { AgentConfig, AgentDecision } from '@/types/investment';
 import { Mark1Agent } from '../agents/mark1-agent';
-import { prisma } from '@/core/database';
 
 export class AgentService {
   private agents: Map<string, Mark1Agent> = new Map();
@@ -31,7 +31,7 @@ export class AgentService {
     maxDailyTrades?: number;
     riskTolerance?: 'LOW' | 'MEDIUM' | 'HIGH';
   }): Promise<AgentConfig> {
-    return await prisma.agentConfig.create({
+    const dbConfig = await prisma.agentConfig.create({
       data: {
         name: config.name,
         version: '1.0.0',
@@ -43,24 +43,44 @@ export class AgentService {
         riskTolerance: config.riskTolerance || 'MEDIUM',
       },
     });
+
+    // Prismaの型をAgentConfig型にマッピング
+    return {
+      ...dbConfig,
+      riskTolerance: dbConfig.riskTolerance as 'LOW' | 'MEDIUM' | 'HIGH',
+    };
   }
 
   /**
    * エージェント設定を取得
    */
   async getAgentConfig(agentId: string): Promise<AgentConfig | null> {
-    return await prisma.agentConfig.findUnique({
+    const dbConfig = await prisma.agentConfig.findUnique({
       where: { id: agentId },
     });
+
+    if (!dbConfig) return null;
+
+    // Prismaの型をAgentConfig型にマッピング
+    return {
+      ...dbConfig,
+      riskTolerance: dbConfig.riskTolerance as 'LOW' | 'MEDIUM' | 'HIGH',
+    };
   }
 
   /**
    * 全エージェント設定を取得
    */
   async getAllAgentConfigs(): Promise<AgentConfig[]> {
-    return await prisma.agentConfig.findMany({
+    const dbConfigs = await prisma.agentConfig.findMany({
       orderBy: { createdAt: 'desc' },
     });
+
+    // Prismaの型をAgentConfig型にマッピング
+    return dbConfigs.map((dbConfig) => ({
+      ...dbConfig,
+      riskTolerance: dbConfig.riskTolerance as 'LOW' | 'MEDIUM' | 'HIGH',
+    }));
   }
 
   /**
@@ -70,12 +90,15 @@ export class AgentService {
     agentId: string,
     limit: number = 50
   ): Promise<AgentDecision[]> {
-    return await prisma.agentDecision.findMany({
+    const decisions = await prisma.agentDecision.findMany({
       where: { agentId },
       include: { product: true },
       orderBy: { createdAt: 'desc' },
       take: limit,
     });
+
+    // Prismaの型をAgentDecision型にマッピング
+    return decisions as any as AgentDecision[];
   }
 
   /**
@@ -99,7 +122,8 @@ export class AgentService {
 
     const averageConfidence =
       decisions.length > 0
-        ? decisions.reduce((sum, d) => sum + d.confidence, 0) / decisions.length
+        ? decisions.reduce((sum, d) => sum + ((d as any).confidence || 0), 0) /
+          decisions.length
         : 0;
 
     // 成功率の計算（簡易版）
@@ -139,7 +163,7 @@ export class AgentService {
     stopLoss?: number;
     takeProfit?: number;
   }): Promise<AgentDecision> {
-    return await prisma.agentDecision.create({
+    const dbDecision = await prisma.agentDecision.create({
       data: {
         agentId: decision.agentId,
         productId: decision.productId,
@@ -155,6 +179,9 @@ export class AgentService {
       },
       include: { product: true },
     });
+
+    // Prismaの型をAgentDecision型にマッピング
+    return dbDecision as any as AgentDecision;
   }
 
   /**
@@ -179,15 +206,16 @@ export class AgentService {
     report += `## 最近の判断履歴\n\n`;
 
     decisions.forEach((decision, index) => {
-      report += `### ${index + 1}. ${decision.product.name} (${decision.product.symbol})\n`;
-      report += `- **判断**: ${decision.action}\n`;
-      report += `- **理由**: ${decision.reason}\n`;
-      report += `- **信頼度**: ${decision.confidence.toFixed(1)}%\n`;
-      report += `- **期待リターン**: ${decision.expectedReturn.toFixed(2)}%\n`;
-      report += `- **技術分析**: ${decision.technicalAnalysis}\n`;
-      report += `- **リスク分析**: ${decision.riskAnalysis}\n`;
-      report += `- **市場分析**: ${decision.marketAnalysis}\n`;
-      report += `- **判断時刻**: ${new Date(decision.createdAt).toLocaleString('ja-JP')}\n\n`;
+      const d = decision as any;
+      report += `### ${index + 1}. ${d.product?.name || 'N/A'} (${d.product?.symbol || 'N/A'})\n`;
+      report += `- **判断**: ${d.action}\n`;
+      report += `- **理由**: ${d.reason}\n`;
+      report += `- **信頼度**: ${(d.confidence || 0).toFixed(1)}%\n`;
+      report += `- **期待リターン**: ${(d.expectedReturn || 0).toFixed(2)}%\n`;
+      report += `- **技術分析**: ${d.technicalAnalysis || 'N/A'}\n`;
+      report += `- **リスク分析**: ${d.riskAnalysis || 'N/A'}\n`;
+      report += `- **市場分析**: ${d.marketAnalysis || 'N/A'}\n`;
+      report += `- **判断時刻**: ${new Date(d.createdAt).toLocaleString('ja-JP')}\n\n`;
     });
 
     return report;
@@ -230,7 +258,7 @@ export class AgentService {
         });
 
         if (decision) {
-          decisions.push(decision);
+          decisions.push(decision as any);
         }
       } catch (error) {
         console.error(

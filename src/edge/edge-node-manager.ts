@@ -278,10 +278,12 @@ export class EdgeNodeManager {
   ): Promise<AggregatedResult> {
     try {
       const availableNodes = targetNodes
-        ? targetNodes.filter(
-            (id) =>
-              this.nodes.has(id) && this.nodes.get(id)!.status === 'ONLINE'
-          )
+        ? targetNodes
+            .filter(
+              (id) =>
+                this.nodes.has(id) && this.nodes.get(id)!.status === 'ONLINE'
+            )
+            .map((id) => this.nodes.get(id)!)
         : Array.from(this.nodes.values()).filter(
             (node) => node.status === 'ONLINE'
           );
@@ -291,8 +293,17 @@ export class EdgeNodeManager {
       }
 
       // 最適なノードを選択
+      // taskを完全なEdgeTask型に変換
+      const fullTask: EdgeTask = {
+        ...task,
+        id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        status: 'PENDING',
+        createdAt: new Date(),
+        retryCount: 0,
+      };
+
       const selectedNodes = await this.optimizationEngine.selectOptimalNodes(
-        task,
+        fullTask,
         availableNodes
       );
 
