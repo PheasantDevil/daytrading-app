@@ -97,6 +97,7 @@ export const aggressiveConfig: DayTradingConfig = {
 export const dailyConfigMap: {
   [key: string]: { config: DayTradingConfig; name: string };
 } = {
+  '2025-10-14': { config: conservativeConfig, name: '保守的' },
   '2025-10-15': { config: conservativeConfig, name: '保守的' },
   '2025-10-16': { config: standardConfig, name: '標準' },
   '2025-10-17': { config: aggressiveConfig, name: '積極的' },
