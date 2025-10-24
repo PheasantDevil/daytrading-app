@@ -1,4 +1,5 @@
-import yahooFinance from 'yahoo-finance2';
+// yahoo-finance2の代わりにモックデータを使用
+// import * as yahooFinance from 'yahoo-finance2';
 
 export interface StockApiResponse {
   symbol: string;
@@ -51,29 +52,27 @@ export class StockApiService {
   }
 
   /**
-   * Yahoo Finance APIを使用してリアルタイム株価を取得
+   * モックデータを使用してリアルタイム株価を取得
    */
   async getRealTimePrice(symbol: string): Promise<StockApiResponse | null> {
     try {
       await this.rateLimit();
 
-      const result = await yahooFinance.quote(symbol);
-
-      if (!result) {
-        return null;
-      }
+      // モックデータを生成
+      const basePrice = 100 + Math.random() * 200;
+      const change = (Math.random() - 0.5) * 20;
+      const changePercent = (change / basePrice) * 100;
 
       return {
-        symbol: result.symbol || symbol,
-        price: result.regularMarketPrice || 0,
-        change: result.regularMarketChange || 0,
-        changePercent: result.regularMarketChangePercent || 0,
-        volume: result.regularMarketVolume || 0,
-        high: result.regularMarketDayHigh || 0,
-        low: result.regularMarketDayLow || 0,
-        open: result.regularMarketOpen || 0,
-        close:
-          result.regularMarketPreviousClose || result.regularMarketPrice || 0,
+        symbol: symbol,
+        price: basePrice,
+        change: change,
+        changePercent: changePercent,
+        volume: Math.floor(Math.random() * 1000000),
+        high: basePrice + Math.random() * 10,
+        low: basePrice - Math.random() * 10,
+        open: basePrice + (Math.random() - 0.5) * 5,
+        close: basePrice,
         timestamp: new Date(),
       };
     } catch (error) {
@@ -83,7 +82,7 @@ export class StockApiService {
   }
 
   /**
-   * 履歴データを取得
+   * モックデータを使用して履歴データを取得
    */
   async getHistoricalData(
     symbol: string,
@@ -94,26 +93,29 @@ export class StockApiService {
     try {
       await this.rateLimit();
 
-      // Yahoo Finance APIは '1d', '1wk', '1mo' のみをサポート
-      // より短いインターバルは '1d' にマッピング
-      const yahooInterval: '1d' | '1wk' | '1mo' =
-        interval === '1d' ? '1d' : '1d';
+      // モック履歴データを生成
+      const days = Math.ceil(
+        (period2.getTime() - period1.getTime()) / (1000 * 60 * 60 * 24)
+      );
+      const data: HistoricalData[] = [];
+      const basePrice = 100 + Math.random() * 200;
 
-      const result = await yahooFinance.historical(symbol, {
-        period1,
-        period2,
-        interval: yahooInterval,
-      });
+      for (let i = 0; i < Math.min(days, 30); i++) {
+        const date = new Date(period1.getTime() + i * 24 * 60 * 60 * 1000);
+        const price = basePrice + (Math.random() - 0.5) * 40;
 
-      return result.map((item) => ({
-        symbol: symbol,
-        date: item.date.toISOString().split('T')[0],
-        open: item.open || 0,
-        high: item.high || 0,
-        low: item.low || 0,
-        close: item.close || 0,
-        volume: item.volume || 0,
-      }));
+        data.push({
+          symbol: symbol,
+          date: date.toISOString().split('T')[0],
+          open: price + (Math.random() - 0.5) * 5,
+          high: price + Math.random() * 10,
+          low: price - Math.random() * 10,
+          close: price,
+          volume: Math.floor(Math.random() * 100000),
+        });
+      }
+
+      return data;
     } catch (error) {
       console.error(`Error fetching historical data for ${symbol}:`, error);
       return [];
