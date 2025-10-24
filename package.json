@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "start": "next start",
     "lint": "next lint",
     "format": "prettier --write .",
     "type-check": "tsc --noEmit",
@@ -88,6 +89,7 @@
   "devDependencies": {
     "@types/lodash": "^4.17.13",
     "@types/ws": "^8.18.1",
+    "ignore-loader": "^0.1.2",
     "tsx": "^4.20.5"
   }
 }
