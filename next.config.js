@@ -15,6 +15,9 @@ const nextConfig = {
       ...config.resolve.fallback,
       '@std/testing/mock': false,
       '@std/testing/bdd': false,
+      'fs': false,
+      'path': false,
+      'crypto': false,
     };
     
     // テストファイルを無視
@@ -35,13 +38,32 @@ const nextConfig = {
       loader: 'ignore-loader',
     });
 
+    // node-pre-gypのHTMLファイルを無視
+    config.module.rules.push({
+      test: /node_modules\/@mapbox\/node-pre-gyp\/lib\/util\/nw-pre-gyp\/index\.html$/,
+      loader: 'ignore-loader',
+    });
+
+    // TensorFlow.jsの問題のあるファイルを無視
+    config.module.rules.push({
+      test: /node_modules\/@tensorflow\/tfjs-node\/.*\.node$/,
+      loader: 'ignore-loader',
+    });
+
     // 外部モジュールとして扱う
     config.externals = config.externals || [];
     if (isServer) {
       config.externals.push({
         '@std/testing/mock': 'commonjs @std/testing/mock',
         '@std/testing/bdd': 'commonjs @std/testing/bdd',
+        '@tensorflow/tfjs-node': 'commonjs @tensorflow/tfjs-node',
       });
+    } else {
+      // クライアントサイドでTensorFlow.jsを無効化
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        '@tensorflow/tfjs-node': false,
+      };
     }
 
     return config;

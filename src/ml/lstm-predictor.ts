@@ -54,7 +54,7 @@ export class LSTMPredictor {
             dropout: 0.2,
             recurrentDropout: 0.2,
           }),
-          
+
           // 2番目のLSTM層
           tf.layers.lstm({
             units: 50,
@@ -62,17 +62,17 @@ export class LSTMPredictor {
             dropout: 0.2,
             recurrentDropout: 0.2,
           }),
-          
+
           // 全結合層
           tf.layers.dense({
             units: 25,
             activation: 'relu',
             kernelRegularizer: tf.regularizers.l2({ l2: 0.01 }),
           }),
-          
+
           // Dropout層
           tf.layers.dropout({ rate: 0.3 }),
-          
+
           // 出力層
           tf.layers.dense({
             units: this.predictionHorizon,
@@ -98,14 +98,18 @@ export class LSTMPredictor {
   /**
    * データを正規化
    */
-  private normalizeData(data: number[][]): { normalized: number[][]; min: number[]; max: number[] } {
+  private normalizeData(data: number[][]): {
+    normalized: number[][];
+    min: number[];
+    max: number[];
+  } {
     const normalized: number[][] = [];
     const min: number[] = [];
     const max: number[] = [];
 
     // 各特徴量の最小値・最大値を計算
     for (let i = 0; i < this.features; i++) {
-      const values = data.map(row => row[i]);
+      const values = data.map((row) => row[i]);
       min[i] = Math.min(...values);
       max[i] = Math.max(...values);
     }
@@ -126,9 +130,13 @@ export class LSTMPredictor {
   /**
    * 正規化されたデータを元に戻す
    */
-  private denormalizeData(normalized: number[], min: number[], max: number[]): number[] {
-    return normalized.map((value, index) => 
-      value * (max[index] - min[index]) + min[index]
+  private denormalizeData(
+    normalized: number[],
+    min: number[],
+    max: number[]
+  ): number[] {
+    return normalized.map(
+      (value, index) => value * (max[index] - min[index]) + min[index]
     );
   }
 
@@ -143,7 +151,7 @@ export class LSTMPredictor {
       // 入力シーケンス
       const sequence = data.slice(i - this.sequenceLength, i);
       X.push(sequence);
-      
+
       // ターゲット（次の期間の終値）
       y.push(data[i][3]); // 終値（インデックス3）
     }
@@ -161,11 +169,15 @@ export class LSTMPredictor {
       }
 
       console.log('Starting LSTM model training...');
-      console.log(`Training data size: ${trainingData.features.length} samples`);
+      console.log(
+        `Training data size: ${trainingData.features.length} samples`
+      );
 
       // データを正規化
-      const { normalized, min, max } = this.normalizeData(trainingData.features);
-      
+      const { normalized, min, max } = this.normalizeData(
+        trainingData.features
+      );
+
       // シーケンスを作成
       const { X, y } = this.createSequences(normalized);
 
@@ -179,8 +191,14 @@ export class LSTMPredictor {
 
       // データを訓練用と検証用に分割
       const splitIndex = Math.floor(X.length * 0.8);
-      const XTrain = XTensor.slice([0, 0, 0], [splitIndex, this.sequenceLength, this.features]);
-      const XVal = XTensor.slice([splitIndex, 0, 0], [X.length - splitIndex, this.sequenceLength, this.features]);
+      const XTrain = XTensor.slice(
+        [0, 0, 0],
+        [splitIndex, this.sequenceLength, this.features]
+      );
+      const XVal = XTensor.slice(
+        [splitIndex, 0, 0],
+        [X.length - splitIndex, this.sequenceLength, this.features]
+      );
       const yTrain = yTensor.slice([0, 0], [splitIndex, 1]);
       const yVal = yTensor.slice([splitIndex, 0], [y.length - splitIndex, 1]);
 
@@ -192,17 +210,27 @@ export class LSTMPredictor {
         callbacks: {
           onEpochEnd: (epoch, logs) => {
             if (epoch % 10 === 0) {
-              console.log(`Epoch ${epoch}: loss = ${logs?.loss?.toFixed(4)}, val_loss = ${logs?.val_loss?.toFixed(4)}`);
+              console.log(
+                `Epoch ${epoch}: loss = ${logs?.loss?.toFixed(4)}, val_loss = ${logs?.val_loss?.toFixed(4)}`
+              );
             }
           },
         },
       });
 
       // メトリクスを計算
-      const finalLoss = history.history.loss[history.history.loss.length - 1] as number;
-      const finalValLoss = history.history.val_loss[history.history.val_loss.length - 1] as number;
-      const finalMae = history.history.val_mae[history.history.val_mae.length - 1] as number;
-      const finalMse = history.history.val_mse[history.history.val_mse.length - 1] as number;
+      const finalLoss = history.history.loss[
+        history.history.loss.length - 1
+      ] as number;
+      const finalValLoss = history.history.val_loss[
+        history.history.val_loss.length - 1
+      ] as number;
+      const finalMae = history.history.val_mae[
+        history.history.val_mae.length - 1
+      ] as number;
+      const finalMse = history.history.val_mse[
+        history.history.val_mse.length - 1
+      ] as number;
 
       // テンソルをメモリから解放
       XTensor.dispose();
@@ -237,15 +265,17 @@ export class LSTMPredictor {
       }
 
       if (inputData.length < this.sequenceLength) {
-        throw new Error(`Insufficient input data. Need at least ${this.sequenceLength} periods`);
+        throw new Error(
+          `Insufficient input data. Need at least ${this.sequenceLength} periods`
+        );
       }
 
       // 最新のシーケンスを取得
       const latestSequence = inputData.slice(-this.sequenceLength);
-      
+
       // データを正規化（簡易実装）
-      const normalizedSequence = latestSequence.map(row => 
-        row.map(value => Math.min(Math.max(value, 0), 1)) // 簡易正規化
+      const normalizedSequence = latestSequence.map(
+        (row) => row.map((value) => Math.min(Math.max(value, 0), 1)) // 簡易正規化
       );
 
       // テンソルに変換
@@ -258,10 +288,14 @@ export class LSTMPredictor {
       // 信頼区間を計算（簡易実装）
       const confidence = 0.7 + Math.random() * 0.2; // 0.7-0.9
       const margin = Math.abs(predictedValue[0]) * (1 - confidence);
-      
+
       const predictedPrice = predictedValue[0];
-      const trend = predictedPrice > inputData[inputData.length - 1][3] ? 'up' : 
-                   predictedPrice < inputData[inputData.length - 1][3] ? 'down' : 'neutral';
+      const trend =
+        predictedPrice > inputData[inputData.length - 1][3]
+          ? 'up'
+          : predictedPrice < inputData[inputData.length - 1][3]
+            ? 'down'
+            : 'neutral';
 
       // テンソルをメモリから解放
       inputTensor.dispose();
@@ -317,7 +351,11 @@ export class LSTMPredictor {
   /**
    * モデルの状態を取得
    */
-  getModelStatus(): { initialized: boolean; trained: boolean; sequenceLength: number } {
+  getModelStatus(): {
+    initialized: boolean;
+    trained: boolean;
+    sequenceLength: number;
+  } {
     return {
       initialized: this.model !== null,
       trained: this.isTrained,

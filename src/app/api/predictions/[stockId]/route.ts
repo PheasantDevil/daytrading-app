@@ -1,7 +1,7 @@
+import { prisma } from '@/core/database';
 import { EnsemblePredictor } from '@/ml/ensemble-predictor';
 import { createErrorResponse, createSuccessResponse } from '@/utils/api';
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/core/database';
 
 // アンサンブル予測器のシングルトンインスタンス
 let ensemblePredictor: EnsemblePredictor | null = null;
@@ -80,13 +80,15 @@ export async function GET(
       const predictor = getEnsemblePredictor();
 
       // データを予測用の形式に変換
-      const features = historicalData.reverse().map(price => [
-        price.open,
-        price.high,
-        price.low,
-        price.close,
-        price.volume,
-      ]);
+      const features = historicalData
+        .reverse()
+        .map((price) => [
+          price.open,
+          price.high,
+          price.low,
+          price.close,
+          price.volume,
+        ]);
 
       // 予測を実行
       const prediction = await predictor.predict(features);
@@ -115,13 +117,15 @@ export async function GET(
       });
     } catch (predictError) {
       console.error('Ensemble prediction error:', predictError);
-      
+
       // 予測エラーの場合はモックデータを返す
       const fallbackPrediction = {
         stockId,
         symbol: stock.symbol,
         currentPrice: historicalData[historicalData.length - 1].close,
-        predictedPrice: historicalData[historicalData.length - 1].close + (Math.random() - 0.5) * 10,
+        predictedPrice:
+          historicalData[historicalData.length - 1].close +
+          (Math.random() - 0.5) * 10,
         confidence: 0.5 + Math.random() * 0.2,
         trend: Math.random() > 0.5 ? 'up' : 'down',
         confidenceInterval: {
