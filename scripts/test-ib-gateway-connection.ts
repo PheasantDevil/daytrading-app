@@ -287,7 +287,7 @@ class IBGatewayTester {
 }
 
 // スクリプトが直接実行された場合
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   const tester = new IBGatewayTester();
   tester.runTests().catch((error) => {
     console.error('Test runner failed:', error);
