@@ -2,7 +2,7 @@
 
 /**
  * Interactive Brokers Gateway 接続テストスクリプト
- * 
+ *
  * このスクリプトは以下をテストします：
  * 1. IBゲートウェイへの基本接続
  * 2. アカウント情報の取得
@@ -45,22 +45,34 @@ class IBGatewayTester {
     };
   }
 
-  private log(message: string, type: 'INFO' | 'SUCCESS' | 'ERROR' | 'WARN' = 'INFO') {
+  private log(
+    message: string,
+    type: 'INFO' | 'SUCCESS' | 'ERROR' | 'WARN' = 'INFO'
+  ) {
     const colors = {
-      INFO: '\x1b[36m',    // Cyan
+      INFO: '\x1b[36m', // Cyan
       SUCCESS: '\x1b[32m', // Green
-      ERROR: '\x1b[31m',   // Red
-      WARN: '\x1b[33m',    // Yellow
+      ERROR: '\x1b[31m', // Red
+      WARN: '\x1b[33m', // Yellow
     };
     const reset = '\x1b[0m';
     const timestamp = new Date().toISOString();
     console.log(`${colors[type]}[${timestamp}] ${type}: ${message}${reset}`);
   }
 
-  private addResult(test: string, status: 'PASS' | 'FAIL' | 'SKIP', message: string, duration?: number) {
+  private addResult(
+    test: string,
+    status: 'PASS' | 'FAIL' | 'SKIP',
+    message: string,
+    duration?: number
+  ) {
     this.results.push({ test, status, message, duration });
-    const statusColor = status === 'PASS' ? 'SUCCESS' : status === 'FAIL' ? 'ERROR' : 'WARN';
-    this.log(`${test}: ${message}${duration ? ` (${duration}ms)` : ''}`, statusColor);
+    const statusColor =
+      status === 'PASS' ? 'SUCCESS' : status === 'FAIL' ? 'ERROR' : 'WARN';
+    this.log(
+      `${test}: ${message}${duration ? ` (${duration}ms)` : ''}`,
+      statusColor
+    );
   }
 
   /**
@@ -68,10 +80,10 @@ class IBGatewayTester {
    */
   private async testNetworkConnection(): Promise<void> {
     const startTime = Date.now();
-    
+
     try {
       const net = await import('net');
-      
+
       return new Promise((resolve, reject) => {
         const socket = new net.Socket();
         const timeout = setTimeout(() => {
@@ -121,7 +133,7 @@ class IBGatewayTester {
    */
   private async testAPIEndpoints(): Promise<void> {
     const startTime = Date.now();
-    
+
     try {
       // 実際のIB APIではなく、アプリケーションのAPIエンドポイントをテスト
       const testEndpoints = [
@@ -145,7 +157,10 @@ class IBGatewayTester {
             this.log(`❌ ${endpoint}: ${response.status}`, 'ERROR');
           }
         } catch (error) {
-          this.log(`❌ ${endpoint}: ${error instanceof Error ? error.message : 'Unknown error'}`, 'ERROR');
+          this.log(
+            `❌ ${endpoint}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            'ERROR'
+          );
         }
       }
 
@@ -179,7 +194,11 @@ class IBGatewayTester {
       issues.push('IB_HOST is not set');
     }
 
-    if (!this.config.port || this.config.port < 1000 || this.config.port > 65535) {
+    if (
+      !this.config.port ||
+      this.config.port < 1000 ||
+      this.config.port > 65535
+    ) {
       issues.push('IB_PORT is invalid (should be between 1000-65535)');
     }
 
@@ -188,16 +207,29 @@ class IBGatewayTester {
     }
 
     // ポート番号の妥当性チェック
-    const expectedPort = this.config.paperTrading ? 7497 : 7496;
-    if (this.config.port !== expectedPort) {
-      issues.push(`Port mismatch: expected ${expectedPort} for ${this.config.paperTrading ? 'paper' : 'live'} trading, got ${this.config.port}`);
+    // 一般的なポート番号: 7497 (Paper), 7496 (Live), 4002 (デフォルト/カスタム)
+    const validPorts = [4002, 7496, 7497];
+    if (!validPorts.includes(this.config.port)) {
+      issues.push(
+        `Port should be one of: 4002 (default), 7497 (paper), 7496 (live), got ${this.config.port}`
+      );
+    } else {
+      // ポート番号が妥当な場合、警告のみ表示（エラーではない）
+      const suggestedPort = this.config.paperTrading ? 7497 : 7496;
+      if (this.config.port !== suggestedPort && this.config.port !== 4002) {
+        issues.push(
+          `Port mismatch: recommended ${suggestedPort} for ${this.config.paperTrading ? 'paper' : 'live'} trading, current ${this.config.port}`
+        );
+      }
     }
 
     // アカウントIDの形式チェック
     if (this.config.accountId) {
-      const isValidPaperAccount = this.config.accountId.startsWith('DU') && this.config.paperTrading;
-      const isValidLiveAccount = this.config.accountId.startsWith('U') && !this.config.paperTrading;
-      
+      const isValidPaperAccount =
+        this.config.accountId.startsWith('DU') && this.config.paperTrading;
+      const isValidLiveAccount =
+        this.config.accountId.startsWith('U') && !this.config.paperTrading;
+
       if (!isValidPaperAccount && !isValidLiveAccount) {
         issues.push('Account ID format mismatch with trading mode');
       }
@@ -231,7 +263,10 @@ class IBGatewayTester {
     this.log(`Port: ${this.config.port}`, 'INFO');
     this.log(`Client ID: ${this.config.clientId}`, 'INFO');
     this.log(`Account ID: ${this.config.accountId || 'NOT SET'}`, 'INFO');
-    this.log(`Paper Trading: ${this.config.paperTrading ? 'YES' : 'NO'}`, 'INFO');
+    this.log(
+      `Paper Trading: ${this.config.paperTrading ? 'YES' : 'NO'}`,
+      'INFO'
+    );
     this.log('================================', 'INFO');
   }
 
@@ -239,9 +274,9 @@ class IBGatewayTester {
    * テスト結果のサマリー表示
    */
   private displaySummary(): void {
-    const passed = this.results.filter(r => r.status === 'PASS').length;
-    const failed = this.results.filter(r => r.status === 'FAIL').length;
-    const skipped = this.results.filter(r => r.status === 'SKIP').length;
+    const passed = this.results.filter((r) => r.status === 'PASS').length;
+    const failed = this.results.filter((r) => r.status === 'FAIL').length;
+    const skipped = this.results.filter((r) => r.status === 'SKIP').length;
     const total = this.results.length;
 
     this.log('=== Test Summary ===', 'INFO');
@@ -252,9 +287,15 @@ class IBGatewayTester {
     this.log('===================', 'INFO');
 
     if (failed === 0) {
-      this.log('🎉 All tests passed! IB Gateway connection is ready.', 'SUCCESS');
+      this.log(
+        '🎉 All tests passed! IB Gateway connection is ready.',
+        'SUCCESS'
+      );
     } else {
-      this.log('❌ Some tests failed. Please check the configuration and IB Gateway status.', 'ERROR');
+      this.log(
+        '❌ Some tests failed. Please check the configuration and IB Gateway status.',
+        'ERROR'
+      );
     }
   }
 
@@ -277,9 +318,11 @@ class IBGatewayTester {
 
       // 4. 結果表示
       this.displaySummary();
-
     } catch (error) {
-      this.log(`Test execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`, 'ERROR');
+      this.log(
+        `Test execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        'ERROR'
+      );
       this.displaySummary();
       process.exit(1);
     }

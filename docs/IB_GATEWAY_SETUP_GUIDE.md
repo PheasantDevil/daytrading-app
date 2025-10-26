@@ -18,7 +18,7 @@ Interactive Brokers Gateway（IBゲートウェイ）は、自動売買システ
 ### 1.2 システム要件
 
 - **Windows**: Windows 10以上
-- **macOS**: macOS 10.14以上  
+- **macOS**: macOS 10.14以上
 - **Linux**: Ubuntu 18.04以上
 - **メモリ**: 最低2GB RAM
 - **ディスク**: 500MB以上の空き容量
@@ -71,7 +71,7 @@ sudo ./ibgateway-*.sh
 ```
 ユーザー名: [IBアカウントのユーザー名]
 パスワード: [IBアカウントのパスワード]
-取引モード: 
+取引モード:
   - Live Trading (本番取引)
   - Paper Trading (ペーパートレーディング)
 ```
@@ -82,22 +82,38 @@ sudo ./ibgateway-*.sh
 
 1. **ログイン後**、設定メニューを開く
 2. **「Configure」** → **「Settings」** → **「API」**
-3. 以下の設定を有効化：
+3. 以下の設定を確認・変更：
 
 ```
-✅ Enable ActiveX and Socket Clients
-✅ Allow connections from localhost only
-✅ Read-Only API
-Socket Port: 7497 (Paper Trading) / 7496 (Live Trading)
-Master API client ID: 0
+✅ API (読み込みのみ) - チェック済み（初期は読み取り専用で安全）
+ソケットポート: 4002 → これを7497（Paper Trading）に変更
+✅ 自動注文を固定させるためには、負の数を使用して下さい - チェック済み
+✅ 取引スケジュール全体をAPIにエクスポゼする - チェック済み
+ログレベル: Error（問題発生時のみデバッグに変更可能）
+マスターAPIクライアントID: 0（空欄のまま）
+APIバルクデータ送信のタイムアウト: 30
+✅ Maintain connection upon receiving incorrectly formatted fields - チェック済み
+✅ ローカルホストからの接続のみ許可 - チェック済み
+信頼できるIP: 127.0.0.1 - 設定済み
+✅ Automatically report Netting Event Contract trades - チェック済み
 ```
 
-### 3.4 ポート設定の確認
+**重要**: 「Enable ActiveX and Socket Clients」という明示的な項目は最新版のIB Gatewayにはありません。代わりに、上記の設定項目を確認してください。
 
-| 取引モード | ポート番号 | 用途 |
-|------------|------------|------|
-| Paper Trading | 7497 | テスト・開発用 |
-| Live Trading | 7496 | 本番取引用 |
+### 3.4 ポート設定の変更
+
+**重要**: デフォルトのソケットポートが4002に設定されている場合、これを変更する必要があります。
+
+1. **ソケットポート**フィールドを見つける
+2. 値を**7497**（Paper Trading）に変更
+3. **適用**ボタンをクリック
+4. **OK**をクリックして設定を保存
+
+| 取引モード    | ポート番号 | 用途           |
+| ------------- | ---------- | -------------- |
+| Paper Trading | 7497       | テスト・開発用 |
+| Live Trading  | 7496       | 本番取引用     |
+| デフォルト     | 4002       | カスタム設定可能 |
 
 ## 4. 接続テスト
 
@@ -108,7 +124,8 @@ Master API client ID: 0
 ```env
 # Paper Trading設定（推奨）
 IB_HOST=127.0.0.1
-IB_PORT=7497
+IB_PORT=7497  # IBゲートウェイで設定したポート番号に合わせて変更
+             # デフォルトの4002を使用する場合はIB_PORT=4002に変更
 IB_CLIENT_ID=1
 IB_ACCOUNT_ID=DU123456  # 実際のペーパートレーディングアカウントID
 IB_PAPER_TRADING=true
@@ -143,32 +160,40 @@ node scripts/test-interactive-brokers.ts
 ### 5.1 よくあるエラー
 
 #### エラー1: 接続拒否
+
 ```
 Error: Connection refused (ECONNREFUSED)
 ```
 
 **解決方法**:
+
 - IBゲートウェイが起動しているか確認
 - ポート番号が正しいか確認（7497/7496）
 - ファイアウォール設定を確認
 
 #### エラー2: 認証エラー
+
 ```
 Error: Authentication failed
 ```
 
 **解決方法**:
+
 - ユーザー名・パスワードを確認
 - 2段階認証が有効な場合は、IBKeyアプリで認証
 - アカウントがAPIアクセス可能か確認
 
 #### エラー3: API無効エラー
+
 ```
 Error: API access not enabled
 ```
 
 **解決方法**:
-- IBゲートウェイの設定で「Enable ActiveX and Socket Clients」を有効化
+
+- IBゲートウェイの設定でAPIが有効になっているか確認
+- 「ローカルホストからの接続のみ許可」がチェックされているか確認
+- ポート番号が正しく設定されているか確認（デフォルトは4002、Paper Tradingは7497推奨）
 - 設定変更後、IBゲートウェイを再起動
 
 ### 5.2 ログの確認
