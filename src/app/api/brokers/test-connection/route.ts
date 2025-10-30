@@ -1,35 +1,69 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// このAPIはNode.jsランタイムでのみ動作させる想定
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { host, port, clientId } = body;
+    const body = await request.json().catch(() => ({} as any));
+    const host = (body.host as string) || process.env.IB_HOST || '127.0.0.1';
+    const port = Number(body.port ?? process.env.IB_PORT ?? 4002);
+    const clientId = Number(body.clientId ?? process.env.IB_CLIENT_ID ?? 1);
 
-    // Interactive Brokers接続テストのモック実装
-    // 実際の実装では、IB APIクライアントを使用して接続テストを行う
+    // netソケットで疎通のみ確認（IB API未使用・安全）
+    const { default: net } = await import('net');
 
-    console.log(
-      `Testing connection to ${host}:${port} with client ID ${clientId}`
-    );
+    const connectResult = await new Promise<{
+      ok: boolean;
+      latencyMs?: number;
+      error?: string;
+    }>((resolve) => {
+      const startedAt = Date.now();
+      const socket = new net.Socket();
+      const timeoutMs = 5000;
 
-    // モック接続テスト（常に成功を返す）
-    // 実際の実装では以下のような処理を行う：
-    // 1. IB APIクライアントのインスタンスを作成
-    // 2. 接続を試行
-    // 3. 接続成功/失敗を判定
-    // 4. エラーメッセージを返す（失敗の場合）
+      const finalize = (ok: boolean, error?: string) => {
+        try { socket.destroy(); } catch {}
+        resolve({ ok, latencyMs: Date.now() - startedAt, error });
+      };
 
-    // モック遅延（実際の接続テストをシミュレート）
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+      socket.setTimeout(timeoutMs);
+      socket.once('connect', () => finalize(true));
+      socket.once('timeout', () => finalize(false, 'timeout'));
+      socket.once('error', (err) => finalize(false, err?.message || 'error'));
+      socket.connect(port, host);
+    });
+
+    if (!connectResult.ok) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'IB Gateway connection failed',
+          data: {
+            host,
+            port,
+            clientId,
+            latencyMs: connectResult.latencyMs,
+            error: connectResult.error,
+            suggestions: [
+              'IB Gateway/TWSを起動してください',
+              `IB Gatewayのポート設定が${port}であることを確認してください（一般的には 4002/7497/7496）`,
+              'Paper/Liveモードと環境変数の整合性を確認してください',
+            ],
+          },
+        },
+        { status: 503 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      message: 'Connection test successful',
+      message: 'IB Gateway connection successful',
       data: {
         host,
         port,
         clientId,
-        connected: true,
+        latencyMs: connectResult.latencyMs,
         timestamp: new Date().toISOString(),
       },
     });
