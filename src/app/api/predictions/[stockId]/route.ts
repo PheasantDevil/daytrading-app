@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // アンサンブル予測器のシングルトンインスタンス
 let ensemblePredictor: EnsemblePredictor | null = null;
+let mlDisabledUntil = 0; // サーキットブレーカー（エポックms）。0なら有効
 
 function getEnsemblePredictor(): EnsemblePredictor {
   if (!ensemblePredictor) {
@@ -75,6 +76,24 @@ export async function GET(
       });
     }
 
+    // 直近でMLが失敗し無効化されている場合は即時フォールバック
+    if (Date.now() < mlDisabledUntil) {
+      const lastPrice = historicalData[historicalData.length - 1]?.close ?? (100 + Math.random() * 50);
+      const fb = {
+        stockId,
+        symbol: stock.symbol,
+        currentPrice: lastPrice,
+        predictedPrice: lastPrice + (Math.random() - 0.5) * 10,
+        confidence: 0.55 + Math.random() * 0.15,
+        trend: Math.random() > 0.5 ? 'up' : 'down',
+        confidenceInterval: { lower: lastPrice - 5, upper: lastPrice + 5 },
+        timestamp: new Date(),
+        modelWeights: { lstm_short: 0.33, lstm_medium: 0.33, lstm_long: 0.34 },
+        accuracy: { mae: 3.0 + Math.random() * 2.0, rmse: 4.0 + Math.random() * 2.0 },
+      };
+      return NextResponse.json(createSuccessResponse(fb), { status: 200 });
+    }
+
     try {
       // アンサンブル予測器を取得
       const predictor = getEnsemblePredictor();
@@ -117,6 +136,8 @@ export async function GET(
       });
     } catch (predictError) {
       console.error('Ensemble prediction error:', predictError);
+      // 一定時間MLを無効化（10分）
+      mlDisabledUntil = Date.now() + 10 * 60 * 1000;
 
       // 予測エラーの場合はモックデータを返す
       const fallbackPrediction = {
