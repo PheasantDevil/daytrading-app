@@ -49,6 +49,7 @@
   },
   "homepage": "https://github.com/PheasantDevil/daytrading-app#readme",
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@prisma/client": "^6.15.0",
     "@tailwindcss/postcss": "^4.1.13",
     "@tensorflow/tfjs": "^4.22.0",
