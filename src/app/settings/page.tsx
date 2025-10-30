@@ -61,6 +61,11 @@ export default function SettingsPage() {
   });
 
   const [activeTab, setActiveTab] = useState('broker');
+  const [connectionResult, setConnectionResult] = useState<
+    | { success: boolean; message: string; latencyMs?: number; error?: string; port?: number; host?: string }
+    | null
+  >(null);
+  const [testing, setTesting] = useState(false);
 
   const handleSettingChange = (key: keyof SystemSettings, value: any) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
@@ -87,6 +92,8 @@ export default function SettingsPage() {
 
   const testConnection = async () => {
     try {
+      setTesting(true);
+      setConnectionResult(null);
       const response = await fetch('/api/brokers/test-connection', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -97,14 +104,36 @@ export default function SettingsPage() {
         }),
       });
 
+      const json = await response.json().catch(() => ({}));
       if (response.ok) {
-        alert('接続テストが成功しました');
+        setConnectionResult({
+          success: true,
+          message: json?.message || '接続に成功しました',
+          latencyMs: json?.data?.latencyMs,
+          port: json?.data?.port ?? settings.ibPort,
+          host: json?.data?.host ?? settings.ibHost,
+        });
       } else {
-        alert('接続テストが失敗しました');
+        setConnectionResult({
+          success: false,
+          message: json?.message || '接続に失敗しました',
+          error: json?.data?.error || json?.error,
+          port: json?.data?.port ?? settings.ibPort,
+          host: json?.data?.host ?? settings.ibHost,
+        });
       }
     } catch (error) {
       console.error('Connection test failed:', error);
-      alert('接続テストが失敗しました');
+      setConnectionResult({
+        success: false,
+        message: '接続テストが失敗しました',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        port: settings.ibPort,
+        host: settings.ibHost,
+      });
+    }
+    finally {
+      setTesting(false);
     }
   };
 
@@ -232,14 +261,49 @@ export default function SettingsPage() {
               <div className="mt-6">
                 <button
                   onClick={testConnection}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 mr-4"
+                  className={`px-4 py-2 rounded-lg mr-4 text-white ${
+                    testing ? 'bg-blue-300' : 'bg-blue-600 hover:bg-blue-700'
+                  }`}
+                  disabled={testing}
                 >
-                  接続テスト
+                  {testing ? '接続中...' : '接続テスト'}
                 </button>
                 <span className="text-sm text-gray-500">
                   TWSまたはIB Gatewayが起動していることを確認してください
                 </span>
               </div>
+
+              {connectionResult && (
+                <div
+                  className={`mt-4 border rounded-lg p-4 ${
+                    connectionResult.success
+                      ? 'border-green-300 bg-green-50'
+                      : 'border-red-300 bg-red-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="font-medium">
+                      {connectionResult.success ? '接続成功' : '接続失敗'}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {connectionResult.host}:{connectionResult.port}
+                    </div>
+                  </div>
+                  <div className="mt-1 text-sm text-gray-700">
+                    {connectionResult.message}
+                    {connectionResult.error && (
+                      <>
+                        <br />エラー: {connectionResult.error}
+                      </>
+                    )}
+                    {typeof connectionResult.latencyMs === 'number' && (
+                      <>
+                        <br />レイテンシ: {connectionResult.latencyMs}ms
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
