@@ -105,7 +105,7 @@ export class ApplicationMonitor {
   constructor(config: MonitoringConfig) {
     this.config = config;
     this.startTime = new Date();
-    
+
     // アラートルールを初期化
     for (const rule of config.alerts.rules) {
       this.alertRules.set(rule.id, rule);
@@ -156,8 +156,10 @@ export class ApplicationMonitor {
       metrics.push(metric);
 
       // 保持期間を超えたメトリクスを削除
-      const cutoffTime = new Date(Date.now() - this.config.metrics.retentionPeriod * 24 * 60 * 60 * 1000);
-      const filteredMetrics = metrics.filter(m => m.timestamp > cutoffTime);
+      const cutoffTime = new Date(
+        Date.now() - this.config.metrics.retentionPeriod * 24 * 60 * 60 * 1000
+      );
+      const filteredMetrics = metrics.filter((m) => m.timestamp > cutoffTime);
       this.metrics.set(metric.name, filteredMetrics);
 
       // アラートルールをチェック
@@ -179,7 +181,13 @@ export class ApplicationMonitor {
   /**
    * ヘルスチェックを追加
    */
-  addHealthCheck(name: string, checkFunction: () => Promise<{ status: 'PASS' | 'FAIL' | 'WARN'; message?: string }>): void {
+  addHealthCheck(
+    name: string,
+    checkFunction: () => Promise<{
+      status: 'PASS' | 'FAIL' | 'WARN';
+      message?: string;
+    }>
+  ): void {
     this.healthChecks.set(name, {
       name,
       status: 'PASS',
@@ -196,7 +204,7 @@ export class ApplicationMonitor {
   async performHealthCheck(name: string): Promise<HealthCheck> {
     try {
       const startTime = Date.now();
-      
+
       // 簡略化されたヘルスチェック
       const healthCheck: HealthCheck = {
         name,
@@ -228,14 +236,14 @@ export class ApplicationMonitor {
   async performAllHealthChecks(): Promise<HealthStatus> {
     try {
       const checks: HealthCheck[] = [];
-      
+
       for (const [name] of this.healthChecks) {
         const check = await this.performHealthCheck(name);
         checks.push(check);
       }
 
-      const failedChecks = checks.filter(c => c.status === 'FAIL');
-      const warningChecks = checks.filter(c => c.status === 'WARN');
+      const failedChecks = checks.filter((c) => c.status === 'FAIL');
+      const warningChecks = checks.filter((c) => c.status === 'WARN');
 
       let status: 'HEALTHY' | 'UNHEALTHY' | 'DEGRADED';
       if (failedChecks.length > 0) {
@@ -267,7 +275,7 @@ export class ApplicationMonitor {
   createAlert(alert: Omit<Alert, 'id' | 'timestamp' | 'resolved'>): void {
     try {
       const alertId = `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
+
       const newAlert: Alert = {
         id: alertId,
         timestamp: new Date(),
@@ -310,7 +318,10 @@ export class ApplicationMonitor {
         }
 
         // クールダウンをチェック
-        if (rule.lastTriggered && Date.now() - rule.lastTriggered.getTime() < rule.cooldown) {
+        if (
+          rule.lastTriggered &&
+          Date.now() - rule.lastTriggered.getTime() < rule.cooldown
+        ) {
           continue;
         }
 
@@ -369,7 +380,7 @@ export class ApplicationMonitor {
   private collectSystemMetrics(): void {
     try {
       const now = new Date();
-      
+
       // CPU使用率（簡略化）
       const cpuUsage = Math.random() * 100;
       this.recordMetric({
@@ -409,7 +420,6 @@ export class ApplicationMonitor {
         tags: { instance: 'main' },
         timestamp: now,
       });
-
     } catch (error) {
       console.error('❌ システムメトリクス収集エラー:', error);
     }
@@ -454,11 +464,13 @@ export class ApplicationMonitor {
           uptime: now.getTime() - this.startTime.getTime(),
           version: '1.0.0',
         },
-        alerts: Array.from(this.alerts.values()).filter(a => !a.resolved),
+        alerts: Array.from(this.alerts.values()).filter((a) => !a.resolved),
         recommendations: this.generateRecommendations(),
       };
 
-      console.log(`📊 監視レポート生成: ${report.metrics.totalRequests} リクエスト, エラー率 ${report.metrics.errorRate.toFixed(2)}%`);
+      console.log(
+        `📊 監視レポート生成: ${report.metrics.totalRequests} リクエスト, エラー率 ${report.metrics.errorRate.toFixed(2)}%`
+      );
     } catch (error) {
       console.error('❌ レポート生成エラー:', error);
     }
@@ -469,20 +481,30 @@ export class ApplicationMonitor {
    */
   private calculateMetrics(startTime: Date, endTime: Date): any {
     const allMetrics = Array.from(this.metrics.values()).flat();
-    const periodMetrics = allMetrics.filter(m => m.timestamp >= startTime && m.timestamp <= endTime);
+    const periodMetrics = allMetrics.filter(
+      (m) => m.timestamp >= startTime && m.timestamp <= endTime
+    );
 
-    const requestMetrics = periodMetrics.filter(m => m.name === 'requests.count');
-    const errorMetrics = periodMetrics.filter(m => m.name === 'errors.count');
-    const responseTimeMetrics = periodMetrics.filter(m => m.name === 'response.time');
+    const requestMetrics = periodMetrics.filter(
+      (m) => m.name === 'requests.count'
+    );
+    const errorMetrics = periodMetrics.filter((m) => m.name === 'errors.count');
+    const responseTimeMetrics = periodMetrics.filter(
+      (m) => m.name === 'response.time'
+    );
 
     const totalRequests = requestMetrics.reduce((sum, m) => sum + m.value, 0);
     const totalErrors = errorMetrics.reduce((sum, m) => sum + m.value, 0);
     const successfulRequests = totalRequests - totalErrors;
-    const errorRate = totalRequests > 0 ? (totalErrors / totalRequests) * 100 : 0;
-    const averageResponseTime = responseTimeMetrics.length > 0 
-      ? responseTimeMetrics.reduce((sum, m) => sum + m.value, 0) / responseTimeMetrics.length 
-      : 0;
-    const throughput = totalRequests / ((endTime.getTime() - startTime.getTime()) / 1000);
+    const errorRate =
+      totalRequests > 0 ? (totalErrors / totalRequests) * 100 : 0;
+    const averageResponseTime =
+      responseTimeMetrics.length > 0
+        ? responseTimeMetrics.reduce((sum, m) => sum + m.value, 0) /
+          responseTimeMetrics.length
+        : 0;
+    const throughput =
+      totalRequests / ((endTime.getTime() - startTime.getTime()) / 1000);
 
     return {
       totalRequests,
@@ -504,31 +526,50 @@ export class ApplicationMonitor {
 
     // CPU使用率チェック
     const cpuMetrics = this.metrics.get('cpu.usage') || [];
-    const recentCpuMetrics = cpuMetrics.filter(m => m.timestamp >= oneHourAgo);
+    const recentCpuMetrics = cpuMetrics.filter(
+      (m) => m.timestamp >= oneHourAgo
+    );
     if (recentCpuMetrics.length > 0) {
-      const avgCpuUsage = recentCpuMetrics.reduce((sum, m) => sum + m.value, 0) / recentCpuMetrics.length;
+      const avgCpuUsage =
+        recentCpuMetrics.reduce((sum, m) => sum + m.value, 0) /
+        recentCpuMetrics.length;
       if (avgCpuUsage > 80) {
-        recommendations.push('CPU使用率が高いです。リソースの追加を検討してください。');
+        recommendations.push(
+          'CPU使用率が高いです。リソースの追加を検討してください。'
+        );
       }
     }
 
     // メモリ使用率チェック
     const memoryMetrics = this.metrics.get('memory.usage') || [];
-    const recentMemoryMetrics = memoryMetrics.filter(m => m.timestamp >= oneHourAgo);
+    const recentMemoryMetrics = memoryMetrics.filter(
+      (m) => m.timestamp >= oneHourAgo
+    );
     if (recentMemoryMetrics.length > 0) {
-      const avgMemoryUsage = recentMemoryMetrics.reduce((sum, m) => sum + m.value, 0) / recentMemoryMetrics.length;
+      const avgMemoryUsage =
+        recentMemoryMetrics.reduce((sum, m) => sum + m.value, 0) /
+        recentMemoryMetrics.length;
       if (avgMemoryUsage > 85) {
-        recommendations.push('メモリ使用率が高いです。メモリリークの確認をしてください。');
+        recommendations.push(
+          'メモリ使用率が高いです。メモリリークの確認をしてください。'
+        );
       }
     }
 
     // エラー率チェック
     const errorMetrics = this.metrics.get('errors.count') || [];
-    const recentErrorMetrics = errorMetrics.filter(m => m.timestamp >= oneHourAgo);
+    const recentErrorMetrics = errorMetrics.filter(
+      (m) => m.timestamp >= oneHourAgo
+    );
     if (recentErrorMetrics.length > 0) {
-      const totalErrors = recentErrorMetrics.reduce((sum, m) => sum + m.value, 0);
+      const totalErrors = recentErrorMetrics.reduce(
+        (sum, m) => sum + m.value,
+        0
+      );
       if (totalErrors > 10) {
-        recommendations.push('エラー数が増加しています。ログの確認をしてください。');
+        recommendations.push(
+          'エラー数が増加しています。ログの確認をしてください。'
+        );
       }
     }
 
@@ -546,14 +587,18 @@ export class ApplicationMonitor {
     if (metricName) {
       const metrics = this.metrics.get(metricName) || [];
       if (startTime && endTime) {
-        return metrics.filter(m => m.timestamp >= startTime && m.timestamp <= endTime);
+        return metrics.filter(
+          (m) => m.timestamp >= startTime && m.timestamp <= endTime
+        );
       }
       return metrics;
     }
 
     const allMetrics = Array.from(this.metrics.values()).flat();
     if (startTime && endTime) {
-      return allMetrics.filter(m => m.timestamp >= startTime && m.timestamp <= endTime);
+      return allMetrics.filter(
+        (m) => m.timestamp >= startTime && m.timestamp <= endTime
+      );
     }
     return allMetrics;
   }
@@ -571,7 +616,7 @@ export class ApplicationMonitor {
   getAlerts(resolved?: boolean): Alert[] {
     const alerts = Array.from(this.alerts.values());
     if (resolved !== undefined) {
-      return alerts.filter(a => a.resolved === resolved);
+      return alerts.filter((a) => a.resolved === resolved);
     }
     return alerts;
   }
@@ -582,13 +627,15 @@ export class ApplicationMonitor {
   getStats(): any {
     const now = new Date();
     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
-    
+
     return {
       uptime: now.getTime() - this.startTime.getTime(),
       metricsCount: Array.from(this.metrics.values()).flat().length,
       healthChecksCount: this.healthChecks.size,
       alertsCount: this.alerts.size,
-      activeAlertsCount: Array.from(this.alerts.values()).filter(a => !a.resolved).length,
+      activeAlertsCount: Array.from(this.alerts.values()).filter(
+        (a) => !a.resolved
+      ).length,
       recentMetrics: this.calculateMetrics(oneHourAgo, now),
     };
   }

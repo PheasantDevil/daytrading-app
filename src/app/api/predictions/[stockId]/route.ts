@@ -78,7 +78,9 @@ export async function GET(
 
     // 直近でMLが失敗し無効化されている場合は即時フォールバック
     if (Date.now() < mlDisabledUntil) {
-      const lastPrice = historicalData[historicalData.length - 1]?.close ?? (100 + Math.random() * 50);
+      const lastPrice =
+        historicalData[historicalData.length - 1]?.close ??
+        100 + Math.random() * 50;
       const fb = {
         stockId,
         symbol: stock.symbol,
@@ -89,7 +91,10 @@ export async function GET(
         confidenceInterval: { lower: lastPrice - 5, upper: lastPrice + 5 },
         timestamp: new Date(),
         modelWeights: { lstm_short: 0.33, lstm_medium: 0.33, lstm_long: 0.34 },
-        accuracy: { mae: 3.0 + Math.random() * 2.0, rmse: 4.0 + Math.random() * 2.0 },
+        accuracy: {
+          mae: 3.0 + Math.random() * 2.0,
+          rmse: 4.0 + Math.random() * 2.0,
+        },
       };
       return NextResponse.json(createSuccessResponse(fb), { status: 200 });
     }

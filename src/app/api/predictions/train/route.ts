@@ -56,19 +56,21 @@ export async function POST(request: NextRequest) {
 
       // データを学習用の形式に変換
       const trainingData = {
-        features: historicalData.map(price => [
+        features: historicalData.map((price) => [
           price.open,
           price.high,
           price.low,
           price.close,
           price.volume,
         ]),
-        targets: historicalData.map(price => price.close),
-        timestamps: historicalData.map(price => price.timestamp),
+        targets: historicalData.map((price) => price.close),
+        timestamps: historicalData.map((price) => price.timestamp),
       };
 
       console.log(`Starting model training for ${stock.symbol}...`);
-      console.log(`Training data size: ${trainingData.features.length} samples`);
+      console.log(
+        `Training data size: ${trainingData.features.length} samples`
+      );
 
       // モデルを学習
       const trainingResults = await predictor.train(trainingData);
@@ -92,12 +94,15 @@ export async function POST(request: NextRequest) {
       });
     } catch (trainingError) {
       console.error('Model training failed:', trainingError);
-      
+
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'Model training failed',
-          details: trainingError instanceof Error ? trainingError.message : 'Unknown error'
+          details:
+            trainingError instanceof Error
+              ? trainingError.message
+              : 'Unknown error',
         },
         { status: 500 }
       );
@@ -105,10 +110,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Training API error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );
@@ -142,10 +147,10 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Model status API error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: 'Failed to get model status',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );

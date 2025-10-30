@@ -49,7 +49,10 @@ export class ScrapingHelper {
   /**
    * URLからHTMLを取得
    */
-  static async fetchHTML(url: string, timeout: number = 30000): Promise<string> {
+  static async fetchHTML(
+    url: string,
+    timeout: number = 30000
+  ): Promise<string> {
     const page = await this.newPage();
     try {
       await page.goto(url, {
@@ -85,7 +88,10 @@ export class ScrapingHelper {
         this.logger.warn(`Selector not found: ${selector}`);
       });
 
-      const text = await page.$eval(selector, (el) => el.textContent?.trim() || '');
+      const text = await page.$eval(
+        selector,
+        (el) => el.textContent?.trim() || ''
+      );
       return text || null;
     } catch (error) {
       this.logger.error(`Failed to get text from ${url}:`, error);
@@ -200,4 +206,3 @@ process.on('SIGTERM', async () => {
   await ScrapingHelper.close();
   process.exit(0);
 });
-

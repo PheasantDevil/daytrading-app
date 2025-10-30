@@ -3,8 +3,18 @@
  * OANDA Japan（FX）とウィブル証券（米国株）の統合管理
  */
 
-import { OandaIntegrationService, OandaOrder, OandaPosition, OandaPrice } from './oanda-integration';
-import { WebullIntegrationService, WebullOrder, WebullPosition, WebullQuote } from './webull-integration';
+import {
+  OandaIntegrationService,
+  OandaOrder,
+  OandaPosition,
+  OandaPrice,
+} from './oanda-integration';
+import {
+  WebullIntegrationService,
+  WebullOrder,
+  WebullPosition,
+  WebullQuote,
+} from './webull-integration';
 
 export interface UnifiedOrder {
   id: string;
@@ -162,7 +172,10 @@ export class TradingIntegrationService {
   /**
    * 注文をキャンセル
    */
-  async cancelOrder(orderId: string, broker: 'OANDA' | 'WEBULL'): Promise<boolean> {
+  async cancelOrder(
+    orderId: string,
+    broker: 'OANDA' | 'WEBULL'
+  ): Promise<boolean> {
     try {
       if (broker === 'OANDA') {
         return await this.oandaService.cancelOrder(orderId);
@@ -221,7 +234,9 @@ export class TradingIntegrationService {
         orders.push(this.convertWebullOrderToUnified(order));
       }
 
-      return orders.sort((a, b) => b.createTime.getTime() - a.createTime.getTime());
+      return orders.sort(
+        (a, b) => b.createTime.getTime() - a.createTime.getTime()
+      );
     } catch (error) {
       console.error('注文履歴取得エラー:', error);
       return orders;
@@ -231,7 +246,10 @@ export class TradingIntegrationService {
   /**
    * 現在価格を取得
    */
-  async getCurrentPrice(symbol: string, market: 'FX' | 'US'): Promise<UnifiedQuote | null> {
+  async getCurrentPrice(
+    symbol: string,
+    market: 'FX' | 'US'
+  ): Promise<UnifiedQuote | null> {
     try {
       if (market === 'FX') {
         const oandaPrice = await this.oandaService.getCurrentPrice(symbol);
@@ -281,8 +299,12 @@ export class TradingIntegrationService {
     symbols: Array<{ symbol: string; market: 'FX' | 'US' }>,
     callback: (quote: UnifiedQuote) => void
   ): Promise<void> {
-    const fxSymbols = symbols.filter(s => s.market === 'FX').map(s => s.symbol);
-    const usSymbols = symbols.filter(s => s.market === 'US').map(s => s.symbol);
+    const fxSymbols = symbols
+      .filter((s) => s.market === 'FX')
+      .map((s) => s.symbol);
+    const usSymbols = symbols
+      .filter((s) => s.market === 'US')
+      .map((s) => s.symbol);
 
     const promises = [];
 
@@ -345,8 +367,10 @@ export class TradingIntegrationService {
       }
 
       this.reconnectAttempts++;
-      console.log(`🔄 再接続試行中... (${this.reconnectAttempts}/${this.config.maxRetries})`);
-      
+      console.log(
+        `🔄 再接続試行中... (${this.reconnectAttempts}/${this.config.maxRetries})`
+      );
+
       const connected = await this.initialize();
       if (connected) {
         console.log('✅ 再接続成功');
@@ -404,10 +428,14 @@ export class TradingIntegrationService {
   /**
    * OANDAポジションを統一形式に変換
    */
-  private convertOandaPositionToUnified(position: OandaPosition): UnifiedPosition {
+  private convertOandaPositionToUnified(
+    position: OandaPosition
+  ): UnifiedPosition {
     const netUnits = position.long.units - position.short.units;
-    const averagePrice = netUnits > 0 ? position.long.averagePrice : position.short.averagePrice;
-    const currentPrice = (position.long.averagePrice + position.short.averagePrice) / 2;
+    const averagePrice =
+      netUnits > 0 ? position.long.averagePrice : position.short.averagePrice;
+    const currentPrice =
+      (position.long.averagePrice + position.short.averagePrice) / 2;
 
     return {
       symbol: position.instrument,
@@ -417,7 +445,8 @@ export class TradingIntegrationService {
       currentPrice: currentPrice,
       marketValue: Math.abs(netUnits) * currentPrice,
       unrealizedPl: position.unrealizedPl,
-      unrealizedPlPercent: (position.unrealizedPl / (Math.abs(netUnits) * averagePrice)) * 100,
+      unrealizedPlPercent:
+        (position.unrealizedPl / (Math.abs(netUnits) * averagePrice)) * 100,
       broker: 'OANDA',
     };
   }
@@ -425,7 +454,9 @@ export class TradingIntegrationService {
   /**
    * ウィブルポジションを統一形式に変換
    */
-  private convertWebullPositionToUnified(position: WebullPosition): UnifiedPosition {
+  private convertWebullPositionToUnified(
+    position: WebullPosition
+  ): UnifiedPosition {
     return {
       symbol: position.symbol,
       market: 'US',

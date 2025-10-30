@@ -1,7 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Area,
+  AreaChart,
+} from 'recharts';
 
 interface PredictionData {
   stockId: number;
@@ -39,7 +49,9 @@ export default function PredictionDisplay({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [trainingStatus, setTrainingStatus] = useState<'idle' | 'training' | 'completed' | 'error'>('idle');
+  const [trainingStatus, setTrainingStatus] = useState<
+    'idle' | 'training' | 'completed' | 'error'
+  >('idle');
 
   const fetchPrediction = async () => {
     try {
@@ -65,7 +77,7 @@ export default function PredictionDisplay({
     try {
       setTrainingStatus('training');
       setLoading(true);
-      
+
       const response = await fetch('/api/predictions/train', {
         method: 'POST',
         headers: {
@@ -184,15 +196,15 @@ export default function PredictionDisplay({
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="time" />
             <YAxis domain={['dataMin - 10', 'dataMax + 10']} />
-            <Tooltip 
+            <Tooltip
               formatter={(value: number) => [`¥${value.toFixed(2)}`, '価格']}
               labelFormatter={(label) => `時間: ${label}`}
             />
-            <Area 
-              type="monotone" 
-              dataKey="price" 
-              stroke="#3B82F6" 
-              fill="#3B82F6" 
+            <Area
+              type="monotone"
+              dataKey="price"
+              stroke="#3B82F6"
+              fill="#3B82F6"
               fillOpacity={0.3}
             />
           </AreaChart>
@@ -222,15 +234,20 @@ export default function PredictionDisplay({
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">予想変動</span>
             <div className="flex items-center space-x-2">
-              <span className={`text-sm font-medium ${
-                priceChange >= 0 ? 'text-green-600' : 'text-red-600'
-              }`}>
+              <span
+                className={`text-sm font-medium ${
+                  priceChange >= 0 ? 'text-green-600' : 'text-red-600'
+                }`}
+              >
                 {priceChange >= 0 ? '+' : ''}¥{priceChange.toFixed(2)}
               </span>
-              <span className={`text-sm font-medium ${
-                priceChangePercent >= 0 ? 'text-green-600' : 'text-red-600'
-              }`}>
-                ({priceChangePercent >= 0 ? '+' : ''}{priceChangePercent.toFixed(2)}%)
+              <span
+                className={`text-sm font-medium ${
+                  priceChangePercent >= 0 ? 'text-green-600' : 'text-red-600'
+                }`}
+              >
+                ({priceChangePercent >= 0 ? '+' : ''}
+                {priceChangePercent.toFixed(2)}%)
               </span>
             </div>
           </div>
@@ -247,8 +264,11 @@ export default function PredictionDisplay({
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
               className={`h-2 rounded-full ${
-                prediction.confidence >= 0.8 ? 'bg-green-500' :
-                prediction.confidence >= 0.6 ? 'bg-yellow-500' : 'bg-red-500'
+                prediction.confidence >= 0.8
+                  ? 'bg-green-500'
+                  : prediction.confidence >= 0.6
+                    ? 'bg-yellow-500'
+                    : 'bg-red-500'
               }`}
               style={{ width: `${prediction.confidence * 100}%` }}
             ></div>
@@ -273,13 +293,20 @@ export default function PredictionDisplay({
         <div className="p-3 bg-gray-50 rounded-lg">
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">トレンド</span>
-            <span className={`px-2 py-1 rounded text-xs font-medium ${
-              prediction.trend === 'up' ? 'bg-green-100 text-green-800' :
-              prediction.trend === 'down' ? 'bg-red-100 text-red-800' :
-              'bg-gray-100 text-gray-800'
-            }`}>
-              {prediction.trend === 'up' ? '上昇' : 
-               prediction.trend === 'down' ? '下降' : '横ばい'}
+            <span
+              className={`px-2 py-1 rounded text-xs font-medium ${
+                prediction.trend === 'up'
+                  ? 'bg-green-100 text-green-800'
+                  : prediction.trend === 'down'
+                    ? 'bg-red-100 text-red-800'
+                    : 'bg-gray-100 text-gray-800'
+              }`}
+            >
+              {prediction.trend === 'up'
+                ? '上昇'
+                : prediction.trend === 'down'
+                  ? '下降'
+                  : '横ばい'}
             </span>
           </div>
         </div>
@@ -307,11 +334,15 @@ export default function PredictionDisplay({
           <div className="grid grid-cols-2 gap-2">
             <div className="text-center">
               <div className="text-xs text-gray-500">MAE</div>
-              <div className="text-sm font-medium">{prediction.accuracy.mae.toFixed(2)}</div>
+              <div className="text-sm font-medium">
+                {prediction.accuracy.mae.toFixed(2)}
+              </div>
             </div>
             <div className="text-center">
               <div className="text-xs text-gray-500">RMSE</div>
-              <div className="text-sm font-medium">{prediction.accuracy.rmse.toFixed(2)}</div>
+              <div className="text-sm font-medium">
+                {prediction.accuracy.rmse.toFixed(2)}
+              </div>
             </div>
           </div>
         </div>

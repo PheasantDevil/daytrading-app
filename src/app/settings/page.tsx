@@ -63,15 +63,25 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('broker');
   // ポート選択UI用の状態
   const [portMode, setPortMode] = useState<'live' | 'paper' | 'other'>(
-    settings.ibPort === 7496 ? 'live' : settings.ibPort === 7497 ? 'paper' : 'other'
+    settings.ibPort === 7496
+      ? 'live'
+      : settings.ibPort === 7497
+        ? 'paper'
+        : 'other'
   );
   const [customPort, setCustomPort] = useState<number>(
-    settings.ibPort === 7496 || settings.ibPort === 7497 ? 4002 : settings.ibPort
+    settings.ibPort === 7496 || settings.ibPort === 7497
+      ? 4002
+      : settings.ibPort
   );
-  const [connectionResult, setConnectionResult] = useState<
-    | { success: boolean; message: string; latencyMs?: number; error?: string; port?: number; host?: string }
-    | null
-  >(null);
+  const [connectionResult, setConnectionResult] = useState<{
+    success: boolean;
+    message: string;
+    latencyMs?: number;
+    error?: string;
+    port?: number;
+    host?: string;
+  } | null>(null);
   const [testing, setTesting] = useState(false);
 
   const handleSettingChange = (key: keyof SystemSettings, value: any) => {
@@ -138,8 +148,7 @@ export default function SettingsPage() {
         port: settings.ibPort,
         host: settings.ibHost,
       });
-    }
-    finally {
+    } finally {
       setTesting(false);
     }
   };
@@ -213,7 +222,10 @@ export default function SettingsPage() {
                     <select
                       value={portMode}
                       onChange={(e) => {
-                        const mode = e.target.value as 'live' | 'paper' | 'other';
+                        const mode = e.target.value as
+                          | 'live'
+                          | 'paper'
+                          | 'other';
                         setPortMode(mode);
                         if (mode === 'live') {
                           handleSettingChange('ibPort', 7496);
@@ -229,16 +241,21 @@ export default function SettingsPage() {
                       className="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="live">7496 (本番取引)</option>
-                      <option value="paper">7497 (ペーパートレーディング)</option>
+                      <option value="paper">
+                        7497 (ペーパートレーディング)
+                      </option>
                       <option value="other">その他（右枠に自動入力）</option>
                     </select>
                     <input
                       type="number"
-                      value={portMode === 'other' ? customPort : settings.ibPort}
+                      value={
+                        portMode === 'other' ? customPort : settings.ibPort
+                      }
                       onChange={(e) => {
                         const v = Number(e.target.value);
                         setCustomPort(v);
-                        if (portMode === 'other') handleSettingChange('ibPort', v);
+                        if (portMode === 'other')
+                          handleSettingChange('ibPort', v);
                       }}
                       className={`w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
                         portMode === 'other'
@@ -331,12 +348,14 @@ export default function SettingsPage() {
                     {connectionResult.message}
                     {connectionResult.error && (
                       <>
-                        <br />エラー: {connectionResult.error}
+                        <br />
+                        エラー: {connectionResult.error}
                       </>
                     )}
                     {typeof connectionResult.latencyMs === 'number' && (
                       <>
-                        <br />レイテンシ: {connectionResult.latencyMs}ms
+                        <br />
+                        レイテンシ: {connectionResult.latencyMs}ms
                       </>
                     )}
                   </div>

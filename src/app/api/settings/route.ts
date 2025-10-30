@@ -57,7 +57,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     // 設定の更新
     systemSettings = { ...systemSettings, ...body };
 

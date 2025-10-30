@@ -31,37 +31,47 @@ export async function GET() {
 
     // 基本統計
     const totalTrades = allTrades.length;
-    const totalProfit = allTrades.reduce((sum, trade) => sum + (trade.profit || 0), 0);
-    const winningTrades = allTrades.filter(trade => (trade.profit || 0) > 0).length;
+    const totalProfit = allTrades.reduce(
+      (sum, trade) => sum + (trade.profit || 0),
+      0
+    );
+    const winningTrades = allTrades.filter(
+      (trade) => (trade.profit || 0) > 0
+    ).length;
     const winRate = totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0;
-    const maxProfit = Math.max(...allTrades.map(trade => trade.profit || 0));
-    const maxLoss = Math.min(...allTrades.map(trade => trade.profit || 0));
+    const maxProfit = Math.max(...allTrades.map((trade) => trade.profit || 0));
+    const maxLoss = Math.min(...allTrades.map((trade) => trade.profit || 0));
     const averageProfit = totalTrades > 0 ? totalProfit / totalTrades : 0;
 
     // 戦略別統計
-    const strategyStats = allTrades.reduce((acc, trade) => {
-      const strategy = trade.strategy || 'Unknown';
-      if (!acc[strategy]) {
-        acc[strategy] = {
-          trades: 0,
-          profit: 0,
-          wins: 0,
-        };
-      }
-      acc[strategy].trades++;
-      acc[strategy].profit += trade.profit || 0;
-      if ((trade.profit || 0) > 0) {
-        acc[strategy].wins++;
-      }
-      return acc;
-    }, {} as Record<string, { trades: number; profit: number; wins: number }>);
+    const strategyStats = allTrades.reduce(
+      (acc, trade) => {
+        const strategy = trade.strategy || 'Unknown';
+        if (!acc[strategy]) {
+          acc[strategy] = {
+            trades: 0,
+            profit: 0,
+            wins: 0,
+          };
+        }
+        acc[strategy].trades++;
+        acc[strategy].profit += trade.profit || 0;
+        if ((trade.profit || 0) > 0) {
+          acc[strategy].wins++;
+        }
+        return acc;
+      },
+      {} as Record<string, { trades: number; profit: number; wins: number }>
+    );
 
-    const strategyPerformance = Object.entries(strategyStats).map(([strategy, stats]) => ({
-      strategy,
-      trades: stats.trades,
-      profit: stats.profit,
-      winRate: stats.trades > 0 ? (stats.wins / stats.trades) * 100 : 0,
-    }));
+    const strategyPerformance = Object.entries(strategyStats).map(
+      ([strategy, stats]) => ({
+        strategy,
+        trades: stats.trades,
+        profit: stats.profit,
+        winRate: stats.trades > 0 ? (stats.wins / stats.trades) * 100 : 0,
+      })
+    );
 
     return NextResponse.json({
       success: true,

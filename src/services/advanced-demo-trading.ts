@@ -3,7 +3,12 @@
  * 複数市場対応、現実的なシミュレーション、高度なリスク管理
  */
 
-import { TradingIntegrationService, UnifiedOrder, UnifiedPosition, UnifiedQuote } from './trading-integration-service';
+import {
+  TradingIntegrationService,
+  UnifiedOrder,
+  UnifiedPosition,
+  UnifiedQuote,
+} from './trading-integration-service';
 import { DataIntegrationService, StockData } from './data-integration-service';
 import { FeeCalculator } from './fee-calculator';
 import { RiskManager } from './risk-manager';
@@ -83,7 +88,10 @@ export interface AdvancedDemoAccount {
 export interface MarketSimulator {
   name: string;
   type: 'FX' | 'US' | 'JP';
-  simulateExecution(order: AdvancedDemoOrder, currentPrice: number): Promise<{
+  simulateExecution(
+    order: AdvancedDemoOrder,
+    currentPrice: number
+  ): Promise<{
     filled: boolean;
     filledPrice: number;
     slippage: number;
@@ -113,7 +121,7 @@ export class AdvancedDemoTradingService {
     this.tradingService = tradingService;
     this.dataService = dataService;
     this.riskManager = new RiskManager(config.riskManagement);
-    
+
     this.account = {
       totalValue: config.initialCapital,
       cashBalance: config.initialCapital,
@@ -182,10 +190,10 @@ export class AdvancedDemoTradingService {
   private async initializeDemoTrading(): Promise<void> {
     // 口座情報を取得
     await this.updateAccountInfo();
-    
+
     // ポジション情報を取得
     await this.updatePositions();
-    
+
     // 注文履歴を取得
     await this.updateOrders();
   }
@@ -211,7 +219,10 @@ export class AdvancedDemoTradingService {
       }
 
       // 現在価格を取得
-      const currentPrice = await this.getCurrentPrice(order.symbol, order.market);
+      const currentPrice = await this.getCurrentPrice(
+        order.symbol,
+        order.market
+      );
       if (!currentPrice) {
         console.error(`❌ 現在価格取得失敗: ${order.symbol}`);
         return null;
@@ -263,7 +274,7 @@ export class AdvancedDemoTradingService {
     try {
       // 約定をシミュレート
       const execution = await simulator.simulateExecution(order, currentPrice);
-      
+
       if (execution.filled) {
         order.status = 'FILLED';
         order.fillTime = new Date();
@@ -290,15 +301,23 @@ export class AdvancedDemoTradingService {
   /**
    * 取引後のポジションを更新
    */
-  private async updatePositionAfterTrade(order: AdvancedDemoOrder): Promise<void> {
+  private async updatePositionAfterTrade(
+    order: AdvancedDemoOrder
+  ): Promise<void> {
     const positionKey = `${order.symbol}_${order.market}`;
     const existingPosition = this.positions.get(positionKey);
 
     if (existingPosition) {
       // 既存ポジションを更新
-      const totalQuantity = existingPosition.quantity + (order.side === 'BUY' ? order.quantity : -order.quantity);
-      const totalCost = existingPosition.cost + (order.side === 'BUY' ? order.netPrice * order.quantity : -order.netPrice * order.quantity);
-      
+      const totalQuantity =
+        existingPosition.quantity +
+        (order.side === 'BUY' ? order.quantity : -order.quantity);
+      const totalCost =
+        existingPosition.cost +
+        (order.side === 'BUY'
+          ? order.netPrice * order.quantity
+          : -order.netPrice * order.quantity);
+
       if (totalQuantity === 0) {
         // ポジションクローズ
         this.positions.delete(positionKey);
@@ -352,7 +371,7 @@ export class AdvancedDemoTradingService {
     // ポートフォリオリスクチェック
     const currentPositions = Array.from(this.positions.values());
     const portfolioRisk = this.riskManager.analyzePortfolioRisk(
-      currentPositions.map(p => ({
+      currentPositions.map((p) => ({
         symbol: p.symbol,
         size: p.quantity,
         entryPrice: p.averagePrice,
@@ -362,7 +381,10 @@ export class AdvancedDemoTradingService {
     );
 
     if (!portfolioRisk.isWithinRiskLimit) {
-      return { allowed: false, reason: 'ポートフォリオリスクが制限を超えています' };
+      return {
+        allowed: false,
+        reason: 'ポートフォリオリスクが制限を超えています',
+      };
     }
 
     // 日次損失チェック
@@ -376,7 +398,10 @@ export class AdvancedDemoTradingService {
   /**
    * 現在価格を取得
    */
-  private async getCurrentPrice(symbol: string, market: 'FX' | 'US' | 'JP'): Promise<StockData | null> {
+  private async getCurrentPrice(
+    symbol: string,
+    market: 'FX' | 'US' | 'JP'
+  ): Promise<StockData | null> {
     try {
       if (market === 'FX' || market === 'US') {
         const quote = await this.tradingService.getCurrentPrice(symbol, market);
@@ -411,12 +436,16 @@ export class AdvancedDemoTradingService {
 
     // ポジションの現在価値を計算
     for (const position of this.positions.values()) {
-      const currentPrice = await this.getCurrentPrice(position.symbol, position.market);
+      const currentPrice = await this.getCurrentPrice(
+        position.symbol,
+        position.market
+      );
       if (currentPrice) {
         position.currentPrice = currentPrice.price;
         position.marketValue = position.quantity * currentPrice.price;
         position.unrealizedPl = position.marketValue - position.cost;
-        position.unrealizedPlPercent = (position.unrealizedPl / position.cost) * 100;
+        position.unrealizedPlPercent =
+          (position.unrealizedPl / position.cost) * 100;
         position.lastUpdated = new Date();
 
         marketValue += position.marketValue;
@@ -428,8 +457,10 @@ export class AdvancedDemoTradingService {
     this.account.marketValue = marketValue;
     this.account.unrealizedPl = unrealizedPl;
     this.account.totalValue = this.account.cashBalance + marketValue;
-    this.account.totalReturn = this.account.totalValue - this.config.initialCapital;
-    this.account.totalReturnPercent = (this.account.totalReturn / this.config.initialCapital) * 100;
+    this.account.totalReturn =
+      this.account.totalValue - this.config.initialCapital;
+    this.account.totalReturnPercent =
+      (this.account.totalReturn / this.config.initialCapital) * 100;
     this.account.lastUpdated = new Date();
   }
 
@@ -439,7 +470,7 @@ export class AdvancedDemoTradingService {
   private async updatePositions(): Promise<void> {
     // 実取引のポジションを取得
     const realPositions = await this.tradingService.getAllPositions();
-    
+
     // デモポジションと統合
     for (const realPosition of realPositions) {
       const positionKey = `${realPosition.symbol}_${realPosition.market}`;
@@ -466,7 +497,7 @@ export class AdvancedDemoTradingService {
   private async updateOrders(): Promise<void> {
     // 実取引の注文を取得
     const realOrders = await this.tradingService.getAllOrders();
-    
+
     // デモ注文と統合
     for (const realOrder of realOrders) {
       const demoOrder: AdvancedDemoOrder = {
@@ -555,7 +586,10 @@ class FxMarketSimulator implements MarketSimulator {
   name = 'FX';
   type = 'FX' as const;
 
-  async simulateExecution(order: AdvancedDemoOrder, currentPrice: number): Promise<{
+  async simulateExecution(
+    order: AdvancedDemoOrder,
+    currentPrice: number
+  ): Promise<{
     filled: boolean;
     filledPrice: number;
     slippage: number;
@@ -596,14 +630,17 @@ class UsMarketSimulator implements MarketSimulator {
   name = 'US';
   type = 'US' as const;
 
-  async simulateExecution(order: AdvancedDemoOrder, currentPrice: number): Promise<{
+  async simulateExecution(
+    order: AdvancedDemoOrder,
+    currentPrice: number
+  ): Promise<{
     filled: boolean;
     filledPrice: number;
     slippage: number;
     commission: number;
   }> {
     // 米国株の約定率
-    const fillProbability = 0.90;
+    const fillProbability = 0.9;
     const filled = Math.random() < fillProbability;
 
     if (!filled) {
@@ -622,7 +659,7 @@ class UsMarketSimulator implements MarketSimulator {
 
   calculateLiquidity(symbol: string, quantity: number): number {
     // 米国株は流動性が高い
-    return 0.90;
+    return 0.9;
   }
 
   getMarketHours(): { open: string; close: string; timezone: string } {
@@ -637,7 +674,10 @@ class JpMarketSimulator implements MarketSimulator {
   name = 'JP';
   type = 'JP' as const;
 
-  async simulateExecution(order: AdvancedDemoOrder, currentPrice: number): Promise<{
+  async simulateExecution(
+    order: AdvancedDemoOrder,
+    currentPrice: number
+  ): Promise<{
     filled: boolean;
     filledPrice: number;
     slippage: number;
@@ -656,14 +696,17 @@ class JpMarketSimulator implements MarketSimulator {
     const filledPrice = currentPrice + slippage;
 
     // 手数料計算（日本株は手数料あり）
-    const commission = FeeCalculator.calculateCommission(order.quantity * filledPrice, 'sbi').total;
+    const commission = FeeCalculator.calculateCommission(
+      order.quantity * filledPrice,
+      'sbi'
+    ).total;
 
     return { filled: true, filledPrice, slippage, commission };
   }
 
   calculateLiquidity(symbol: string, quantity: number): number {
     // 日本株は流動性が中程度
-    return 0.80;
+    return 0.8;
   }
 
   getMarketHours(): { open: string; close: string; timezone: string } {

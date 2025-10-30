@@ -47,9 +47,9 @@ export class EnsemblePredictor {
     this.models.set('lstm_long', new LSTMPredictor());
 
     // 初期重みを設定
-    this.modelWeights.set('lstm_short', 0.4);  // 短期予測重視
+    this.modelWeights.set('lstm_short', 0.4); // 短期予測重視
     this.modelWeights.set('lstm_medium', 0.4); // 中期予測重視
-    this.modelWeights.set('lstm_long', 0.2);   // 長期予測重視
+    this.modelWeights.set('lstm_long', 0.2); // 長期予測重視
   }
 
   /**
@@ -58,20 +58,20 @@ export class EnsemblePredictor {
   async train(trainingData: TrainingData): Promise<Record<string, any>> {
     try {
       console.log('Starting ensemble model training...');
-      
+
       const results: Record<string, any> = {};
-      
+
       // 各モデルを個別に学習
       for (const [modelName, model] of this.models) {
         try {
           console.log(`Training ${modelName}...`);
-          
+
           // モデルごとに異なるデータセットを作成
           const modelData = this.prepareModelData(trainingData, modelName);
-          
+
           const metrics = await model.train(modelData);
           results[modelName] = metrics;
-          
+
           console.log(`${modelName} training completed:`, metrics);
         } catch (error) {
           console.error(`Failed to train ${modelName}:`, error);
@@ -81,10 +81,10 @@ export class EnsemblePredictor {
 
       // 重みを動的に調整（簡易実装）
       this.adjustModelWeights(results);
-      
+
       this.isTrained = true;
       console.log('Ensemble model training completed');
-      
+
       return results;
     } catch (error) {
       console.error('Failed to train ensemble model:', error);
@@ -95,21 +95,30 @@ export class EnsemblePredictor {
   /**
    * モデルごとにデータを準備
    */
-  private prepareModelData(trainingData: TrainingData, modelName: string): TrainingData {
+  private prepareModelData(
+    trainingData: TrainingData,
+    modelName: string
+  ): TrainingData {
     // モデルごとに異なるデータ処理を適用
     switch (modelName) {
       case 'lstm_short':
         // 短期予測用：最近のデータを重視
         return {
-          features: trainingData.features.slice(-Math.floor(trainingData.features.length * 0.7)),
-          targets: trainingData.targets.slice(-Math.floor(trainingData.targets.length * 0.7)),
-          timestamps: trainingData.timestamps.slice(-Math.floor(trainingData.timestamps.length * 0.7)),
+          features: trainingData.features.slice(
+            -Math.floor(trainingData.features.length * 0.7)
+          ),
+          targets: trainingData.targets.slice(
+            -Math.floor(trainingData.targets.length * 0.7)
+          ),
+          timestamps: trainingData.timestamps.slice(
+            -Math.floor(trainingData.timestamps.length * 0.7)
+          ),
         };
-        
+
       case 'lstm_medium':
         // 中期予測用：全データを使用
         return trainingData;
-        
+
       case 'lstm_long':
         // 長期予測用：より多くの履歴データを使用
         return {
@@ -117,7 +126,7 @@ export class EnsemblePredictor {
           targets: trainingData.targets,
           timestamps: trainingData.timestamps,
         };
-        
+
       default:
         return trainingData;
     }
@@ -165,22 +174,24 @@ export class EnsemblePredictor {
       }
 
       console.log('Making ensemble prediction...');
-      
+
       const predictions: ModelPrediction[] = [];
-      
+
       // 各モデルで予測を実行
       for (const [modelName, model] of this.models) {
         try {
           const prediction = await model.predict(inputData);
           const weight = this.modelWeights.get(modelName) || 0;
-          
+
           predictions.push({
             modelName,
             prediction,
             weight,
           });
-          
-          console.log(`${modelName} prediction: ${prediction.predictedPrice.toFixed(2)} (weight: ${weight.toFixed(3)})`);
+
+          console.log(
+            `${modelName} prediction: ${prediction.predictedPrice.toFixed(2)} (weight: ${weight.toFixed(3)})`
+          );
         } catch (error) {
           console.error(`Failed to get prediction from ${modelName}:`, error);
         }
@@ -192,9 +203,11 @@ export class EnsemblePredictor {
 
       // 重み付き平均で最終予測を計算
       const ensembleResult = this.combinePredictions(predictions);
-      
-      console.log(`Ensemble prediction: ${ensembleResult.predictedPrice.toFixed(2)} (confidence: ${ensembleResult.confidence.toFixed(3)})`);
-      
+
+      console.log(
+        `Ensemble prediction: ${ensembleResult.predictedPrice.toFixed(2)} (confidence: ${ensembleResult.confidence.toFixed(3)})`
+      );
+
       return ensembleResult;
     } catch (error) {
       console.error('Failed to make ensemble prediction:', error);
@@ -209,9 +222,9 @@ export class EnsemblePredictor {
     let weightedPriceSum = 0;
     let weightedConfidenceSum = 0;
     let totalWeight = 0;
-    
+
     const modelWeights: Record<string, number> = {};
-    
+
     // 重み付き平均を計算
     for (const pred of predictions) {
       const weight = pred.weight;
@@ -220,24 +233,29 @@ export class EnsemblePredictor {
       totalWeight += weight;
       modelWeights[pred.modelName] = weight;
     }
-    
+
     const finalPrice = weightedPriceSum / totalWeight;
     const finalConfidence = weightedConfidenceSum / totalWeight;
-    
+
     // トレンドを決定
     const currentPrice = predictions[0].prediction.predictedPrice; // 簡易実装
-    const trend = finalPrice > currentPrice ? 'up' : 
-                 finalPrice < currentPrice ? 'down' : 'neutral';
-    
+    const trend =
+      finalPrice > currentPrice
+        ? 'up'
+        : finalPrice < currentPrice
+          ? 'down'
+          : 'neutral';
+
     // 信頼区間を計算
-    const variance = predictions.reduce((sum, pred) => {
-      const diff = pred.prediction.predictedPrice - finalPrice;
-      return sum + (diff * diff * pred.weight);
-    }, 0) / totalWeight;
-    
+    const variance =
+      predictions.reduce((sum, pred) => {
+        const diff = pred.prediction.predictedPrice - finalPrice;
+        return sum + diff * diff * pred.weight;
+      }, 0) / totalWeight;
+
     const stdDev = Math.sqrt(variance);
     const margin = stdDev * (1 - finalConfidence);
-    
+
     return {
       predictedPrice: finalPrice,
       confidence: finalConfidence,
@@ -257,9 +275,9 @@ export class EnsemblePredictor {
   async evaluate(testData: TrainingData): Promise<Record<string, any>> {
     try {
       console.log('Evaluating ensemble model...');
-      
+
       const results: Record<string, any> = {};
-      
+
       for (const [modelName, model] of this.models) {
         try {
           const testMetrics = await this.evaluateModel(model, testData);
@@ -269,7 +287,7 @@ export class EnsemblePredictor {
           results[modelName] = { error: error.message };
         }
       }
-      
+
       return results;
     } catch (error) {
       console.error('Failed to evaluate ensemble model:', error);
@@ -280,17 +298,22 @@ export class EnsemblePredictor {
   /**
    * 個別モデルの性能を評価
    */
-  private async evaluateModel(model: LSTMPredictor, testData: TrainingData): Promise<any> {
+  private async evaluateModel(
+    model: LSTMPredictor,
+    testData: TrainingData
+  ): Promise<any> {
     // 簡易的な評価実装
     const predictions: number[] = [];
     const actuals: number[] = [];
-    
+
     // テストデータの一部で予測を実行
     const testSize = Math.min(10, testData.features.length);
-    
+
     for (let i = 0; i < testSize; i++) {
       try {
-        const prediction = await model.predict(testData.features.slice(0, i + 60));
+        const prediction = await model.predict(
+          testData.features.slice(0, i + 60)
+        );
         predictions.push(prediction.predictedPrice);
         actuals.push(testData.targets[i + 60]);
       } catch (error) {
@@ -298,20 +321,26 @@ export class EnsemblePredictor {
         continue;
       }
     }
-    
+
     if (predictions.length === 0) {
       return { error: 'No valid predictions' };
     }
-    
+
     // MAE（平均絶対誤差）を計算
-    const mae = predictions.reduce((sum, pred, index) => 
-      sum + Math.abs(pred - actuals[index]), 0) / predictions.length;
-    
+    const mae =
+      predictions.reduce(
+        (sum, pred, index) => sum + Math.abs(pred - actuals[index]),
+        0
+      ) / predictions.length;
+
     // RMSE（二乗平均平方根誤差）を計算
-    const mse = predictions.reduce((sum, pred, index) => 
-      sum + Math.pow(pred - actuals[index], 2), 0) / predictions.length;
+    const mse =
+      predictions.reduce(
+        (sum, pred, index) => sum + Math.pow(pred - actuals[index], 2),
+        0
+      ) / predictions.length;
     const rmse = Math.sqrt(mse);
-    
+
     return {
       mae,
       rmse,
@@ -324,14 +353,14 @@ export class EnsemblePredictor {
    */
   getModelStatus(): Record<string, any> {
     const status: Record<string, any> = {};
-    
+
     for (const [modelName, model] of this.models) {
       status[modelName] = {
         ...model.getModelStatus(),
         weight: this.modelWeights.get(modelName) || 0,
       };
     }
-    
+
     return {
       ensemble: {
         trained: this.isTrained,

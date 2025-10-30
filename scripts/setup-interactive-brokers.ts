@@ -100,7 +100,9 @@ async function setupInteractiveBrokers(): Promise<void> {
       logger.error('❌ Interactive Brokersとの接続に失敗しました');
       logger.error('以下を確認してください:');
       logger.error('1. TWS/IB Gatewayが起動しているか');
-      logger.error('2. API接続が有効になっているか（設定 > API > Enable ActiveX and Socket Clients）');
+      logger.error(
+        '2. API接続が有効になっているか（設定 > API > Enable ActiveX and Socket Clients）'
+      );
       logger.error('3. ポート番号が正しいか（7497=paper, 7496=live）');
       logger.error('4. ファイアウォールがブロックしていないか');
     }
@@ -122,4 +124,3 @@ const args = process.argv.slice(2);
 setupInteractiveBrokers().catch(console.error);
 
 export { setupInteractiveBrokers };
-

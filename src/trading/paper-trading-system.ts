@@ -74,7 +74,9 @@ export class PaperTradingSystem extends EventEmitter {
   async initialize(): Promise<void> {
     try {
       this.logger.info('ペーパートレーディングシステムを初期化中...');
-      this.logger.info(`初期資金: $${this.config.initialBalance.toLocaleString()}`);
+      this.logger.info(
+        `初期資金: $${this.config.initialBalance.toLocaleString()}`
+      );
 
       // モックAPIに接続
       await this.mockApi.connect();
@@ -82,10 +84,15 @@ export class PaperTradingSystem extends EventEmitter {
       // イベントハンドラーの設定
       this.setupEventHandlers();
 
-      this.logger.info('✅ ペーパートレーディングシステムの初期化が完了しました');
+      this.logger.info(
+        '✅ ペーパートレーディングシステムの初期化が完了しました'
+      );
       this.emit('initialized');
     } catch (error) {
-      this.logger.error('ペーパートレーディングシステムの初期化に失敗しました:', error);
+      this.logger.error(
+        'ペーパートレーディングシステムの初期化に失敗しました:',
+        error
+      );
       throw error;
     }
   }
@@ -219,11 +226,21 @@ export class PaperTradingSystem extends EventEmitter {
   }> {
     const virtualAccount = this.mockApi.getVirtualAccount();
     const positions = Array.from(virtualAccount.positions.values());
-    
-    const unrealizedPnL = positions.reduce((sum, pos) => sum + pos.unrealizedPnL, 0);
-    const realizedPnL = positions.reduce((sum, pos) => sum + pos.realizedPnL, 0);
-    const grossPositionValue = positions.reduce((sum, pos) => sum + Math.abs(pos.marketValue), 0);
-    const netLiquidation = virtualAccount.balance + grossPositionValue + unrealizedPnL;
+
+    const unrealizedPnL = positions.reduce(
+      (sum, pos) => sum + pos.unrealizedPnL,
+      0
+    );
+    const realizedPnL = positions.reduce(
+      (sum, pos) => sum + pos.realizedPnL,
+      0
+    );
+    const grossPositionValue = positions.reduce(
+      (sum, pos) => sum + Math.abs(pos.marketValue),
+      0
+    );
+    const netLiquidation =
+      virtualAccount.balance + grossPositionValue + unrealizedPnL;
     const totalPnL = netLiquidation - this.initialBalance;
 
     return {
@@ -273,20 +290,22 @@ export class PaperTradingSystem extends EventEmitter {
   getTradingStats(): TradingStats {
     const virtualAccount = this.mockApi.getVirtualAccount();
     const trades = virtualAccount.trades;
-    
-    const winningTrades = trades.filter(t => t.pnl > 0).length;
-    const losingTrades = trades.filter(t => t.pnl < 0).length;
+
+    const winningTrades = trades.filter((t) => t.pnl > 0).length;
+    const losingTrades = trades.filter((t) => t.pnl < 0).length;
     const totalPnL = trades.reduce((sum, t) => sum + t.pnl, 0);
-    
-    const wins = trades.filter(t => t.pnl > 0);
-    const losses = trades.filter(t => t.pnl < 0);
-    
-    const averageWin = wins.length > 0 
-      ? wins.reduce((sum, t) => sum + t.pnl, 0) / wins.length 
-      : 0;
-    const averageLoss = losses.length > 0 
-      ? losses.reduce((sum, t) => sum + t.pnl, 0) / losses.length 
-      : 0;
+
+    const wins = trades.filter((t) => t.pnl > 0);
+    const losses = trades.filter((t) => t.pnl < 0);
+
+    const averageWin =
+      wins.length > 0
+        ? wins.reduce((sum, t) => sum + t.pnl, 0) / wins.length
+        : 0;
+    const averageLoss =
+      losses.length > 0
+        ? losses.reduce((sum, t) => sum + t.pnl, 0) / losses.length
+        : 0;
 
     // 最大ドローダウンの計算
     let peak = this.initialBalance;
@@ -305,10 +324,11 @@ export class PaperTradingSystem extends EventEmitter {
     }
 
     // シャープレシオの簡易計算
-    const returns = trades.map(t => t.pnl / this.initialBalance);
+    const returns = trades.map((t) => t.pnl / this.initialBalance);
     const avgReturn = returns.reduce((sum, r) => sum + r, 0) / returns.length;
     const stdDev = Math.sqrt(
-      returns.reduce((sum, r) => sum + Math.pow(r - avgReturn, 2), 0) / returns.length
+      returns.reduce((sum, r) => sum + Math.pow(r - avgReturn, 2), 0) /
+        returns.length
     );
     const sharpeRatio = stdDev > 0 ? avgReturn / stdDev : 0;
 
@@ -346,21 +366,21 @@ export class PaperTradingSystem extends EventEmitter {
   async stop(): Promise<void> {
     try {
       this.logger.info('ペーパートレーディングを停止します...');
-      
+
       await this.mockApi.disconnect();
       this.isRunning = false;
-      
+
       this.logger.info('✅ ペーパートレーディングが停止されました');
       this.logger.info('📊 最終結果:');
-      
+
       const accountInfo = await this.getAccountInfo();
       const stats = this.getTradingStats();
-      
+
       this.logger.info(`純資産: $${accountInfo.netLiquidation.toFixed(2)}`);
       this.logger.info(`総損益: $${accountInfo.totalPnL.toFixed(2)}`);
       this.logger.info(`勝率: ${(stats.winRate * 100).toFixed(2)}%`);
       this.logger.info(`総取引数: ${stats.totalTrades}`);
-      
+
       this.emit('stopped', { accountInfo, stats });
     } catch (error) {
       this.logger.error('ペーパートレーディングの停止に失敗しました:', error);
@@ -378,7 +398,7 @@ export class PaperTradingSystem extends EventEmitter {
     trades: number;
   } {
     const virtualAccount = this.mockApi.getVirtualAccount();
-    
+
     return {
       running: this.isRunning,
       balance: virtualAccount.balance,
@@ -399,7 +419,7 @@ export class PaperTradingSystem extends EventEmitter {
   }> {
     const connected = this.mockApi.isConnectedToIB();
     const virtualAccount = this.mockApi.getVirtualAccount();
-    
+
     return {
       healthy: connected && this.isRunning,
       status: this.isRunning ? 'running' : 'stopped',

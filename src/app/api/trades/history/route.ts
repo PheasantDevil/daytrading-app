@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
     // フィルター条件を構築
     const where: any = {};
-    
+
     if (symbol) {
       where.stock = {
         symbol: {
@@ -23,17 +23,17 @@ export async function GET(request: NextRequest) {
         },
       };
     }
-    
+
     if (strategy) {
       where.strategy = strategy;
     }
-    
+
     if (profitMin || profitMax) {
       where.profit = {};
       if (profitMin) where.profit.gte = parseFloat(profitMin);
       if (profitMax) where.profit.lte = parseFloat(profitMax);
     }
-    
+
     if (dateFrom || dateTo) {
       where.timestamp = {};
       if (dateFrom) where.timestamp.gte = new Date(dateFrom);

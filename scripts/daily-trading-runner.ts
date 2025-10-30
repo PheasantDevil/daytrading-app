@@ -12,7 +12,7 @@ const logger = new Logger('DailyTradingRunner');
 
 /**
  * 毎日の自動取引実行スクリプト
- * 
+ *
  * 使用方法:
  * - 手動実行: npm run trade:daily
  * - cron設定: 毎日08:00に実行
@@ -171,4 +171,3 @@ runDailyTrading().catch((error) => {
 });
 
 export { runDailyTrading };
-

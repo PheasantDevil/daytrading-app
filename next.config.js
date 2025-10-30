@@ -15,17 +15,17 @@ const nextConfig = {
       ...config.resolve.fallback,
       '@std/testing/mock': false,
       '@std/testing/bdd': false,
-      'fs': false,
-      'path': false,
-      'crypto': false,
+      fs: false,
+      path: false,
+      crypto: false,
     };
-    
+
     // テストファイルを無視
     config.module.rules.push({
       test: /\.test\.(js|ts|tsx)$/,
       loader: 'ignore-loader',
     });
-    
+
     // yahoo-finance2のテストファイルを無視
     config.module.rules.push({
       test: /node_modules\/yahoo-finance2\/.*\/tests\/.*\.js$/,

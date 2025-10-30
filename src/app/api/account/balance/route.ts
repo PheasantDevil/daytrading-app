@@ -2,14 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
-async function pingGateway(host: string, port: number): Promise<{ ok: boolean; latencyMs?: number; error?: string }>{
+async function pingGateway(
+  host: string,
+  port: number
+): Promise<{ ok: boolean; latencyMs?: number; error?: string }> {
   const { default: net } = await import('net');
   return new Promise((resolve) => {
     const start = Date.now();
     const socket = new net.Socket();
     const timeoutMs = 3000;
     const finalize = (ok: boolean, error?: string) => {
-      try { socket.destroy(); } catch {}
+      try {
+        socket.destroy();
+      } catch {}
       resolve({ ok, latencyMs: Date.now() - start, error });
     };
     socket.setTimeout(timeoutMs);
@@ -28,11 +33,14 @@ export async function GET(_req: NextRequest) {
 
     const ping = await pingGateway(host, port);
     if (!ping.ok) {
-      return NextResponse.json({
-        success: false,
-        message: 'IB Gateway not reachable',
-        data: { host, port, accountId, error: ping.error },
-      }, { status: 503 });
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'IB Gateway not reachable',
+          data: { host, port, accountId, error: ping.error },
+        },
+        { status: 503 }
+      );
     }
 
     // TODO: 実IB API接続に置換予定。現状はモック残高を返却
@@ -52,18 +60,18 @@ export async function GET(_req: NextRequest) {
     return NextResponse.json({ success: true, data: mockBalance });
   } catch (error) {
     console.error('Balance API error:', error);
-    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { success: false, message: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
-
-import { NextResponse } from 'next/server';
-import { prisma } from '@/core/database';
 
 export async function GET() {
   try {
     // 実際の実装では、Interactive Brokers APIから口座残高を取得
     // 現在はモックデータを返す
-    
+
     const mockBalance = {
       accountId: process.env.IB_ACCOUNT_ID || 'U1234567',
       balance: 1000000, // ¥1,000,000

@@ -118,12 +118,15 @@ export abstract class BaseSignalService
       this.emit('serviceDisabled', this.name);
 
       // 24時間後に自動再開
-      setTimeout(() => {
-        this.isDisabled = false;
-        this.errorCount = 0;
-        this.logger.info(`${this.name} service re-enabled`);
-        this.emit('serviceEnabled', this.name);
-      }, 24 * 60 * 60 * 1000);
+      setTimeout(
+        () => {
+          this.isDisabled = false;
+          this.errorCount = 0;
+          this.logger.info(`${this.name} service re-enabled`);
+          this.emit('serviceEnabled', this.name);
+        },
+        24 * 60 * 60 * 1000
+      );
     }
   }
 
@@ -145,4 +148,3 @@ export abstract class BaseSignalService
     this.logger.info(`${this.name} service reset`);
   }
 }
-
