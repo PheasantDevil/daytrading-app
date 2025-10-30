@@ -2,7 +2,18 @@
 
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from 'recharts';
 
 interface PerformanceSummary {
   totalProfit: number;
@@ -130,7 +141,9 @@ export default function HistoryPage() {
     profitMax: '',
   });
 
-  const [strategyPerformance, setStrategyPerformance] = useState<StrategyPerformance[]>([
+  const [strategyPerformance, setStrategyPerformance] = useState<
+    StrategyPerformance[]
+  >([
     { name: 'モメンタム', trades: 18, profit: 15000, winRate: 72 },
     { name: '平均回帰', trades: 12, profit: 8000, winRate: 58 },
     { name: 'ブレイクアウト', trades: 12, profit: 5000, winRate: 67 },
@@ -143,7 +156,7 @@ export default function HistoryPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(filters),
       });
-      
+
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
@@ -160,11 +173,13 @@ export default function HistoryPage() {
     }
   };
 
-  const filteredTrades = trades.filter(trade => {
+  const filteredTrades = trades.filter((trade) => {
     if (filters.symbol && !trade.symbol.includes(filters.symbol)) return false;
     if (filters.strategy && trade.strategy !== filters.strategy) return false;
-    if (filters.profitMin && trade.profit < Number(filters.profitMin)) return false;
-    if (filters.profitMax && trade.profit > Number(filters.profitMax)) return false;
+    if (filters.profitMin && trade.profit < Number(filters.profitMin))
+      return false;
+    if (filters.profitMax && trade.profit > Number(filters.profitMax))
+      return false;
     return true;
   });
 
@@ -173,26 +188,38 @@ export default function HistoryPage() {
       {/* パフォーマンスサマリー */}
       <div className="mb-6">
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-2xl font-semibold mb-4">パフォーマンスサマリー</h2>
+          <h2 className="text-2xl font-semibold mb-4">
+            パフォーマンスサマリー
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div className="text-center">
               <p className="text-sm text-gray-500">総損益</p>
-              <p className={`text-2xl font-bold ${performance.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {performance.totalProfit >= 0 ? '+' : ''}¥{performance.totalProfit.toLocaleString()}
+              <p
+                className={`text-2xl font-bold ${performance.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}
+              >
+                {performance.totalProfit >= 0 ? '+' : ''}¥
+                {performance.totalProfit.toLocaleString()}
               </p>
             </div>
             <div className="text-center">
               <p className="text-sm text-gray-500">勝率</p>
-              <p className="text-2xl font-bold text-gray-900">{performance.winRate}%</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {performance.winRate}%
+              </p>
             </div>
             <div className="text-center">
               <p className="text-sm text-gray-500">取引数</p>
-              <p className="text-2xl font-bold text-gray-900">{performance.totalTrades}回</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {performance.totalTrades}回
+              </p>
             </div>
             <div className="text-center">
               <p className="text-sm text-gray-500">平均利益</p>
-              <p className={`text-2xl font-bold ${performance.averageProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {performance.averageProfit >= 0 ? '+' : ''}¥{performance.averageProfit.toLocaleString()}
+              <p
+                className={`text-2xl font-bold ${performance.averageProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}
+              >
+                {performance.averageProfit >= 0 ? '+' : ''}¥
+                {performance.averageProfit.toLocaleString()}
               </p>
             </div>
           </div>
@@ -204,14 +231,17 @@ export default function HistoryPage() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis />
-                <Tooltip 
-                  formatter={(value: number) => [`¥${value.toLocaleString()}`, '累積損益']}
+                <Tooltip
+                  formatter={(value: number) => [
+                    `¥${value.toLocaleString()}`,
+                    '累積損益',
+                  ]}
                   labelFormatter={(label) => `日付: ${label}`}
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="profit" 
-                  stroke="#10B981" 
+                <Line
+                  type="monotone"
+                  dataKey="profit"
+                  stroke="#10B981"
                   strokeWidth={2}
                   dot={{ fill: '#10B981' }}
                 />
@@ -227,38 +257,54 @@ export default function HistoryPage() {
           <h3 className="text-lg font-semibold mb-4">フィルター</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">日付（開始）</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                日付（開始）
+              </label>
               <input
                 type="date"
                 value={filters.dateFrom}
-                onChange={(e) => setFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, dateFrom: e.target.value }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">日付（終了）</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                日付（終了）
+              </label>
               <input
                 type="date"
                 value={filters.dateTo}
-                onChange={(e) => setFilters(prev => ({ ...prev, dateTo: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, dateTo: e.target.value }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">銘柄</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                銘柄
+              </label>
               <input
                 type="text"
                 placeholder="例: 7203"
                 value={filters.symbol}
-                onChange={(e) => setFilters(prev => ({ ...prev, symbol: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, symbol: e.target.value }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">戦略</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                戦略
+              </label>
               <select
                 value={filters.strategy}
-                onChange={(e) => setFilters(prev => ({ ...prev, strategy: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, strategy: e.target.value }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">すべて</option>
@@ -268,29 +314,46 @@ export default function HistoryPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">最小利益</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                最小利益
+              </label>
               <input
                 type="number"
                 placeholder="例: 1000"
                 value={filters.profitMin}
-                onChange={(e) => setFilters(prev => ({ ...prev, profitMin: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, profitMin: e.target.value }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">最大利益</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                最大利益
+              </label>
               <input
                 type="number"
                 placeholder="例: 10000"
                 value={filters.profitMax}
-                onChange={(e) => setFilters(prev => ({ ...prev, profitMax: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, profitMax: e.target.value }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
           <div className="mt-4 flex justify-between">
             <button
-              onClick={() => setFilters({ dateFrom: '', dateTo: '', symbol: '', strategy: '', profitMin: '', profitMax: '' })}
+              onClick={() =>
+                setFilters({
+                  dateFrom: '',
+                  dateTo: '',
+                  symbol: '',
+                  strategy: '',
+                  profitMin: '',
+                  profitMax: '',
+                })
+              }
               className="px-4 py-2 text-gray-600 hover:text-gray-800"
             >
               フィルターをリセット
@@ -314,13 +377,27 @@ export default function HistoryPage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">日時</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">銘柄</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">売買</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数量</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">価格</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">損益</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">戦略</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      日時
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      銘柄
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      売買
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      数量
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      価格
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      損益
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      戦略
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -331,16 +408,22 @@ export default function HistoryPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{trade.symbol}</div>
-                          <div className="text-sm text-gray-500">{trade.name}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {trade.symbol}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {trade.name}
+                          </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${
-                          trade.action === 'buy' 
-                            ? 'bg-blue-100 text-blue-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-medium ${
+                            trade.action === 'buy'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                        >
                           {trade.action === 'buy' ? '購入' : '売却'}
                         </span>
                       </td>
@@ -350,10 +433,13 @@ export default function HistoryPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         ¥{trade.price.toLocaleString()}
                       </td>
-                      <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
-                        trade.profit >= 0 ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {trade.profit >= 0 ? '+' : ''}¥{trade.profit.toLocaleString()}
+                      <td
+                        className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
+                          trade.profit >= 0 ? 'text-green-600' : 'text-red-600'
+                        }`}
+                      >
+                        {trade.profit >= 0 ? '+' : ''}¥
+                        {trade.profit.toLocaleString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {trade.strategy}
@@ -374,19 +460,34 @@ export default function HistoryPage() {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-sm text-gray-500">最大利益</span>
-                <span className="text-sm font-medium text-green-600">¥{performance.maxProfit.toLocaleString()}</span>
+                <span className="text-sm font-medium text-green-600">
+                  ¥{performance.maxProfit.toLocaleString()}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-500">最大損失</span>
-                <span className="text-sm font-medium text-red-600">¥{performance.maxLoss.toLocaleString()}</span>
+                <span className="text-sm font-medium text-red-600">
+                  ¥{performance.maxLoss.toLocaleString()}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-500">勝ちトレード</span>
-                <span className="text-sm font-medium text-gray-900">{Math.round(performance.totalTrades * performance.winRate / 100)}回</span>
+                <span className="text-sm font-medium text-gray-900">
+                  {Math.round(
+                    (performance.totalTrades * performance.winRate) / 100
+                  )}
+                  回
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-500">負けトレード</span>
-                <span className="text-sm font-medium text-gray-900">{performance.totalTrades - Math.round(performance.totalTrades * performance.winRate / 100)}回</span>
+                <span className="text-sm font-medium text-gray-900">
+                  {performance.totalTrades -
+                    Math.round(
+                      (performance.totalTrades * performance.winRate) / 100
+                    )}
+                  回
+                </span>
               </div>
             </div>
           </div>
@@ -402,13 +503,18 @@ export default function HistoryPage() {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }) =>
+                      `${name} ${(percent * 100).toFixed(0)}%`
+                    }
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
                   >
                     {strategyData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
                     ))}
                   </Pie>
                   <Tooltip />
@@ -417,16 +523,25 @@ export default function HistoryPage() {
             </div>
             <div className="space-y-2">
               {strategyPerformance.map((strategy, index) => (
-                <div key={strategy.name} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                <div
+                  key={strategy.name}
+                  className="flex justify-between items-center p-2 bg-gray-50 rounded"
+                >
                   <div>
                     <p className="text-sm font-medium">{strategy.name}</p>
-                    <p className="text-xs text-gray-500">{strategy.trades}回取引</p>
+                    <p className="text-xs text-gray-500">
+                      {strategy.trades}回取引
+                    </p>
                   </div>
                   <div className="text-right">
-                    <p className={`text-sm font-medium ${strategy.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <p
+                      className={`text-sm font-medium ${strategy.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                    >
                       ¥{strategy.profit.toLocaleString()}
                     </p>
-                    <p className="text-xs text-gray-500">勝率{strategy.winRate}%</p>
+                    <p className="text-xs text-gray-500">
+                      勝率{strategy.winRate}%
+                    </p>
                   </div>
                 </div>
               ))}

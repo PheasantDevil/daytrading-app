@@ -5,7 +5,7 @@ export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json().catch(() => ({} as any));
+    const body = await request.json().catch(() => ({}) as any);
     const host = (body.host as string) || process.env.IB_HOST || '127.0.0.1';
     const port = Number(body.port ?? process.env.IB_PORT ?? 4002);
     const clientId = Number(body.clientId ?? process.env.IB_CLIENT_ID ?? 1);
@@ -23,7 +23,9 @@ export async function POST(request: NextRequest) {
       const timeoutMs = 5000;
 
       const finalize = (ok: boolean, error?: string) => {
-        try { socket.destroy(); } catch {}
+        try {
+          socket.destroy();
+        } catch {}
         resolve({ ok, latencyMs: Date.now() - startedAt, error });
       };
 

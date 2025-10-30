@@ -173,4 +173,3 @@ testInteractiveBrokersConnection()
   });
 
 export { testInteractiveBrokersConnection };
-

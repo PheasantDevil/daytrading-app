@@ -32,11 +32,18 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Mobile sidebar */}
-      <div className={`fixed inset-0 z-50 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
+      <div
+        className={`fixed inset-0 z-50 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}
+      >
+        <div
+          className="fixed inset-0 bg-gray-600 bg-opacity-75"
+          onClick={() => setSidebarOpen(false)}
+        />
         <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white shadow-xl">
           <div className="flex h-16 items-center justify-between px-4">
-            <h1 className="text-xl font-bold text-gray-900">Trading Platform</h1>
+            <h1 className="text-xl font-bold text-gray-900">
+              Trading Platform
+            </h1>
             <button
               type="button"
               className="text-gray-400 hover:text-gray-600"
@@ -61,7 +68,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     >
                       <item.icon
                         className={`mr-3 h-5 w-5 ${
-                          isActive ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
+                          isActive
+                            ? 'text-blue-500'
+                            : 'text-gray-400 group-hover:text-gray-500'
                         }`}
                       />
                       {item.name}
@@ -78,7 +87,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
         <div className="flex flex-grow flex-col overflow-y-auto bg-white shadow-lg">
           <div className="flex h-16 items-center px-4">
-            <h1 className="text-xl font-bold text-gray-900">Trading Platform</h1>
+            <h1 className="text-xl font-bold text-gray-900">
+              Trading Platform
+            </h1>
           </div>
           <nav className="flex-1 px-4 py-4">
             <ul className="space-y-2">
@@ -96,7 +107,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     >
                       <item.icon
                         className={`mr-3 h-5 w-5 ${
-                          isActive ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
+                          isActive
+                            ? 'text-blue-500'
+                            : 'text-gray-400 group-hover:text-gray-500'
                         }`}
                       />
                       {item.name}
@@ -124,7 +137,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
             <div className="flex flex-1 items-center">
               <h2 className="text-lg font-semibold text-gray-900">
-                {navigation.find(item => item.href === pathname)?.name || 'ダッシュボード'}
+                {navigation.find((item) => item.href === pathname)?.name ||
+                  'ダッシュボード'}
               </h2>
             </div>
             <div className="flex items-center gap-x-4 lg:gap-x-6">
@@ -140,7 +154,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <div className="flex items-center gap-x-2">
                 <div className="flex items-center gap-x-2">
                   <UserIcon className="h-6 w-6 text-gray-400" />
-                  <span className="text-sm font-medium text-gray-700">アカウント</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    アカウント
+                  </span>
                 </div>
               </div>
             </div>

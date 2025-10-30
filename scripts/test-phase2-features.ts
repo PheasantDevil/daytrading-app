@@ -11,7 +11,7 @@ import { AdvancedDemoTradingService } from '../src/services/advanced-demo-tradin
 
 async function testDataIntegrationService(): Promise<void> {
   console.log('\n🧪 データ統合サービステスト開始...');
-  
+
   try {
     const dataService = new DataIntegrationService({
       cacheEnabled: true,
@@ -24,7 +24,9 @@ async function testDataIntegrationService(): Promise<void> {
     // 日本株データ取得テスト
     const jpStockData = await dataService.getStockData('7203', 'JP');
     if (jpStockData) {
-      console.log(`✅ 日本株データ取得: ${jpStockData.symbol} - ${jpStockData.price}円 (${jpStockData.source})`);
+      console.log(
+        `✅ 日本株データ取得: ${jpStockData.symbol} - ${jpStockData.price}円 (${jpStockData.source})`
+      );
     } else {
       console.log('⚠️ 日本株データ取得失敗');
     }
@@ -32,21 +34,32 @@ async function testDataIntegrationService(): Promise<void> {
     // 米国株データ取得テスト
     const usStockData = await dataService.getStockData('AAPL', 'US');
     if (usStockData) {
-      console.log(`✅ 米国株データ取得: ${usStockData.symbol} - $${usStockData.price} (${usStockData.source})`);
+      console.log(
+        `✅ 米国株データ取得: ${usStockData.symbol} - $${usStockData.price} (${usStockData.source})`
+      );
     } else {
       console.log('⚠️ 米国株データ取得失敗');
     }
 
     // 履歴データ取得テスト
-    const historicalData = await dataService.getHistoricalData('AAPL', 'US', 30);
+    const historicalData = await dataService.getHistoricalData(
+      'AAPL',
+      'US',
+      30
+    );
     if (historicalData) {
-      console.log(`✅ 履歴データ取得: ${historicalData.data.length}日分 (${historicalData.source})`);
+      console.log(
+        `✅ 履歴データ取得: ${historicalData.data.length}日分 (${historicalData.source})`
+      );
     } else {
       console.log('⚠️ 履歴データ取得失敗');
     }
 
     // 複数銘柄データ取得テスト
-    const multipleData = await dataService.getMultipleStockData(['AAPL', 'GOOGL', 'MSFT'], 'US');
+    const multipleData = await dataService.getMultipleStockData(
+      ['AAPL', 'GOOGL', 'MSFT'],
+      'US'
+    );
     console.log(`✅ 複数銘柄データ取得: ${multipleData.size}銘柄`);
 
     // API可用性チェック
@@ -61,7 +74,7 @@ async function testDataIntegrationService(): Promise<void> {
 
 async function testOandaIntegration(): Promise<void> {
   console.log('\n🧪 OANDA統合テスト開始...');
-  
+
   try {
     const oandaService = new OandaIntegrationService({
       apiKey: process.env.OANDA_API_KEY || 'test-key',
@@ -78,7 +91,9 @@ async function testOandaIntegration(): Promise<void> {
       // 口座情報取得テスト
       const account = await oandaService.getAccount();
       if (account) {
-        console.log(`✅ 口座情報取得: 残高 ${account.balance} ${account.currency}`);
+        console.log(
+          `✅ 口座情報取得: 残高 ${account.balance} ${account.currency}`
+        );
       }
 
       // ポジション情報取得テスト
@@ -88,7 +103,9 @@ async function testOandaIntegration(): Promise<void> {
       // 現在価格取得テスト
       const price = await oandaService.getCurrentPrice('EUR_USD');
       if (price) {
-        console.log(`✅ 現在価格取得: ${price.instrument} - Bid: ${price.bid}, Ask: ${price.ask}`);
+        console.log(
+          `✅ 現在価格取得: ${price.instrument} - Bid: ${price.bid}, Ask: ${price.ask}`
+        );
       }
 
       // 履歴データ取得テスト
@@ -104,7 +121,7 @@ async function testOandaIntegration(): Promise<void> {
 
 async function testWebullIntegration(): Promise<void> {
   console.log('\n🧪 ウィブル統合テスト開始...');
-  
+
   try {
     const webullService = new WebullIntegrationService({
       apiKey: process.env.WEBULL_API_KEY || 'test-key',
@@ -153,7 +170,7 @@ async function testWebullIntegration(): Promise<void> {
 
 async function testTradingIntegration(): Promise<void> {
   console.log('\n🧪 取引統合テスト開始...');
-  
+
   try {
     const tradingService = new TradingIntegrationService({
       oanda: {
@@ -180,7 +197,9 @@ async function testTradingIntegration(): Promise<void> {
     if (initialized) {
       // 接続状態チェック
       const status = await tradingService.checkConnectionStatus();
-      console.log(`✅ 接続状態: OANDA=${status.oanda}, ウィブル=${status.webull}, 全体=${status.overall}`);
+      console.log(
+        `✅ 接続状態: OANDA=${status.oanda}, ウィブル=${status.webull}, 全体=${status.overall}`
+      );
 
       // 全ポジション取得テスト
       const positions = await tradingService.getAllPositions();
@@ -218,7 +237,7 @@ async function testTradingIntegration(): Promise<void> {
 
 async function testAdvancedDemoTrading(): Promise<void> {
   console.log('\n🧪 高度化デモトレードテスト開始...');
-  
+
   try {
     // モックサービスを作成
     const mockTradingService = {
@@ -287,7 +306,9 @@ async function testAdvancedDemoTrading(): Promise<void> {
 
     // 口座情報取得テスト
     const account = demoService.getAccount();
-    console.log(`✅ 口座情報取得: 総資産 ${account.totalValue.toLocaleString()}円`);
+    console.log(
+      `✅ 口座情報取得: 総資産 ${account.totalValue.toLocaleString()}円`
+    );
 
     // 注文発注テスト
     const order = await demoService.placeOrder({
@@ -299,7 +320,9 @@ async function testAdvancedDemoTrading(): Promise<void> {
     });
 
     if (order) {
-      console.log(`✅ 注文発注: ${order.symbol} ${order.side} ${order.quantity}株`);
+      console.log(
+        `✅ 注文発注: ${order.symbol} ${order.side} ${order.quantity}株`
+      );
     } else {
       console.log('⚠️ 注文発注失敗');
     }
@@ -324,7 +347,7 @@ async function testAdvancedDemoTrading(): Promise<void> {
 
 async function testIntegrationWorkflow(): Promise<void> {
   console.log('\n🧪 統合ワークフローテスト開始...');
-  
+
   try {
     // データ統合サービス
     const dataService = new DataIntegrationService({
@@ -390,7 +413,9 @@ async function testIntegrationWorkflow(): Promise<void> {
     // 1. データ取得
     const jpData = await dataService.getStockData('7203', 'JP');
     const usData = await dataService.getStockData('AAPL', 'US');
-    console.log(`✅ データ取得: 日本株=${jpData ? '成功' : '失敗'}, 米国株=${usData ? '成功' : '失敗'}`);
+    console.log(
+      `✅ データ取得: 日本株=${jpData ? '成功' : '失敗'}, 米国株=${usData ? '成功' : '失敗'}`
+    );
 
     // 2. デモトレード開始
     await demoService.startDemoTrading();
@@ -398,12 +423,32 @@ async function testIntegrationWorkflow(): Promise<void> {
 
     // 3. 複数市場での取引
     const orders = await Promise.allSettled([
-      demoService.placeOrder({ symbol: 'AAPL', market: 'US', side: 'BUY', quantity: 10, type: 'MARKET' }),
-      demoService.placeOrder({ symbol: 'EUR_USD', market: 'FX', side: 'BUY', quantity: 1000, type: 'MARKET' }),
-      demoService.placeOrder({ symbol: '7203', market: 'JP', side: 'BUY', quantity: 100, type: 'MARKET' }),
+      demoService.placeOrder({
+        symbol: 'AAPL',
+        market: 'US',
+        side: 'BUY',
+        quantity: 10,
+        type: 'MARKET',
+      }),
+      demoService.placeOrder({
+        symbol: 'EUR_USD',
+        market: 'FX',
+        side: 'BUY',
+        quantity: 1000,
+        type: 'MARKET',
+      }),
+      demoService.placeOrder({
+        symbol: '7203',
+        market: 'JP',
+        side: 'BUY',
+        quantity: 100,
+        type: 'MARKET',
+      }),
     ]);
 
-    const successfulOrders = orders.filter(result => result.status === 'fulfilled' && result.value).length;
+    const successfulOrders = orders.filter(
+      (result) => result.status === 'fulfilled' && result.value
+    ).length;
     console.log(`✅ 複数市場取引: ${successfulOrders}/3 成功`);
 
     // 4. 結果確認
@@ -429,7 +474,7 @@ async function testIntegrationWorkflow(): Promise<void> {
 
 async function runAllTests(): Promise<void> {
   console.log('🚀 Phase2機能テスト開始...');
-  
+
   try {
     await testDataIntegrationService();
     await testOandaIntegration();
@@ -437,7 +482,7 @@ async function runAllTests(): Promise<void> {
     await testTradingIntegration();
     await testAdvancedDemoTrading();
     await testIntegrationWorkflow();
-    
+
     console.log('\n✅ Phase2機能テスト完了');
   } catch (error) {
     console.error('❌ Phase2機能テストエラー:', error);

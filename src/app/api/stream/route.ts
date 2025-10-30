@@ -8,9 +8,12 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const symbol = searchParams.get('symbol');
-    
+
     if (!symbol) {
-      return NextResponse.json({ success: false, error: 'Symbol parameter is required' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: 'Symbol parameter is required' },
+        { status: 400 }
+      );
     }
 
     // データストリームを初期化
@@ -66,7 +69,10 @@ export async function POST(request: NextRequest) {
       case 'subscribe':
         // 複数銘柄の市場データを取得
         if (!Array.isArray(symbols)) {
-          return NextResponse.json({ success: false, error: 'Symbols must be an array' }, { status: 400 });
+          return NextResponse.json(
+            { success: false, error: 'Symbols must be an array' },
+            { status: 400 }
+          );
         }
 
         const marketDataList = symbols.map((symbol: string) => {
@@ -104,10 +110,16 @@ export async function POST(request: NextRequest) {
         });
 
       default:
-        return NextResponse.json({ success: false, error: 'Invalid action' }, { status: 400 });
+        return NextResponse.json(
+          { success: false, error: 'Invalid action' },
+          { status: 400 }
+        );
     }
   } catch (error) {
     console.error('Stream management error:', error);
-    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

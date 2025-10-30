@@ -55,7 +55,9 @@ async function testDayTradingScheduler(): Promise<void> {
     ];
 
     const signalAggregator = new SignalAggregatorService(signalServices);
-    logger.info(`✅ シグナル統合サービス初期化完了（${signalServices.length}サービス）`);
+    logger.info(
+      `✅ シグナル統合サービス初期化完了（${signalServices.length}サービス）`
+    );
 
     // デイトレードスケジューラー
     const scheduler = new DayTradingScheduler(
@@ -176,4 +178,3 @@ async function testDayTradingScheduler(): Promise<void> {
 testDayTradingScheduler().catch(console.error);
 
 export { testDayTradingScheduler };
-

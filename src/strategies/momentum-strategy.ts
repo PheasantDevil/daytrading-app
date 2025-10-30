@@ -3,7 +3,13 @@
  * 価格の勢いを利用した取引戦略
  */
 
-import { TradingStrategy, StrategyConfig, Signal, OrderResult, RebalanceResult } from './trading-strategy';
+import {
+  TradingStrategy,
+  StrategyConfig,
+  Signal,
+  OrderResult,
+  RebalanceResult,
+} from './trading-strategy';
 import { RealTradingService } from '../services/real-trading-service';
 import { DataIntegrationService } from '../services/data-integration-service';
 
@@ -43,7 +49,10 @@ export class MomentumStrategy extends TradingStrategy {
               this.saveSignal(signal);
             }
           } catch (error) {
-            console.error(`❌ モメンタムシグナル生成エラー (${symbol}):`, error);
+            console.error(
+              `❌ モメンタムシグナル生成エラー (${symbol}):`,
+              error
+            );
           }
         }
       }
@@ -59,28 +68,50 @@ export class MomentumStrategy extends TradingStrategy {
   /**
    * 個別のモメンタムシグナルを生成
    */
-  private async generateMomentumSignal(symbol: string, market: 'FX' | 'US' | 'JP'): Promise<Signal | null> {
+  private async generateMomentumSignal(
+    symbol: string,
+    market: 'FX' | 'US' | 'JP'
+  ): Promise<Signal | null> {
     try {
       // 履歴データを取得
-      const historicalData = await this.dataService.getHistoricalData(symbol, market, this.momentumConfig.lookbackPeriod);
-      if (!historicalData || historicalData.data.length < Math.max(...this.momentumConfig.momentumPeriods)) {
+      const historicalData = await this.dataService.getHistoricalData(
+        symbol,
+        market,
+        this.momentumConfig.lookbackPeriod
+      );
+      if (
+        !historicalData ||
+        historicalData.data.length <
+          Math.max(...this.momentumConfig.momentumPeriods)
+      ) {
         return null;
       }
 
-      const prices = historicalData.data.map(d => d.close);
-      const volumes = historicalData.data.map(d => d.volume);
+      const prices = historicalData.data.map((d) => d.close);
+      const volumes = historicalData.data.map((d) => d.volume);
 
       // モメンタム計算
-      const momentum = this.calculateMomentum(prices, this.momentumConfig.momentumPeriods);
-      const volumeMomentum = this.calculateVolumeMomentum(volumes, this.momentumConfig.momentumPeriods);
+      const momentum = this.calculateMomentum(
+        prices,
+        this.momentumConfig.momentumPeriods
+      );
+      const volumeMomentum = this.calculateVolumeMomentum(
+        volumes,
+        this.momentumConfig.momentumPeriods
+      );
 
       // 価格変化率計算
       const priceChange = this.calculatePriceChange(prices);
       const volumeChange = this.calculateVolumeChange(volumes);
 
       // シグナル強度計算
-      const signalStrength = this.calculateSignalStrength(momentum, volumeMomentum, priceChange, volumeChange);
-      
+      const signalStrength = this.calculateSignalStrength(
+        momentum,
+        volumeMomentum,
+        priceChange,
+        volumeChange
+      );
+
       if (Math.abs(signalStrength) < this.momentumConfig.priceChangeThreshold) {
         return null;
       }
@@ -104,7 +135,12 @@ export class MomentumStrategy extends TradingStrategy {
       // シグナル生成
       const side = signalStrength > 0 ? 'BUY' : 'SELL';
       const strength = Math.min(Math.abs(signalStrength), 1);
-      const confidence = this.calculateConfidence(momentum, volumeMomentum, priceChange, volumeChange);
+      const confidence = this.calculateConfidence(
+        momentum,
+        volumeMomentum,
+        priceChange,
+        volumeChange
+      );
 
       const indicators = {
         momentum: momentum,
@@ -114,7 +150,13 @@ export class MomentumStrategy extends TradingStrategy {
         signalStrength: signalStrength,
       };
 
-      const reason = this.generateReason(side, momentum, volumeMomentum, priceChange, volumeChange);
+      const reason = this.generateReason(
+        side,
+        momentum,
+        volumeMomentum,
+        priceChange,
+        volumeChange
+      );
 
       return await this.generateSignal(
         symbol,
@@ -135,7 +177,7 @@ export class MomentumStrategy extends TradingStrategy {
    * モメンタムを計算
    */
   private calculateMomentum(prices: number[], periods: number[]): number {
-    const momentums = periods.map(period => {
+    const momentums = periods.map((period) => {
       if (prices.length < period) return 0;
       const currentPrice = prices[prices.length - 1];
       const pastPrice = prices[prices.length - period - 1];
@@ -143,8 +185,11 @@ export class MomentumStrategy extends TradingStrategy {
     });
 
     // 重み付き平均
-    const weights = periods.map(p => 1 / p);
-    const weightedSum = momentums.reduce((sum, momentum, index) => sum + momentum * weights[index], 0);
+    const weights = periods.map((p) => 1 / p);
+    const weightedSum = momentums.reduce(
+      (sum, momentum, index) => sum + momentum * weights[index],
+      0
+    );
     const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
 
     return weightedSum / totalWeight;
@@ -153,8 +198,11 @@ export class MomentumStrategy extends TradingStrategy {
   /**
    * ボリュームモメンタムを計算
    */
-  private calculateVolumeMomentum(volumes: number[], periods: number[]): number {
-    const volumeMomentums = periods.map(period => {
+  private calculateVolumeMomentum(
+    volumes: number[],
+    periods: number[]
+  ): number {
+    const volumeMomentums = periods.map((period) => {
       if (volumes.length < period) return 0;
       const currentVolume = volumes[volumes.length - 1];
       const pastVolume = volumes[volumes.length - period - 1];
@@ -162,8 +210,11 @@ export class MomentumStrategy extends TradingStrategy {
     });
 
     // 重み付き平均
-    const weights = periods.map(p => 1 / p);
-    const weightedSum = volumeMomentums.reduce((sum, momentum, index) => sum + momentum * weights[index], 0);
+    const weights = periods.map((p) => 1 / p);
+    const weightedSum = volumeMomentums.reduce(
+      (sum, momentum, index) => sum + momentum * weights[index],
+      0
+    );
     const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
 
     return weightedSum / totalWeight;
@@ -202,11 +253,12 @@ export class MomentumStrategy extends TradingStrategy {
     const momentumWeight = 0.6;
     const volumeWeight = 0.4;
 
-    const signalStrength = (momentum * momentumWeight) + (volumeMomentum * volumeWeight);
-    
+    const signalStrength =
+      momentum * momentumWeight + volumeMomentum * volumeWeight;
+
     // 価格変化率で調整
     const adjustedStrength = signalStrength * (1 + priceChange * 0.1);
-    
+
     return adjustedStrength;
   }
 
@@ -235,7 +287,8 @@ export class MomentumStrategy extends TradingStrategy {
    */
   private confirmVolume(volumes: number[], volumeMomentum: number): boolean {
     // 平均ボリュームと比較
-    const avgVolume = volumes.reduce((sum, vol) => sum + vol, 0) / volumes.length;
+    const avgVolume =
+      volumes.reduce((sum, vol) => sum + vol, 0) / volumes.length;
     const currentVolume = volumes[volumes.length - 1];
 
     // ボリュームが平均を上回り、モメンタムが正の場合は確認
@@ -259,9 +312,17 @@ export class MomentumStrategy extends TradingStrategy {
 
     // 重み付き平均
     const weights = [0.4, 0.3, 0.2, 0.1];
-    const confidences = [momentumConfidence, volumeConfidence, priceConfidence, volumeChangeConfidence];
+    const confidences = [
+      momentumConfidence,
+      volumeConfidence,
+      priceConfidence,
+      volumeChangeConfidence,
+    ];
 
-    const weightedSum = confidences.reduce((sum, conf, index) => sum + conf * weights[index], 0);
+    const weightedSum = confidences.reduce(
+      (sum, conf, index) => sum + conf * weights[index],
+      0
+    );
     const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
 
     return weightedSum / totalWeight;
@@ -339,12 +400,19 @@ export class MomentumStrategy extends TradingStrategy {
           });
 
           if (orderResult.success) {
-            console.log(`✅ モメンタム注文執行成功: ${signal.symbol} ${signal.side} ${signal.quantity}`);
+            console.log(
+              `✅ モメンタム注文執行成功: ${signal.symbol} ${signal.side} ${signal.quantity}`
+            );
           } else {
-            console.log(`❌ モメンタム注文執行失敗: ${signal.symbol} ${signal.side} - ${orderResult.error}`);
+            console.log(
+              `❌ モメンタム注文執行失敗: ${signal.symbol} ${signal.side} - ${orderResult.error}`
+            );
           }
         } catch (error) {
-          console.error(`❌ モメンタム注文執行エラー (${signal.symbol}):`, error);
+          console.error(
+            `❌ モメンタム注文執行エラー (${signal.symbol}):`,
+            error
+          );
           results.push({
             success: false,
             error: error instanceof Error ? error.message : '不明なエラー',
@@ -370,16 +438,18 @@ export class MomentumStrategy extends TradingStrategy {
 
       // 現在のポジションを取得
       const positions = await this.tradingService.getPositions();
-      
+
       // 新しいシグナルを生成
       const signals = await this.generateSignals();
-      
+
       // 既存ポジションと新しいシグナルの比較
       const rebalanceOrders: OrderResult[] = [];
 
       for (const position of positions) {
-        const signal = signals.find(s => s.symbol === position.symbol && s.market === position.market);
-        
+        const signal = signals.find(
+          (s) => s.symbol === position.symbol && s.market === position.market
+        );
+
         if (!signal) {
           // シグナルがない場合はポジションをクローズ
           const closeOrder = await this.tradingService.placeOrder({
@@ -410,7 +480,9 @@ export class MomentumStrategy extends TradingStrategy {
               strategy: this.config.name,
             },
           });
-        } else if (signal.side !== (position.side === 'LONG' ? 'BUY' : 'SELL')) {
+        } else if (
+          signal.side !== (position.side === 'LONG' ? 'BUY' : 'SELL')
+        ) {
           // シグナルの方向が異なる場合はポジションを反転
           const reverseOrder = await this.tradingService.placeOrder({
             symbol: position.symbol,
@@ -431,14 +503,19 @@ export class MomentumStrategy extends TradingStrategy {
       }
 
       // 新しいシグナルの注文を執行
-      const newSignals = signals.filter(s => !positions.some(p => p.symbol === s.symbol && p.market === s.market));
+      const newSignals = signals.filter(
+        (s) =>
+          !positions.some((p) => p.symbol === s.symbol && p.market === s.market)
+      );
       const newOrders = await this.executeOrders(newSignals);
       rebalanceOrders.push(...newOrders);
 
-      const successfulOrders = rebalanceOrders.filter(r => r.success).length;
+      const successfulOrders = rebalanceOrders.filter((r) => r.success).length;
       const totalOrders = rebalanceOrders.length;
 
-      console.log(`✅ モメンタム戦略リバランス完了: ${successfulOrders}/${totalOrders} 成功`);
+      console.log(
+        `✅ モメンタム戦略リバランス完了: ${successfulOrders}/${totalOrders} 成功`
+      );
 
       return {
         success: successfulOrders > 0,

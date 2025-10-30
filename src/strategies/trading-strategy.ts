@@ -186,12 +186,15 @@ export abstract class TradingStrategy {
 
       // 基本的なパフォーマンス計算
       const totalTrades = orders.length;
-      const winningTrades = orders.filter(order => order.status === 'FILLED' && order.totalCost > 0).length;
+      const winningTrades = orders.filter(
+        (order) => order.status === 'FILLED' && order.totalCost > 0
+      ).length;
       const losingTrades = totalTrades - winningTrades;
       const winRate = totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0;
 
       const totalReturn = positions.reduce((sum, pos) => sum + pos.totalPnL, 0);
-      const totalReturnPercent = totalReturn > 0 ? (totalReturn / 1000000) * 100 : 0; // 仮の初期資本
+      const totalReturnPercent =
+        totalReturn > 0 ? (totalReturn / 1000000) * 100 : 0; // 仮の初期資本
 
       const performance: StrategyPerformance = {
         strategy: this.config.name,
@@ -261,23 +264,35 @@ export abstract class TradingStrategy {
     indicators: Record<string, number>
   ): Promise<Signal> {
     const signalId = `${this.config.name}_${symbol}_${Date.now()}`;
-    const currentPrice = await this.tradingService.getCurrentPrice(symbol, market);
-    
+    const currentPrice = await this.tradingService.getCurrentPrice(
+      symbol,
+      market
+    );
+
     if (!currentPrice) {
       throw new Error(`現在価格を取得できません: ${symbol}`);
     }
 
     // 数量計算（簡略化）
-    const quantity = this.calculateQuantity(symbol, market, currentPrice, strength);
+    const quantity = this.calculateQuantity(
+      symbol,
+      market,
+      currentPrice,
+      strength
+    );
 
     // ストップロス・テイクプロフィット計算
-    const stopLoss = side === 'BUY' 
-      ? currentPrice * (1 - this.config.riskManagement.stopLossPercent / 100)
-      : currentPrice * (1 + this.config.riskManagement.stopLossPercent / 100);
-    
-    const takeProfit = side === 'BUY'
-      ? currentPrice * (1 + this.config.riskManagement.takeProfitPercent / 100)
-      : currentPrice * (1 - this.config.riskManagement.takeProfitPercent / 100);
+    const stopLoss =
+      side === 'BUY'
+        ? currentPrice * (1 - this.config.riskManagement.stopLossPercent / 100)
+        : currentPrice * (1 + this.config.riskManagement.stopLossPercent / 100);
+
+    const takeProfit =
+      side === 'BUY'
+        ? currentPrice *
+          (1 + this.config.riskManagement.takeProfitPercent / 100)
+        : currentPrice *
+          (1 - this.config.riskManagement.takeProfitPercent / 100);
 
     const signal: Signal = {
       id: signalId,
@@ -331,7 +346,11 @@ export abstract class TradingStrategy {
   /**
    * 戦略の状態を取得
    */
-  getStatus(): { running: boolean; signalsCount: number; performance: StrategyPerformance | null } {
+  getStatus(): {
+    running: boolean;
+    signalsCount: number;
+    performance: StrategyPerformance | null;
+  } {
     return {
       running: this.isRunning,
       signalsCount: this.signals.size,

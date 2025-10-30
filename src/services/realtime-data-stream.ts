@@ -50,21 +50,22 @@ export class RealtimeDataStream extends EventEmitter {
    */
   async connect(): Promise<void> {
     try {
-      console.log(`Connecting to IB Gateway at ${this.config.host}:${this.config.port}`);
-      
+      console.log(
+        `Connecting to IB Gateway at ${this.config.host}:${this.config.port}`
+      );
+
       // モック実装: 実際のWebSocket接続の代わりにタイマーを使用
       this.isConnected = true;
       this.reconnectAttempts = 0;
-      
+
       // ハートビート開始
       this.startHeartbeat();
-      
+
       // データ更新開始
       this.startDataUpdates();
-      
+
       this.emit('connected');
       console.log('Connected to IB Gateway (mock implementation)');
-      
     } catch (error) {
       console.error('Failed to connect to IB Gateway:', error);
       this.handleConnectionError();
@@ -78,31 +79,30 @@ export class RealtimeDataStream extends EventEmitter {
   async disconnect(): Promise<void> {
     try {
       console.log('Disconnecting from IB Gateway...');
-      
+
       this.isConnected = false;
-      
+
       // タイマーをクリア
       if (this.heartbeatTimer) {
         clearInterval(this.heartbeatTimer);
         this.heartbeatTimer = undefined;
       }
-      
+
       if (this.dataUpdateTimer) {
         clearInterval(this.dataUpdateTimer);
         this.dataUpdateTimer = undefined;
       }
-      
+
       if (this.reconnectTimer) {
         clearTimeout(this.reconnectTimer);
         this.reconnectTimer = undefined;
       }
-      
+
       // サブスクリプションをクリア
       this.subscriptions.clear();
-      
+
       this.emit('disconnected');
       console.log('Disconnected from IB Gateway');
-      
     } catch (error) {
       console.error('Error during disconnect:', error);
       throw error;
@@ -112,7 +112,11 @@ export class RealtimeDataStream extends EventEmitter {
   /**
    * 市場データのサブスクリプションを開始
    */
-  subscribe(symbol: string, callback: (data: MarketData) => void, interval: number = 5000): void {
+  subscribe(
+    symbol: string,
+    callback: (data: MarketData) => void,
+    interval: number = 5000
+  ): void {
     if (!this.isConnected) {
       throw new Error('Not connected to IB Gateway');
     }
@@ -125,7 +129,7 @@ export class RealtimeDataStream extends EventEmitter {
 
     this.subscriptions.set(symbol, subscription);
     console.log(`Subscribed to market data for ${symbol}`);
-    
+
     this.emit('subscribed', symbol);
   }
 
@@ -143,18 +147,26 @@ export class RealtimeDataStream extends EventEmitter {
   /**
    * 複数銘柄のサブスクリプションを一括開始
    */
-  subscribeMultiple(symbols: string[], callback: (data: MarketData[]) => void, interval: number = 5000): void {
-    symbols.forEach(symbol => {
-      this.subscribe(symbol, (data) => {
-        // 全銘柄のデータが揃ったらコールバックを呼び出し
-        const allData = Array.from(this.subscriptions.values())
-          .map(sub => this.generateMockMarketData(sub.symbol))
-          .filter(data => symbols.includes(data.symbol));
-        
-        if (allData.length === symbols.length) {
-          callback(allData);
-        }
-      }, interval);
+  subscribeMultiple(
+    symbols: string[],
+    callback: (data: MarketData[]) => void,
+    interval: number = 5000
+  ): void {
+    symbols.forEach((symbol) => {
+      this.subscribe(
+        symbol,
+        (data) => {
+          // 全銘柄のデータが揃ったらコールバックを呼び出し
+          const allData = Array.from(this.subscriptions.values())
+            .map((sub) => this.generateMockMarketData(sub.symbol))
+            .filter((data) => symbols.includes(data.symbol));
+
+          if (allData.length === symbols.length) {
+            callback(allData);
+          }
+        },
+        interval
+      );
     });
   }
 
@@ -204,7 +216,10 @@ export class RealtimeDataStream extends EventEmitter {
         const marketData = this.generateMockMarketData(subscription.symbol);
         subscription.callback(marketData);
       } catch (error) {
-        console.error(`Error updating market data for ${subscription.symbol}:`, error);
+        console.error(
+          `Error updating market data for ${subscription.symbol}:`,
+          error
+        );
       }
     });
   }
@@ -236,15 +251,17 @@ export class RealtimeDataStream extends EventEmitter {
    */
   private handleConnectionError(): void {
     this.isConnected = false;
-    
+
     if (this.reconnectAttempts < this.config.maxReconnectAttempts) {
       this.reconnectAttempts++;
       const delay = this.config.reconnectInterval * this.reconnectAttempts;
-      
-      console.log(`Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts}/${this.config.maxReconnectAttempts})`);
-      
+
+      console.log(
+        `Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts}/${this.config.maxReconnectAttempts})`
+      );
+
       this.reconnectTimer = setTimeout(() => {
-        this.connect().catch(error => {
+        this.connect().catch((error) => {
           console.error('Reconnection failed:', error);
         });
       }, delay);
@@ -275,14 +292,18 @@ export class RealtimeDataStream extends EventEmitter {
 // シングルトンインスタンス
 let realtimeDataStream: RealtimeDataStream | null = null;
 
-export function getRealtimeDataStream(config?: RealtimeDataStreamConfig): RealtimeDataStream {
+export function getRealtimeDataStream(
+  config?: RealtimeDataStreamConfig
+): RealtimeDataStream {
   if (!realtimeDataStream && config) {
     realtimeDataStream = new RealtimeDataStream(config);
   }
-  
+
   if (!realtimeDataStream) {
-    throw new Error('RealtimeDataStream not initialized. Call with config first.');
+    throw new Error(
+      'RealtimeDataStream not initialized. Call with config first.'
+    );
   }
-  
+
   return realtimeDataStream;
 }

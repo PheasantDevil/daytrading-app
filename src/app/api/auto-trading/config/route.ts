@@ -47,14 +47,20 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     // 設定の更新
     if (body.strategies) {
-      tradingConfig.strategies = { ...tradingConfig.strategies, ...body.strategies };
+      tradingConfig.strategies = {
+        ...tradingConfig.strategies,
+        ...body.strategies,
+      };
     }
-    
+
     if (body.riskSettings) {
-      tradingConfig.riskSettings = { ...tradingConfig.riskSettings, ...body.riskSettings };
+      tradingConfig.riskSettings = {
+        ...tradingConfig.riskSettings,
+        ...body.riskSettings,
+      };
     }
 
     return NextResponse.json({

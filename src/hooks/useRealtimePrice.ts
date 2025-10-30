@@ -44,7 +44,7 @@ export function useRealtimePrice({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  
+
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -59,9 +59,12 @@ export function useRealtimePrice({
       // 新しいAbortControllerを作成
       abortControllerRef.current = new AbortController();
 
-      const response = await fetch(`/api/stream?symbol=${encodeURIComponent(symbol)}`, {
-        signal: abortControllerRef.current.signal,
-      });
+      const response = await fetch(
+        `/api/stream?symbol=${encodeURIComponent(symbol)}`,
+        {
+          signal: abortControllerRef.current.signal,
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -84,10 +87,14 @@ export function useRealtimePrice({
       }
 
       console.error('Failed to fetch market data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch market data');
+      setError(
+        err instanceof Error ? err.message : 'Failed to fetch market data'
+      );
       setIsConnected(false);
       setLoading(false);
-      onError?.(err instanceof Error ? err : new Error('Failed to fetch market data'));
+      onError?.(
+        err instanceof Error ? err : new Error('Failed to fetch market data')
+      );
     }
   }, [symbol, onError]);
 
@@ -160,7 +167,7 @@ export function useRealtimePrices({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  
+
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -195,7 +202,7 @@ export function useRealtimePrices({
         result.data.forEach((marketData: MarketData) => {
           newData.set(marketData.symbol, marketData);
         });
-        
+
         setData(newData);
         setError(null);
         setIsConnected(true);
@@ -209,10 +216,14 @@ export function useRealtimePrices({
       }
 
       console.error('Failed to fetch market data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch market data');
+      setError(
+        err instanceof Error ? err.message : 'Failed to fetch market data'
+      );
       setIsConnected(false);
       setLoading(false);
-      onError?.(err instanceof Error ? err : new Error('Failed to fetch market data'));
+      onError?.(
+        err instanceof Error ? err : new Error('Failed to fetch market data')
+      );
     }
   }, [symbols, onError]);
 

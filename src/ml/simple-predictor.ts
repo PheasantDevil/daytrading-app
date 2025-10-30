@@ -158,4 +158,3 @@ export class SimplePredictor {
 }
 
 export const simplePredictor = new SimplePredictor();
-

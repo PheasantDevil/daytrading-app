@@ -75,12 +75,16 @@ export class DayTradingScheduler extends EventEmitter {
     }
 
     if (!this.config.trading.enabled) {
-      this.logger.warn('自動取引が無効化されています（config.trading.enabled = false）');
+      this.logger.warn(
+        '自動取引が無効化されています（config.trading.enabled = false）'
+      );
       return;
     }
 
     this.logger.info('🚀 デイトレードスケジューラーを開始します...');
-    this.logger.info(`モード: ${this.config.trading.paperTrading ? 'ペーパートレーディング' : '本番取引'}`);
+    this.logger.info(
+      `モード: ${this.config.trading.paperTrading ? 'ペーパートレーディング' : '本番取引'}`
+    );
     this.logger.info(`タイムゾーン: ${this.config.schedule.timezone}`);
 
     this.isRunning = true;
@@ -93,7 +97,9 @@ export class DayTradingScheduler extends EventEmitter {
 
     this.logger.info('✅ スケジューラーが起動しました');
     this.logger.info(`📅 購入時刻: ${this.config.schedule.buyTime}`);
-    this.logger.info(`📅 売却チェック開始: ${this.config.schedule.sellCheckStart}`);
+    this.logger.info(
+      `📅 売却チェック開始: ${this.config.schedule.sellCheckStart}`
+    );
     this.logger.info(`📅 強制決済時刻: ${this.config.schedule.forceCloseTime}`);
 
     this.emit('started');
@@ -164,7 +170,9 @@ export class DayTradingScheduler extends EventEmitter {
 
       // 既にポジションがある場合はスキップ
       if (this.currentPosition) {
-        this.logger.info('⚠️ 既にポジションを保有中のため、購入をスキップします');
+        this.logger.info(
+          '⚠️ 既にポジションを保有中のため、購入をスキップします'
+        );
         return;
       }
 
@@ -211,7 +219,9 @@ export class DayTradingScheduler extends EventEmitter {
 
       // 4. 購入実行
       if (this.config.trading.confirmBeforeTrade) {
-        this.logger.info('\n⚠️ 取引前確認が有効です（config.trading.confirmBeforeTrade）');
+        this.logger.info(
+          '\n⚠️ 取引前確認が有効です（config.trading.confirmBeforeTrade）'
+        );
         this.logger.info('実際の取引はスキップします');
         this.emit('buySignalGenerated', best);
         return;
@@ -269,7 +279,9 @@ export class DayTradingScheduler extends EventEmitter {
         type: 'market',
       });
 
-      this.logger.info(`✅ 購入完了: ${symbol} × ${quantity}株 @ $${price.toFixed(2)}`);
+      this.logger.info(
+        `✅ 購入完了: ${symbol} × ${quantity}株 @ $${price.toFixed(2)}`
+      );
 
       // ポジション記録
       this.currentPosition = {
@@ -429,14 +441,18 @@ export class DayTradingScheduler extends EventEmitter {
       this.logger.info('\n💰 ========== 売却実行 ==========');
       this.logger.info(`銘柄: ${this.currentPosition.symbol}`);
       this.logger.info(`理由: ${reason}`);
-      this.logger.info(`購入価格: $${this.currentPosition.entryPrice.toFixed(2)}`);
+      this.logger.info(
+        `購入価格: $${this.currentPosition.entryPrice.toFixed(2)}`
+      );
       this.logger.info(
         `現在価格: $${this.currentPosition.currentPrice.toFixed(2)}`
       );
       this.logger.info(
         `損益率: ${(this.currentPosition.profitRate * 100).toFixed(2)}%`
       );
-      this.logger.info(`損益額: $${this.currentPosition.profitAmount.toFixed(2)}`);
+      this.logger.info(
+        `損益額: $${this.currentPosition.profitAmount.toFixed(2)}`
+      );
 
       // 注文実行
       const order = await this.brokerIntegration.placeOrder({
@@ -527,7 +543,8 @@ export class DayTradingScheduler extends EventEmitter {
       (sum, t) => sum + (t.profitAmount || 0),
       0
     );
-    const winRate = todayTrades.length > 0 ? (wins / todayTrades.length) * 100 : 0;
+    const winRate =
+      todayTrades.length > 0 ? (wins / todayTrades.length) * 100 : 0;
 
     return {
       trades: todayTrades.length,
@@ -593,4 +610,3 @@ ${this.tradeHistory
     this.logger.info('\n' + report);
   }
 }
-

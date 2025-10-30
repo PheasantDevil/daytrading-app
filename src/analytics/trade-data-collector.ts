@@ -216,9 +216,14 @@ export class TradeDataCollector extends EventEmitter {
       losses,
       winRate: sellTrades.length > 0 ? (wins / sellTrades.length) * 100 : 0,
       totalProfit,
-      averageProfit: profits.length > 0 ? profits.reduce((a, b) => a + b, 0) / profits.length : 0,
+      averageProfit:
+        profits.length > 0
+          ? profits.reduce((a, b) => a + b, 0) / profits.length
+          : 0,
       averageLoss:
-        lossAmounts.length > 0 ? lossAmounts.reduce((a, b) => a + b, 0) / lossAmounts.length : 0,
+        lossAmounts.length > 0
+          ? lossAmounts.reduce((a, b) => a + b, 0) / lossAmounts.length
+          : 0,
       maxProfit: profits.length > 0 ? Math.max(...profits) : 0,
       maxLoss: lossAmounts.length > 0 ? Math.min(...lossAmounts) : 0,
       symbols,
@@ -273,7 +278,9 @@ export class TradeDataCollector extends EventEmitter {
    * 期間指定でデータ取得
    */
   getDataByDateRange(startDate: string, endDate: string): DailyData[] {
-    return this.dailyData.filter((d) => d.date >= startDate && d.date <= endDate);
+    return this.dailyData.filter(
+      (d) => d.date >= startDate && d.date <= endDate
+    );
   }
 
   /**
@@ -294,7 +301,9 @@ export class TradeDataCollector extends EventEmitter {
       if (existsSync(filepath)) {
         const data = await readFile(filepath, 'utf-8');
         this.dailyData = JSON.parse(data);
-        this.logger.info(`📁 既存データを読み込み: ${this.dailyData.length}日分`);
+        this.logger.info(
+          `📁 既存データを読み込み: ${this.dailyData.length}日分`
+        );
       } else {
         this.logger.info('📁 新規データ収集を開始');
       }
@@ -304,4 +313,3 @@ export class TradeDataCollector extends EventEmitter {
     }
   }
 }
-

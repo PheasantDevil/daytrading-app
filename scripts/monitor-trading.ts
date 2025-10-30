@@ -8,7 +8,7 @@ const logger = new Logger('TradingMonitor');
 
 /**
  * 取引監視ツール
- * 
+ *
  * 使用方法:
  * npm run monitor:trading
  */
@@ -122,9 +122,7 @@ async function monitorTrading(): Promise<void> {
     logger.info('\n🚀 === 次のステップ ===');
 
     if (sellTrades.length < 10) {
-      logger.info(
-        `⏳ データ収集を継続（現在: ${sellTrades.length}/10取引）`
-      );
+      logger.info(`⏳ データ収集を継続（現在: ${sellTrades.length}/10取引）`);
       logger.info('💡 最低10取引のデータを蓄積してください');
     } else if (winRate >= 50) {
       logger.info('✅ 十分なデータが蓄積されました');
@@ -150,4 +148,3 @@ async function monitorTrading(): Promise<void> {
 monitorTrading().catch(console.error);
 
 export { monitorTrading };
-

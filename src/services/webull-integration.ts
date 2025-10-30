@@ -98,7 +98,7 @@ export class WebullIntegrationService {
 
       const data = await response.json();
       this.accessToken = data.access_token;
-      this.tokenExpiry = Date.now() + (data.expires_in * 1000);
+      this.tokenExpiry = Date.now() + data.expires_in * 1000;
       this.isConnected = true;
 
       return true;
@@ -144,11 +144,11 @@ export class WebullIntegrationService {
       if (!(await this.checkTokenValidity())) return null;
 
       const response = await this.makeRequest('GET', '/user/account');
-      
+
       if (!response.ok) return null;
-      
+
       const data = await response.json();
-      
+
       return {
         accountId: data.accountId,
         currency: data.currency || 'USD',
@@ -172,9 +172,9 @@ export class WebullIntegrationService {
       if (!(await this.checkTokenValidity())) return [];
 
       const response = await this.makeRequest('GET', '/user/positions');
-      
+
       if (!response.ok) return [];
-      
+
       const data = await response.json();
       return data.positions.map((position: any) => ({
         symbol: position.symbol,
@@ -217,11 +217,11 @@ export class WebullIntegrationService {
       };
 
       const response = await this.makeRequest('POST', '/order', orderData);
-      
+
       if (!response.ok) return null;
-      
+
       const data = await response.json();
-      
+
       return {
         orderId: data.orderId,
         symbol: data.symbol,
@@ -233,7 +233,9 @@ export class WebullIntegrationService {
         createTime: new Date(data.createTime),
         fillTime: data.fillTime ? new Date(data.fillTime) : undefined,
         filledQuantity: parseFloat(data.filledQuantity || '0'),
-        filledPrice: data.filledPrice ? parseFloat(data.filledPrice) : undefined,
+        filledPrice: data.filledPrice
+          ? parseFloat(data.filledPrice)
+          : undefined,
       };
     } catch (error) {
       console.error('注文発注エラー:', error);
@@ -264,9 +266,9 @@ export class WebullIntegrationService {
       if (!(await this.checkTokenValidity())) return [];
 
       const response = await this.makeRequest('GET', '/user/orders');
-      
+
       if (!response.ok) return [];
-      
+
       const data = await response.json();
       return data.orders.map((order: any) => ({
         orderId: order.orderId,
@@ -279,7 +281,9 @@ export class WebullIntegrationService {
         createTime: new Date(order.createTime),
         fillTime: order.fillTime ? new Date(order.fillTime) : undefined,
         filledQuantity: parseFloat(order.filledQuantity || '0'),
-        filledPrice: order.filledPrice ? parseFloat(order.filledPrice) : undefined,
+        filledPrice: order.filledPrice
+          ? parseFloat(order.filledPrice)
+          : undefined,
       }));
     } catch (error) {
       console.error('注文履歴取得エラー:', error);
@@ -295,11 +299,11 @@ export class WebullIntegrationService {
       if (!(await this.checkTokenValidity())) return null;
 
       const response = await this.makeRequest('GET', `/quote/${symbol}`);
-      
+
       if (!response.ok) return null;
-      
+
       const data = await response.json();
-      
+
       return {
         symbol: data.symbol,
         price: parseFloat(data.price),
@@ -329,10 +333,13 @@ export class WebullIntegrationService {
     try {
       if (!(await this.checkTokenValidity())) return [];
 
-      const response = await this.makeRequest('GET', `/chart/${symbol}?interval=${interval}&count=${count}`);
-      
+      const response = await this.makeRequest(
+        'GET',
+        `/chart/${symbol}?interval=${interval}&count=${count}`
+      );
+
       if (!response.ok) return [];
-      
+
       const data = await response.json();
       return data.candles.map((candle: any) => ({
         time: new Date(candle.time),
@@ -351,9 +358,11 @@ export class WebullIntegrationService {
   /**
    * 複数銘柄の価格を一括取得
    */
-  async getMultipleQuotes(symbols: string[]): Promise<Map<string, WebullQuote>> {
+  async getMultipleQuotes(
+    symbols: string[]
+  ): Promise<Map<string, WebullQuote>> {
     const results = new Map<string, WebullQuote>();
-    
+
     const promises = symbols.map(async (symbol) => {
       try {
         const quote = await this.getCurrentPrice(symbol);
@@ -380,12 +389,15 @@ export class WebullIntegrationService {
       if (!(await this.checkTokenValidity())) return;
 
       const symbolsParam = symbols.join(',');
-      const response = await fetch(`${this.config.baseUrl}/quote/stream?symbols=${symbolsParam}`, {
-        headers: {
-          'Authorization': `Bearer ${this.accessToken}`,
-          'Accept': 'application/json',
-        },
-      });
+      const response = await fetch(
+        `${this.config.baseUrl}/quote/stream?symbols=${symbolsParam}`,
+        {
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+            Accept: 'application/json',
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -409,7 +421,7 @@ export class WebullIntegrationService {
 
         for (const line of lines) {
           if (line.trim() === '') continue;
-          
+
           try {
             const data = JSON.parse(line);
             if (data.type === 'QUOTE') {
@@ -440,13 +452,17 @@ export class WebullIntegrationService {
   /**
    * HTTPリクエストを実行
    */
-  private async makeRequest(method: string, endpoint: string, data?: any): Promise<Response> {
+  private async makeRequest(
+    method: string,
+    endpoint: string,
+    data?: any
+  ): Promise<Response> {
     const url = `${this.config.baseUrl}${endpoint}`;
-    
+
     const options: RequestInit = {
       method,
       headers: {
-        'Authorization': `Bearer ${this.accessToken}`,
+        Authorization: `Bearer ${this.accessToken}`,
         'Content-Type': 'application/json',
       },
     };

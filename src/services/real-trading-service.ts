@@ -142,7 +142,9 @@ export class RealTradingService {
 
   constructor(config: RealTradingConfig) {
     this.config = config;
-    this.tradingIntegration = new TradingIntegrationService(config.tradingIntegration);
+    this.tradingIntegration = new TradingIntegrationService(
+      config.tradingIntegration
+    );
     this.dataIntegration = new DataIntegrationService(config.dataIntegration);
     this.riskManager = new RiskManager(config.riskManagement);
     this.feeCalculator = new FeeCalculator(config.feeCalculation);
@@ -192,13 +194,19 @@ export class RealTradingService {
       // OANDA口座情報取得
       const oandaAccount = await this.tradingIntegration.getAccount('OANDA');
       if (oandaAccount) {
-        this.accounts.set('OANDA', this.convertToRealAccount(oandaAccount, 'OANDA'));
+        this.accounts.set(
+          'OANDA',
+          this.convertToRealAccount(oandaAccount, 'OANDA')
+        );
       }
 
       // ウィブル口座情報取得
       const webullAccount = await this.tradingIntegration.getAccount('WEBULL');
       if (webullAccount) {
-        this.accounts.set('WEBULL', this.convertToRealAccount(webullAccount, 'WEBULL'));
+        this.accounts.set(
+          'WEBULL',
+          this.convertToRealAccount(webullAccount, 'WEBULL')
+        );
       }
 
       console.log(`✅ 口座情報読み込み完了: ${this.accounts.size}口座`);
@@ -210,7 +218,10 @@ export class RealTradingService {
   /**
    * 統一口座情報をリアル口座情報に変換
    */
-  private convertToRealAccount(unifiedAccount: any, broker: string): RealAccount {
+  private convertToRealAccount(
+    unifiedAccount: any,
+    broker: string
+  ): RealAccount {
     return {
       id: unifiedAccount.id || `${broker}_${Date.now()}`,
       broker,
@@ -236,7 +247,21 @@ export class RealTradingService {
   /**
    * リアル注文を発注
    */
-  async placeOrder(order: Omit<RealOrder, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'filledQuantity' | 'averagePrice' | 'commission' | 'slippage' | 'netPrice' | 'totalCost'>): Promise<OrderResult> {
+  async placeOrder(
+    order: Omit<
+      RealOrder,
+      | 'id'
+      | 'createdAt'
+      | 'updatedAt'
+      | 'status'
+      | 'filledQuantity'
+      | 'averagePrice'
+      | 'commission'
+      | 'slippage'
+      | 'netPrice'
+      | 'totalCost'
+    >
+  ): Promise<OrderResult> {
     try {
       if (!this.isInitialized) {
         return { success: false, error: 'サービスが初期化されていません' };
@@ -260,7 +285,10 @@ export class RealTradingService {
       // 注文発注
       const result = await this.tradingIntegration.placeOrder(unifiedOrder);
       if (!result.success || !result.order) {
-        return { success: false, error: result.error || '注文発注に失敗しました' };
+        return {
+          success: false,
+          error: result.error || '注文発注に失敗しました',
+        };
       }
 
       // リアル注文形式に変換
@@ -272,11 +300,16 @@ export class RealTradingService {
       // 口座情報を更新
       await this.updateAccount(broker);
 
-      console.log(`✅ リアル注文発注成功: ${realOrder.symbol} ${realOrder.side} ${realOrder.quantity}${this.getQuantityUnit(order.market)}`);
+      console.log(
+        `✅ リアル注文発注成功: ${realOrder.symbol} ${realOrder.side} ${realOrder.quantity}${this.getQuantityUnit(order.market)}`
+      );
       return { success: true, orderId: realOrder.id, order: realOrder };
     } catch (error) {
       console.error('❌ リアル注文発注エラー:', error);
-      return { success: false, error: error instanceof Error ? error.message : '不明なエラー' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : '不明なエラー',
+      };
     }
   }
 
@@ -412,7 +445,10 @@ export class RealTradingService {
   /**
    * 統一ポジションをリアルポジション形式に変換
    */
-  private convertToRealPosition(unifiedPosition: any, broker: string): RealPosition {
+  private convertToRealPosition(
+    unifiedPosition: any,
+    broker: string
+  ): RealPosition {
     const positionId = `${broker}_${unifiedPosition.id || Date.now()}`;
     const now = new Date();
 
@@ -456,7 +492,9 @@ export class RealTradingService {
         }
       }
 
-      return orders.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      return orders.sort(
+        (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+      );
     } catch (error) {
       console.error('❌ リアル注文取得エラー:', error);
       return [];
@@ -477,9 +515,18 @@ export class RealTradingService {
       }
 
       // 全口座の統合情報を返す
-      const totalValue = Array.from(this.accounts.values()).reduce((sum, account) => sum + account.totalValue, 0);
-      const totalPnL = Array.from(this.accounts.values()).reduce((sum, account) => sum + account.totalPnL, 0);
-      const totalReturn = Array.from(this.accounts.values()).reduce((sum, account) => sum + account.totalReturn, 0);
+      const totalValue = Array.from(this.accounts.values()).reduce(
+        (sum, account) => sum + account.totalValue,
+        0
+      );
+      const totalPnL = Array.from(this.accounts.values()).reduce(
+        (sum, account) => sum + account.totalPnL,
+        0
+      );
+      const totalReturn = Array.from(this.accounts.values()).reduce(
+        (sum, account) => sum + account.totalReturn,
+        0
+      );
 
       return {
         id: 'COMBINED',
@@ -487,16 +534,38 @@ export class RealTradingService {
         accountType: 'CASH',
         currency: 'USD',
         totalValue,
-        availableCash: Array.from(this.accounts.values()).reduce((sum, account) => sum + account.availableCash, 0),
-        buyingPower: Array.from(this.accounts.values()).reduce((sum, account) => sum + account.buyingPower, 0),
-        marginUsed: Array.from(this.accounts.values()).reduce((sum, account) => sum + account.marginUsed, 0),
-        marginAvailable: Array.from(this.accounts.values()).reduce((sum, account) => sum + account.marginAvailable, 0),
-        unrealizedPnL: Array.from(this.accounts.values()).reduce((sum, account) => sum + account.unrealizedPnL, 0),
-        realizedPnL: Array.from(this.accounts.values()).reduce((sum, account) => sum + account.realizedPnL, 0),
+        availableCash: Array.from(this.accounts.values()).reduce(
+          (sum, account) => sum + account.availableCash,
+          0
+        ),
+        buyingPower: Array.from(this.accounts.values()).reduce(
+          (sum, account) => sum + account.buyingPower,
+          0
+        ),
+        marginUsed: Array.from(this.accounts.values()).reduce(
+          (sum, account) => sum + account.marginUsed,
+          0
+        ),
+        marginAvailable: Array.from(this.accounts.values()).reduce(
+          (sum, account) => sum + account.marginAvailable,
+          0
+        ),
+        unrealizedPnL: Array.from(this.accounts.values()).reduce(
+          (sum, account) => sum + account.unrealizedPnL,
+          0
+        ),
+        realizedPnL: Array.from(this.accounts.values()).reduce(
+          (sum, account) => sum + account.realizedPnL,
+          0
+        ),
         totalPnL,
-        dayPnL: Array.from(this.accounts.values()).reduce((sum, account) => sum + account.dayPnL, 0),
+        dayPnL: Array.from(this.accounts.values()).reduce(
+          (sum, account) => sum + account.dayPnL,
+          0
+        ),
         totalReturn,
-        totalReturnPercent: totalValue > 0 ? (totalReturn / totalValue) * 100 : 0,
+        totalReturnPercent:
+          totalValue > 0 ? (totalReturn / totalValue) * 100 : 0,
         positions: [],
         orders: [],
         lastUpdated: new Date(),
@@ -518,7 +587,10 @@ export class RealTradingService {
         return false;
       }
 
-      const result = await this.tradingIntegration.cancelOrder(orderId, order.broker);
+      const result = await this.tradingIntegration.cancelOrder(
+        orderId,
+        order.broker
+      );
       if (result) {
         order.status = 'CANCELLED';
         order.updatedAt = new Date();
@@ -537,7 +609,10 @@ export class RealTradingService {
   /**
    * 現在価格を取得
    */
-  async getCurrentPrice(symbol: string, market: 'FX' | 'US' | 'JP'): Promise<number | null> {
+  async getCurrentPrice(
+    symbol: string,
+    market: 'FX' | 'US' | 'JP'
+  ): Promise<number | null> {
     try {
       const price = await this.dataIntegration.getStockData(symbol, market);
       return price?.price || null;
@@ -550,7 +625,10 @@ export class RealTradingService {
   /**
    * 接続状態をチェック
    */
-  async checkConnectionStatus(): Promise<{ overall: boolean; brokers: Record<string, boolean> }> {
+  async checkConnectionStatus(): Promise<{
+    overall: boolean;
+    brokers: Record<string, boolean>;
+  }> {
     try {
       const status = await this.tradingIntegration.checkConnectionStatus();
       return {

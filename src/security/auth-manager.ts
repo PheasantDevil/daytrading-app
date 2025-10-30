@@ -258,9 +258,7 @@ export class AuthManager {
   /**
    * トークンを検証
    */
-  async verifyToken(
-    token: string
-  ): Promise<{
+  async verifyToken(token: string): Promise<{
     valid: boolean;
     user?: Omit<User, 'passwordHash' | 'mfaSecret'>;
     error?: string;

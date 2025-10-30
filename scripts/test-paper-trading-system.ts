@@ -72,7 +72,9 @@ async function testPaperTradingSystem(): Promise<void> {
     logger.info('\n📊 現在のポジション:');
     const positions = await paperTrading.getPositions();
     for (const pos of positions) {
-      logger.info(`${pos.symbol}: ${pos.quantity}株 @ $${pos.averageCost.toFixed(2)}`);
+      logger.info(
+        `${pos.symbol}: ${pos.quantity}株 @ $${pos.averageCost.toFixed(2)}`
+      );
       logger.info(`  現在価格: $${pos.currentPrice.toFixed(2)}`);
       logger.info(`  未実現損益: $${pos.unrealizedPnL.toFixed(2)}`);
       logger.info(`  評価額: $${pos.marketValue.toFixed(2)}`);
@@ -101,7 +103,9 @@ async function testPaperTradingSystem(): Promise<void> {
     const finalAccount = await paperTrading.getAccountInfo();
     logger.info(`残高: $${finalAccount.balance.toLocaleString()}`);
     logger.info(`純資産: $${finalAccount.netLiquidation.toLocaleString()}`);
-    logger.info(`総損益: $${finalAccount.totalPnL.toFixed(2)} (${((finalAccount.totalPnL / initialAccount.balance) * 100).toFixed(2)}%)`);
+    logger.info(
+      `総損益: $${finalAccount.totalPnL.toFixed(2)} (${((finalAccount.totalPnL / initialAccount.balance) * 100).toFixed(2)}%)`
+    );
     logger.info(`未実現損益: $${finalAccount.unrealizedPnL.toFixed(2)}`);
     logger.info(`実現損益: $${finalAccount.realizedPnL.toFixed(2)}`);
 
@@ -132,7 +136,10 @@ async function testPaperTradingSystem(): Promise<void> {
     logger.info('\n🎉 ペーパートレーディングシステムのテストが完了しました');
     logger.info('✅ 全ての機能が正常に動作しています');
   } catch (error) {
-    logger.error('❌ ペーパートレーディングシステムのテストに失敗しました:', error);
+    logger.error(
+      '❌ ペーパートレーディングシステムのテストに失敗しました:',
+      error
+    );
     process.exit(1);
   }
 }
@@ -141,4 +148,3 @@ async function testPaperTradingSystem(): Promise<void> {
 testPaperTradingSystem().catch(console.error);
 
 export { testPaperTradingSystem };
-

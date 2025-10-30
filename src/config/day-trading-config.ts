@@ -140,4 +140,3 @@ export const japanDayTradingConfig: DayTradingConfig = {
     timezone: 'Asia/Tokyo',
   },
 };
-

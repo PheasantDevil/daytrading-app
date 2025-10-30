@@ -19,11 +19,11 @@ export async function GET(request: NextRequest) {
 
     // 実際の実装では、Interactive Brokers APIから履歴データを取得
     // 現在はモックデータを生成
-    
+
     const mockHistoricalData = [];
     const now = new Date();
     const basePrice = 100 + Math.random() * 200;
-    
+
     // バーサイズに応じて時間間隔を設定
     let intervalMs = 60000; // 1分
     switch (barSize) {

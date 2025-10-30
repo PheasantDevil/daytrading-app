@@ -9,12 +9,14 @@
 ## 🎯 このフェーズの目標
 
 ### データ収集
+
 - ✅ 最低10-20取引のデータを蓄積
 - ✅ 勝率、損益、シグナル精度を記録
 - ✅ システムの問題点を発見
 - ✅ 最適な設定値を見つける
 
 ### 期間
+
 - **推奨**: 1-2週間（営業日10-14日）
 - **最低**: 10取引（約2週間）
 
@@ -79,15 +81,16 @@ npm run practice:day-trading
 ### Step 3: 自動取引を有効化（準備ができたら）
 
 設定ファイルを編集:
+
 ```typescript
 // src/config/day-trading-config.ts
 
 export const myDayTradingConfig: DayTradingConfig = {
   ...defaultDayTradingConfig,
   trading: {
-    enabled: true,              // 自動取引有効化
-    paperTrading: true,         // まずはペーパートレーディング
-    confirmBeforeTrade: false,  // 確認なしで自動実行
+    enabled: true, // 自動取引有効化
+    paperTrading: true, // まずはペーパートレーディング
+    confirmBeforeTrade: false, // 確認なしで自動実行
     maxRetries: 3,
   },
 };
@@ -113,6 +116,7 @@ npm run trade:auto-start
 ### 毎日記録すべきデータ
 
 **1. 取引データ**
+
 - 日付
 - 候補銘柄（スクリーニング結果）
 - 選択された銘柄
@@ -123,11 +127,13 @@ npm run trade:auto-start
 - 損益額
 
 **2. シグナルデータ**
+
 - 各サイトのシグナル（BUY/HOLD/SELL）
 - 確信度
 - 過半数判定結果
 
 **3. パフォーマンスデータ**
+
 - 勝率
 - 平均利益
 - 平均損失
@@ -140,10 +146,10 @@ npm run trade:auto-start
 
 ### エクセル/スプレッドシート
 
-| 日付 | 候補銘柄 | 選択銘柄 | BUYシグナル | 購入価格 | 売却価格 | 売却理由 | 損益率 | 損益額 | メモ |
-|------|---------|---------|-----------|---------|---------|---------|-------|-------|------|
-| 10/10 | AAPL,GOOGL,MSFT | - | 0/7 | - | - | 購入なし | 0% | $0 | 全てHOLD |
-| 10/11 | AAPL,TSLA,NVDA | AAPL | 1/7 | $175.50 | $184.27 | 目標達成 | +5.0% | $438.50 | 順調 |
+| 日付  | 候補銘柄        | 選択銘柄 | BUYシグナル | 購入価格 | 売却価格 | 売却理由 | 損益率 | 損益額  | メモ     |
+| ----- | --------------- | -------- | ----------- | -------- | -------- | -------- | ------ | ------- | -------- |
+| 10/10 | AAPL,GOOGL,MSFT | -        | 0/7         | -        | -        | 購入なし | 0%     | $0      | 全てHOLD |
+| 10/11 | AAPL,TSLA,NVDA  | AAPL     | 1/7         | $175.50  | $184.27  | 目標達成 | +5.0%  | $438.50 | 順調     |
 
 ### JSON形式（自動記録）
 
@@ -204,6 +210,7 @@ npm run trade:auto-start
 ### 毎週金曜日（または週末）
 
 **1. 週次データの集計**
+
 ```
 今週の取引:
 - 取引日数: 5日
@@ -216,17 +223,20 @@ npm run trade:auto-start
 ```
 
 **2. パターンの分析**
+
 - どの銘柄が多く選ばれたか
 - どの時間帯で売却が多いか
 - ストップロスが多いか、目標達成が多いか
 - シグナルの精度はどうか
 
 **3. 問題点の洗い出し**
+
 - エラーが発生したか
 - 予期しない動作はあったか
 - 改善すべき点は何か
 
 **4. 設定の見直し**
+
 - ストップロス/テイクプロフィットの調整
 - スクリーニング条件の調整
 - シグナル閾値の調整
@@ -263,11 +273,13 @@ npm run trade:auto-start
 ### 1. シグナル精度
 
 **質問**:
+
 - Yahoo Financeのシグナルは信頼できるか？
 - BUYシグナルの銘柄は実際に上昇したか？
 - HOLDと判定された銘柄は見送って正解だったか？
 
 **分析方法**:
+
 ```
 BUYシグナル精度 = (実際に上昇した回数) / (BUY判定回数)
 目標: 60%以上
@@ -276,11 +288,13 @@ BUYシグナル精度 = (実際に上昇した回数) / (BUY判定回数)
 ### 2. リスク管理の有効性
 
 **質問**:
+
 - ストップロス（-3%）は適切か？
 - テイクプロフィット（+5%）は達成可能か？
 - 強制決済で損失が拡大していないか？
 
 **分析方法**:
+
 ```
 ストップロス発動率 = (ストップロス回数) / (総取引数)
 理想: 30%以下
@@ -289,11 +303,13 @@ BUYシグナル精度 = (実際に上昇した回数) / (BUY判定回数)
 ### 3. 銘柄選定の妥当性
 
 **質問**:
+
 - スクリーニング条件は適切か？
 - 選ばれる銘柄に偏りはないか？
 - 流動性は十分か？
 
 **分析方法**:
+
 ```
 銘柄分布を確認
 出来高を確認
@@ -306,14 +322,17 @@ BUYシグナル精度 = (実際に上昇した回数) / (BUY判定回数)
 ### 問題1: 購入推奨銘柄が出ない
 
 **原因**:
+
 - 市場全体が下落トレンド
 - Yahoo Financeのシグナルが保守的すぎる
 
 **対策**:
+
 ```typescript
 // シグナル判定を緩和
 // yahoo-finance-signal.ts の分析ロジックを調整
-if (buyScore > sellScore) {  // +1 を削除
+if (buyScore > sellScore) {
+  // +1 を削除
   signal = 'BUY';
 }
 ```
@@ -321,10 +340,12 @@ if (buyScore > sellScore) {  // +1 を削除
 ### 問題2: ストップロスが頻繁に発動
 
 **原因**:
+
 - ストップロス（-3%）が厳しすぎる
 - ボラティリティが高い銘柄を選んでいる
 
 **対策**:
+
 ```typescript
 // ストップロスを緩和
 riskManagement: {
@@ -335,10 +356,12 @@ riskManagement: {
 ### 問題3: 目標利益に到達しない
 
 **原因**:
+
 - テイクプロフィット（+5%）が高すぎる
 - 日中の値動きが小さい
 
 **対策**:
+
 ```typescript
 // 目標を下げる
 riskManagement: {
@@ -353,17 +376,20 @@ riskManagement: {
 ### デイリーレポート
 
 **確認項目**:
+
 - 今日の取引があったか
 - 損益はどうだったか
 - 理由は妥当か
 
 **アクション**:
+
 - データを記録
 - 問題があれば設定調整
 
 ### 週次レポート（自分で作成）
 
 **テンプレート**:
+
 ```
 ========== 週次レポート ==========
 期間: 2025/10/7 - 2025/10/11
@@ -401,20 +427,20 @@ riskManagement: {
 ```typescript
 export const aggressiveDayTradingConfig: DayTradingConfig = {
   ...defaultDayTradingConfig,
-  
+
   riskManagement: {
-    stopLoss: -0.05,           // -5%（緩い）
-    takeProfit: 0.03,          // +3%（早めに利確）
-    maxPositionSize: 15000,    // $15,000（大きい）
-    maxDailyTrades: 2,         // 1日2取引まで
-    emergencyStopLoss: -0.08,  // -8%
+    stopLoss: -0.05, // -5%（緩い）
+    takeProfit: 0.03, // +3%（早めに利確）
+    maxPositionSize: 15000, // $15,000（大きい）
+    maxDailyTrades: 2, // 1日2取引まで
+    emergencyStopLoss: -0.08, // -8%
   },
-  
+
   screening: {
-    minVolume: 500000,         // 50万株（緩い）
-    minPrice: 5,               // $5（低価格株も対象）
-    maxPrice: 1000,            // $1,000（高価格株も対象）
-    candidateCount: 20,        // 20銘柄（多め）
+    minVolume: 500000, // 50万株（緩い）
+    minPrice: 5, // $5（低価格株も対象）
+    maxPrice: 1000, // $1,000（高価格株も対象）
+    candidateCount: 20, // 20銘柄（多め）
   },
 };
 ```
@@ -424,20 +450,20 @@ export const aggressiveDayTradingConfig: DayTradingConfig = {
 ```typescript
 export const conservativeDayTradingConfig: DayTradingConfig = {
   ...defaultDayTradingConfig,
-  
+
   riskManagement: {
-    stopLoss: -0.02,           // -2%（厳しい）
-    takeProfit: 0.07,          // +7%（慎重）
-    maxPositionSize: 5000,     // $5,000（小さい）
-    maxDailyTrades: 1,         // 1日1取引
-    emergencyStopLoss: -0.03,  // -3%
+    stopLoss: -0.02, // -2%（厳しい）
+    takeProfit: 0.07, // +7%（慎重）
+    maxPositionSize: 5000, // $5,000（小さい）
+    maxDailyTrades: 1, // 1日1取引
+    emergencyStopLoss: -0.03, // -3%
   },
-  
+
   screening: {
-    minVolume: 2000000,        // 200万株（厳しい）
-    minPrice: 50,              // $50（安定株のみ）
-    maxPrice: 300,             // $300（高すぎる株は除外）
-    candidateCount: 5,         // 5銘柄（少なめ）
+    minVolume: 2000000, // 200万株（厳しい）
+    minPrice: 50, // $50（安定株のみ）
+    maxPrice: 300, // $300（高すぎる株は除外）
+    candidateCount: 5, // 5銘柄（少なめ）
   },
 };
 ```
@@ -532,6 +558,7 @@ export const conservativeDayTradingConfig: DayTradingConfig = {
 ### ✅ Phase4へ進むべき（リスク管理強化）
 
 **条件**:
+
 - 勝率が40%以下
 - ストップロスが頻発（50%以上）
 - ドローダウンが大きい
@@ -543,6 +570,7 @@ export const conservativeDayTradingConfig: DayTradingConfig = {
 ### ✅ Phase5へ進むべき（パフォーマンス分析）
 
 **条件**:
+
 - 勝率が50%以上
 - 安定して利益が出ている
 - より詳細な分析が必要
@@ -554,6 +582,7 @@ export const conservativeDayTradingConfig: DayTradingConfig = {
 ### ✅ 設定調整のみで継続
 
 **条件**:
+
 - 勝率が40-50%
 - 時々利益が出る
 - システムは正常動作
@@ -565,6 +594,7 @@ export const conservativeDayTradingConfig: DayTradingConfig = {
 ### ⚠️ 戦略の見直しが必要
 
 **条件**:
+
 - 勝率が30%以下
 - 連続で損失
 - システムの問題が頻発
@@ -576,21 +606,25 @@ export const conservativeDayTradingConfig: DayTradingConfig = {
 ## 💡 成功のヒント
 
 ### 1. 焦らない
+
 - 最初の1週間は学習期間
 - データ収集が目的
 - 損益よりもデータが重要
 
 ### 2. 記録を続ける
+
 - 毎日の記録が重要
 - パターンが見えてくる
 - 改善のヒントが得られる
 
 ### 3. システムを信頼する
+
 - 過半数判定を信頼
 - 感情的な判断を避ける
 - データに基づいて改善
 
 ### 4. 少額から開始
+
 - ペーパートレーディングで十分
 - 実資金は少額から
 - 徐々に増やす
@@ -660,6 +694,7 @@ NVDA: 1回 (0勝1敗)
 ## 🎉 このフェーズの成果
 
 **2週間の実運用を通じて**:
+
 - ✅ 実際の取引データを蓄積
 - ✅ システムの安定性を確認
 - ✅ 最適な設定値を発見
@@ -667,4 +702,3 @@ NVDA: 1回 (0勝1敗)
 - ✅ 次のPhaseへの準備完了
 
 **データに基づいた改善ができる状態になります！** 📊
-
