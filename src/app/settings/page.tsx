@@ -61,6 +61,13 @@ export default function SettingsPage() {
   });
 
   const [activeTab, setActiveTab] = useState('broker');
+  // ポート選択UI用の状態
+  const [portMode, setPortMode] = useState<'live' | 'paper' | 'other'>(
+    settings.ibPort === 7496 ? 'live' : settings.ibPort === 7497 ? 'paper' : 'other'
+  );
+  const [customPort, setCustomPort] = useState<number>(
+    settings.ibPort === 7496 || settings.ibPort === 7497 ? 4002 : settings.ibPort
+  );
   const [connectionResult, setConnectionResult] = useState<
     | { success: boolean; message: string; latencyMs?: number; error?: string; port?: number; host?: string }
     | null
@@ -202,16 +209,47 @@ export default function SettingsPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     ポート番号
                   </label>
-                  <select
-                    value={settings.ibPort}
-                    onChange={(e) =>
-                      handleSettingChange('ibPort', Number(e.target.value))
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value={7496}>7496 (本番取引)</option>
-                    <option value={7497}>7497 (ペーパートレーディング)</option>
-                  </select>
+                  <div className="flex gap-3">
+                    <select
+                      value={portMode}
+                      onChange={(e) => {
+                        const mode = e.target.value as 'live' | 'paper' | 'other';
+                        setPortMode(mode);
+                        if (mode === 'live') {
+                          handleSettingChange('ibPort', 7496);
+                        } else if (mode === 'paper') {
+                          handleSettingChange('ibPort', 7497);
+                        } else {
+                          // その他: 右枠に自動入力（デフォルト4002）
+                          const nextPort = customPort || 4002;
+                          setCustomPort(nextPort);
+                          handleSettingChange('ibPort', nextPort);
+                        }
+                      }}
+                      className="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="live">7496 (本番取引)</option>
+                      <option value="paper">7497 (ペーパートレーディング)</option>
+                      <option value="other">その他（右枠に自動入力）</option>
+                    </select>
+                    <input
+                      type="number"
+                      value={portMode === 'other' ? customPort : settings.ibPort}
+                      onChange={(e) => {
+                        const v = Number(e.target.value);
+                        setCustomPort(v);
+                        if (portMode === 'other') handleSettingChange('ibPort', v);
+                      }}
+                      className={`w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                        portMode === 'other'
+                          ? 'border-gray-300 focus:ring-blue-500'
+                          : 'border-gray-200 bg-gray-100 text-gray-500'
+                      }`}
+                      disabled={portMode !== 'other'}
+                      min={1}
+                      max={65535}
+                    />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
