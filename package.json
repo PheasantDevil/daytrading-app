@@ -82,6 +82,7 @@
     "puppeteer": "^21.11.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "recharts": "^3.3.0",
     "redis": "^5.8.2",
     "scikit-learn": "^0.1.0",
     "tailwindcss": "^4.1.13",
